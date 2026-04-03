@@ -5,9 +5,9 @@ import sys
 
 from dotenv import load_dotenv
 
-from bot.main_bot import run_bot
-from config.settings import get_settings, Settings
-from db.database_setup import init_db, init_db_connection
+from src.main_bot import run_bot
+from src.config import get_settings
+from src.database.database_setup import init_db, init_db_connection
 
 
 def _resolve_log_level(value: str) -> int:

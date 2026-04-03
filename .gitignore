@@ -14,8 +14,8 @@ __pycache__/
 # Игнорировать Docker артефакты (если вдруг)
 *.log
 *.pid
-locales/ru_backup.json
-locales/en_backup.json
-db/models_old.py
+assets/locales/ru_backup.json
+assets/locales/en_backup.json
+src/database/models_old.py
 .serena/
 AGENTS.md

@@ -64,6 +64,51 @@
     cp .env.example .env
     nano .env 
     ```
+    
+    | Переменная                          | Описание |
+    |-------------------------------------|---------|
+    | `BOT_TOKEN`                         | Токен Telegram-бота от @BotFather |
+    | `TELEGRAM_PROXY_URL`                | Прокси для подключения к Telegram API (socks5:// или http://) |
+    | `ADMIN_IDS`                         | Список ID администраторов через запятую |
+    | `POSTGRES_USER`                     | Имя пользователя PostgreSQL |
+    | `POSTGRES_PASSWORD`                 | Пароль пользователя PostgreSQL |
+    | `POSTGRES_HOST`                     | Хост базы данных (обычно имя контейнера) |
+    | `POSTGRES_PORT`                     | Порт PostgreSQL |
+    | `POSTGRES_DB`                       | Название базы данных |
+    | `DEFAULT_LANGUAGE`                  | Язык по умолчанию (`ru` или `en`) |
+    | `SUPPORT_LINK`                      | Ссылка на поддержку |
+    | `SERVER_STATUS_URL`                 | Ссылка на страницу статуса серверов |
+    | `TERMS_OF_SERVICE_URL`              | Ссылка на пользовательское соглашение |
+    | `SUBSCRIPTION_MINI_APP_URL`         | URL мини-приложения подписки (если используется) |
+    | `DISABLE_WELCOME_MESSAGE`           | Отключить приветственное сообщение (`True`/`False`) |
+    | `MY_DEVICES_SECTION_ENABLED`        | Включить раздел «Мои устройства» |
+    | `USER_HWID_DEVICE_LIMIT`            | Ограничение устройств по HWID (0 = без ограничений) |
+    | `REQUIRED_CHANNEL_SUBSCRIBE_TO_USE` | Включить обязательную подписку на канал |
+    | `REQUIRED_CHANNEL_ID`               | ID канала для обязательной подписки |
+    | `REQUIRED_CHANNEL_LINK`             | Публичная ссылка на канал |
+    | `WEBHOOK_BASE_URL`                  | Базовый URL для вебхуков |
+    | `YOOKASSA_ENABLED`                  | Включить оплату через YooKassa |
+    | `FREEKASSA_ENABLED`                 | Включить оплату через FreeKassa |
+    | `STARS_ENABLED`                     | Включить оплату Telegram Stars |
+    | `CRYPTOPAY_ENABLED`                 | Включить CryptoPay |
+    | `PAYMENT_METHODS_ORDER`             | Порядок отображения способов оплаты |
+    | `YOOKASSA_SHOP_ID`                  | Shop ID в YooKassa |
+    | `YOOKASSA_SECRET_KEY`               | Secret Key в YooKassa |
+    | `NALOGO_INN`                        | ИНН для самозанятых (nalog.ru) |
+    | `NALOGO_PASSWORD`                   | Пароль от кабинета самозанятого |
+    | `REFERRAL_ENABLED`                  | Включить реферальную систему |
+    | `PANEL_API_URL`                     | URL API Remnawave панели |
+    | `PANEL_API_KEY`                     | API-ключ Remnawave панели |
+    | `USER_TRAFFIC_LIMIT_GB`             | Ограничение трафика для пользователей (0 = без лимита) |
+    | `TRIAL_ENABLED`                     | Включить пробный период |
+    | `TRIAL_DURATION_DAYS`               | Длительность пробного периода в днях |
+    | `WEB_SERVER_HOST`                   | Хост веб-сервера |
+    | `WEB_SERVER_PORT`                   | Порт веб-сервера |
+    | `LOG_LEVEL`                         | Уровень логирования (INFO, DEBUG, WARNING и т.д.) |
+    | `LOG_CHAT_ID`                       | ID чата для административных уведомлений |
+    
+    > **Примечание:** Полный список переменных находится в файле `.env.example`.
+
     Ниже перечислены ключевые переменные.
 
     <details>
