@@ -30,7 +30,7 @@ def build_dispatcher(settings: Settings, async_session_factory: sessionmaker) ->
 
     dp = Dispatcher(storage=storage, settings=settings, bot_instance=bot)
 
-    i18n_instance = get_i18n_instance(path="locales", default=settings.DEFAULT_LANGUAGE)
+    i18n_instance = get_i18n_instance(path="assets/locales", default=settings.DEFAULT_LANGUAGE)
 
     dp["i18n_instance"] = i18n_instance
     dp["async_session_factory"] = async_session_factory

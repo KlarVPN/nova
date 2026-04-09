@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from src.config import Settings
 
-from database.database_setup import init_db_connection
+from src.database.database_setup import init_db_connection
 
 from src.middlewares.i18n import JsonI18n
 from src.app.controllers.dispatcher_controller import build_dispatcher

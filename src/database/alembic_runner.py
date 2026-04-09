@@ -16,7 +16,7 @@ _BASELINE_REVISION = "0001_initial_schema"
 
 
 def _build_alembic_config(settings: Settings) -> Config:
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     config = Config(str(project_root / "alembic.ini"))
     config.set_main_option("script_location", str(project_root / "alembic"))
     config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

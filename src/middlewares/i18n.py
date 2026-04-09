@@ -100,7 +100,7 @@ class JsonI18n:
 _i18n_instance_singleton: Optional[JsonI18n] = None
 
 
-def get_i18n_instance(path: str = "locales",
+def get_i18n_instance(path: str = "assets/locales",
                       default: str = "en",
                       domain: str = "bot") -> JsonI18n:
     global _i18n_instance_singleton
