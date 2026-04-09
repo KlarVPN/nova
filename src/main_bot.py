@@ -211,7 +211,7 @@ async def on_shutdown_configured(dispatcher: Dispatcher):
         except Exception as e:
             logging.warning(f"SHUTDOWN: Failed to close bot session: {e}")
 
-    from database.database_setup import async_engine as global_async_engine
+    from src.database.database_setup import async_engine as global_async_engine
 
     if global_async_engine:
         logging.info("SHUTDOWN: Disposing SQLAlchemy engine...")
