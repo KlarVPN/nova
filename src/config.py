@@ -229,7 +229,6 @@ class Settings(BaseSettings):
     SUBSCRIPTION_MINI_APP_URL: Optional[str] = Field(default=None)
 
     START_COMMAND_DESCRIPTION: Optional[str] = Field(default=None)
-    DISABLE_WELCOME_MESSAGE: bool = Field(default=False, description="Disable welcome message on /start command")
 
     MY_DEVICES_SECTION_ENABLED: bool = Field(
         default=False,

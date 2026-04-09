@@ -80,7 +80,6 @@
     | `SERVER_STATUS_URL`                 | Ссылка на страницу статуса серверов |
     | `TERMS_OF_SERVICE_URL`              | Ссылка на пользовательское соглашение |
     | `SUBSCRIPTION_MINI_APP_URL`         | URL мини-приложения подписки (если используется) |
-    | `DISABLE_WELCOME_MESSAGE`           | Отключить приветственное сообщение (`True`/`False`) |
     | `MY_DEVICES_SECTION_ENABLED`        | Включить раздел «Мои устройства» |
     | `USER_HWID_DEVICE_LIMIT`            | Ограничение устройств по HWID (0 = без ограничений) |
     | `REQUIRED_CHANNEL_SUBSCRIBE_TO_USE` | Включить обязательную подписку на канал |
