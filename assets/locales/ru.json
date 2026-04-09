@@ -1,5 +1,4 @@
 {
-  "welcome": "Добро пожаловать, {user_name}!",
   "channel_subscription_required": "Чтобы пользоваться ботом, подпишитесь на канал и нажмите \"Проверить подписку\".",
   "channel_subscription_join_button": "Перейти в канал",
   "channel_subscription_verify_button": "Проверить подписку",
