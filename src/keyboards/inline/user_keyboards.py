@@ -16,37 +16,43 @@ def get_main_menu_inline_keyboard(
     if show_trial_button and settings.TRIAL_ENABLED:
         builder.row(
             InlineKeyboardButton(text=_(key="menu_activate_trial_button"),
-                                 callback_data="main_action:request_trial"))
+                                 callback_data="main_action:request_trial",
+                                 icon_custom_emoji_id="5355197719822504108"))
 
     builder.row(
         InlineKeyboardButton(text=_(key="menu_subscribe_inline"),
-                             callback_data="main_action:subscribe"))
+                             callback_data="main_action:subscribe",
+                             icon_custom_emoji_id="5355001173529106401"))
     builder.row(
         InlineKeyboardButton(
             text=_(key="menu_my_subscription_inline"),
             callback_data="main_action:my_subscription",
+            icon_custom_emoji_id="5357490991840399481"
         )
     )
 
     promo_button = InlineKeyboardButton(
         text=_(key="menu_apply_promo_button"),
-        callback_data="main_action:apply_promo")
+        callback_data="main_action:apply_promo",
+        icon_custom_emoji_id="5355262243116194984")
     if settings.REFERRAL_ENABLED:
         referral_button = InlineKeyboardButton(
             text=_(key="menu_referral_inline"),
-            callback_data="main_action:referral")
+            callback_data="main_action:referral",
+            icon_custom_emoji_id="5354998738282647073")
         builder.row(referral_button, promo_button)
     else:
         builder.row(promo_button)
 
     language_button = InlineKeyboardButton(
         text=_(key="menu_language_settings_inline"),
-        callback_data="main_action:language")
+        callback_data="main_action:language",
+        icon_custom_emoji_id="5388937913453023337" if lang == "ru" else "5386757878247889379")
     status_button_list = []
     if settings.SERVER_STATUS_URL:
         status_button_list.append(
             InlineKeyboardButton(text=_(key="menu_server_status_button"),
-                                 url=settings.SERVER_STATUS_URL))
+                                 url=settings.SERVER_STATUS_URL, icon_custom_emoji_id="5352605655519763926"))
 
     if status_button_list:
         builder.row(language_button, *status_button_list)
@@ -56,12 +62,12 @@ def get_main_menu_inline_keyboard(
     if settings.SUPPORT_LINK:
         builder.row(
             InlineKeyboardButton(text=_(key="menu_support_button"),
-                                 url=settings.SUPPORT_LINK))
+                                 url=settings.SUPPORT_LINK, icon_custom_emoji_id="5354914651412930547"))
 
     if settings.TERMS_OF_SERVICE_URL:
         builder.row(
             InlineKeyboardButton(text=_(key="menu_terms_button"),
-                                 url=settings.TERMS_OF_SERVICE_URL))
+                                 url=settings.TERMS_OF_SERVICE_URL, icon_custom_emoji_id="5354867531326724446"))
 
     return builder.as_markup()
 
@@ -71,13 +77,28 @@ def get_language_selection_keyboard(i18n_instance,
     _ = lambda key, **kwargs: i18n_instance.gettext(current_lang, key, **kwargs
                                                     )
     builder = InlineKeyboardBuilder()
-    builder.button(text=f"🇬🇧 English {'✅' if current_lang == 'en' else ''}",
-                   callback_data="set_lang_en")
-    builder.button(text=f"🇷🇺 Русский {'✅' if current_lang == 'ru' else ''}",
-                   callback_data="set_lang_ru")
-    builder.button(text=_(key="back_to_main_menu_button"),
-                   callback_data="main_action:back_to_main")
-    builder.adjust(1)
+    en_button = InlineKeyboardButton(
+        text="English",
+        callback_data="set_lang_en",
+        style="success" if current_lang == "en" else None,
+        icon_custom_emoji_id="5386757878247889379",
+    )
+    ru_button = InlineKeyboardButton(
+        text="Русский",
+        callback_data="set_lang_ru",
+        style="success" if current_lang == "ru" else None,
+        icon_custom_emoji_id="5388937913453023337",
+    )
+    builder.row(en_button, ru_button)
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
+
     return builder.as_markup()
 
 
