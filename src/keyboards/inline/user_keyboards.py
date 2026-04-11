@@ -20,6 +20,33 @@ def get_main_menu_inline_keyboard(
                                  icon_custom_emoji_id="5355197719822504108"))
 
     builder.row(
+        InlineKeyboardButton(text=_(key="menu_cabinet_button"),
+                             callback_data="main_action:cabinet",
+                             icon_custom_emoji_id="5354961973362598334"))
+
+    row = [InlineKeyboardButton(text=_(key="menu_information_button"),
+                                callback_data="main_action:info",
+                                icon_custom_emoji_id="5354900362056731576")]
+
+    if settings.SUPPORT_LINK:
+        row.append(
+            InlineKeyboardButton(text=_(key="menu_support_button"),
+                                 url=settings.SUPPORT_LINK, icon_custom_emoji_id="5354914651412930547"))
+
+    builder.row(*row)
+    builder.row(InlineKeyboardButton(
+        text=_(key="menu_language_settings_inline"),
+        callback_data="main_action:language",
+        icon_custom_emoji_id="5388937913453023337" if lang == "ru" else "5386757878247889379"))
+
+    return builder.as_markup()
+
+
+def get_cabinet_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+
+    builder = InlineKeyboardBuilder()
+    builder.row(
         InlineKeyboardButton(text=_(key="menu_subscribe_inline"),
                              callback_data="main_action:subscribe",
                              icon_custom_emoji_id="5355001173529106401"))
@@ -44,30 +71,57 @@ def get_main_menu_inline_keyboard(
     else:
         builder.row(promo_button)
 
-    language_button = InlineKeyboardButton(
-        text=_(key="menu_language_settings_inline"),
-        callback_data="main_action:language",
-        icon_custom_emoji_id="5388937913453023337" if lang == "ru" else "5386757878247889379")
-    status_button_list = []
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
+
+    return builder.as_markup()
+
+
+def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+
+    builder = InlineKeyboardBuilder()
+
+    first_row = []
+    if settings.WEB_URL:
+        first_row.append(
+            InlineKeyboardButton(text=_(key="menu_website_button"),
+                                 url=settings.WEB_URL, icon_custom_emoji_id="5354828391289757858"))
+
     if settings.SERVER_STATUS_URL:
-        status_button_list.append(
+        first_row.append(
             InlineKeyboardButton(text=_(key="menu_server_status_button"),
                                  url=settings.SERVER_STATUS_URL, icon_custom_emoji_id="5352605655519763926"))
 
-    if status_button_list:
-        builder.row(language_button, *status_button_list)
-    else:
-        builder.row(language_button)
+    if settings.WEB_URL or settings.SERVER_STATUS_URL:
+        builder.row(*first_row)
 
-    if settings.SUPPORT_LINK:
-        builder.row(
-            InlineKeyboardButton(text=_(key="menu_support_button"),
-                                 url=settings.SUPPORT_LINK, icon_custom_emoji_id="5354914651412930547"))
-
+    second_row = []
     if settings.TERMS_OF_SERVICE_URL:
-        builder.row(
+        second_row.append(
             InlineKeyboardButton(text=_(key="menu_terms_button"),
                                  url=settings.TERMS_OF_SERVICE_URL, icon_custom_emoji_id="5354867531326724446"))
+
+    if settings.DOCS_URL:
+        second_row.append(
+            InlineKeyboardButton(text=_(key="menu_docs_button"),
+                                 url=settings.DOCS_URL, icon_custom_emoji_id="5354836839490429519"))
+
+    if settings.TERMS_OF_SERVICE_URL or settings.DOCS_URL:
+        builder.row(*second_row)
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
 
     return builder.as_markup()
 

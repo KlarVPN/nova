@@ -20,9 +20,11 @@ class Settings(BaseSettings):
 
     DEFAULT_LANGUAGE: str = Field(default="ru")
 
+    WEB_URL: Optional[str] = Field(default=None)
     SUPPORT_LINK: Optional[str] = Field(default=None)
     SERVER_STATUS_URL: Optional[str] = Field(default=None)
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
+    DOCS_URL: Optional[str] = Field(default=None)
     REQUIRED_CHANNEL_SUBSCRIBE_TO_USE: bool = Field(
         default=False,
         description="Require users to subscribe to REQUIRED_CHANNEL_ID before using the bot",
