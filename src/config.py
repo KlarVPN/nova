@@ -1,7 +1,15 @@
 import logging
+import json
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, ValidationError, computed_field, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationError, computed_field, field_validator, model_validator
 from typing import Optional, List, Dict, Any
+
+
+class Proxy(BaseModel):
+    country: str
+    link: str
+    emoji_id: str
 
 
 class Settings(BaseSettings):
@@ -21,6 +29,7 @@ class Settings(BaseSettings):
     DEFAULT_LANGUAGE: str = Field(default="ru")
 
     WEB_URL: Optional[str] = Field(default=None)
+    WEB_PROXY_URL: Optional[str] = Field(default=None)
     REVIEWS_URL: Optional[str] = Field(default=None)
     SUPPORT_LINK: Optional[str] = Field(default=None)
     SERVER_STATUS_URL: Optional[str] = Field(default=None)
@@ -247,6 +256,42 @@ class Settings(BaseSettings):
     INLINE_USER_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/681/681494.png")
     INLINE_FINANCIAL_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/2769/2769339.png")
     INLINE_SYSTEM_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/2920/2920277.png")
+
+    PROXIES: List[Proxy] = Field(default_factory=list, init=False)
+
+    @model_validator(mode="after")
+    def load_and_validate_proxies(self) -> "Settings":
+        file_path: Path = Path("assets/proxies.json")
+
+        if not file_path.exists():
+            logging.warning("Proxies file %s not found. Proxies will not be loaded.", file_path)
+            self.PROXIES = []
+            return self
+
+        try:
+            raw_data = file_path.read_text(encoding="utf-8")
+            data = json.loads(raw_data)
+
+            proxies_list = data.get("proxies", [])
+
+            if not proxies_list:
+                logging.warning("The 'proxies' array in proxies.json is empty.")
+                self.PROXIES = []
+                return self
+
+            # Валидация через Pydantic модель
+            self.PROXIES = [Proxy.model_validate(item) for item in proxies_list]
+
+            logging.info("Successfully loaded %d proxies from %s", len(self.PROXIES), file_path.name)
+
+        except json.JSONDecodeError as e:
+            logging.error("JSON decode error in file %s: %s", file_path, e)
+            self.PROXIES = []
+        except Exception as e:
+            logging.error("Unexpected error while loading proxies from %s: %s", file_path, e)
+            self.PROXIES = []
+
+        return self
 
     @computed_field
     @property

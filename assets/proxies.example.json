@@ -1,0 +1,14 @@
+{
+  "proxies": [
+    {
+      "country": "Швеция",
+      "link": "https://t.me/proxy?server=...&port=...",
+      "emoji_id": "5388660123558253942"
+    },
+    {
+      "country": "Германия",
+      "link": "https://t.me/proxy?...",
+      "emoji_id": "5388592499298177129"
+    }
+  ]
+}

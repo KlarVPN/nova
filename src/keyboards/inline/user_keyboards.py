@@ -2,7 +2,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from typing import Dict, Optional, List, Tuple
 
-from src.config import Settings
+from src.config import Settings, Proxy
 
 
 def get_main_menu_inline_keyboard(
@@ -34,6 +34,10 @@ def get_main_menu_inline_keyboard(
                                  url=settings.SUPPORT_LINK, icon_custom_emoji_id="5354914651412930547"))
 
     builder.row(*row)
+    if settings.PROXIES:
+        builder.row(InlineKeyboardButton(text=_(key="free_proxies_button"), callback_data="main_action:proxy",
+                                     icon_custom_emoji_id="5355075390563981853"))
+
     builder.row(InlineKeyboardButton(
         text=_(key="menu_language_settings_inline"),
         callback_data="main_action:language",
@@ -138,6 +142,37 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
         )
     )
 
+    return builder.as_markup()
+
+
+def get_proxies_keyboard(i18n_instance, current_lang: str, settings: Settings, proxies: List[Proxy]) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(current_lang, key, **kwargs
+                                                    )
+    if not proxies:
+        builder = InlineKeyboardBuilder()
+        return builder
+
+    builder = InlineKeyboardBuilder()
+
+    for proxy in proxies:
+        builder.button(
+            text=proxy.country,
+            url=proxy.link,
+            icon_custom_emoji_id=proxy.emoji_id
+        )
+
+    builder.adjust(3)
+    if settings.WEB_PROXY_URL:
+        builder.row(InlineKeyboardButton(text=_(key="free_proxies_button"), url=settings.WEB_PROXY_URL,
+                                         icon_custom_emoji_id="5354828391289757858"))
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
     return builder.as_markup()
 
 
