@@ -401,10 +401,12 @@ def get_back_to_main_menu_markup(lang: str,
     builder = InlineKeyboardBuilder()
     if callback_data:
         builder.button(text=_(key="back_to_main_menu_button"),
-                       callback_data=callback_data)
+                       callback_data=callback_data,
+                       icon_custom_emoji_id="5355307842783975721")
     else:
         builder.button(text=_(key="back_to_main_menu_button"),
-                       callback_data="main_action:back_to_main")
+                       callback_data="main_action:back_to_main",
+                       icon_custom_emoji_id="5355307842783975721")
     return builder.as_markup()
 
 

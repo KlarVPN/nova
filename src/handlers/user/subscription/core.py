@@ -246,7 +246,7 @@ async def my_subscription_command_handler(
             ),
         )
 
-    base_markup = get_back_to_main_menu_markup(current_lang, i18n)
+    base_markup = get_back_to_main_menu_markup(current_lang, i18n, "main_action:cabinet")
     kb = base_markup.inline_keyboard
     try:
         local_sub = await subscription_dal.get_active_subscription_by_user_id(session, event.from_user.id)
@@ -259,6 +259,7 @@ async def my_subscription_command_handler(
                 InlineKeyboardButton(
                     text=get_text("connect_button"),
                     web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
+                    icon_custom_emoji_id="5354960470124041653"
                 )
             ])
         else:
@@ -268,6 +269,7 @@ async def my_subscription_command_handler(
                     InlineKeyboardButton(
                         text=get_text("connect_button"),
                         url=cfg_link_val,
+                        icon_custom_emoji_id="5354960470124041653"
                     )
                 ])
 
@@ -319,6 +321,7 @@ async def my_subscription_command_handler(
                 InlineKeyboardButton(
                     text=devices_button_text,
                     callback_data="main_action:my_devices",
+                    icon_custom_emoji_id="5354878084061370642"
                 )
             ])
 
