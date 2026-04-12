@@ -88,6 +88,10 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
     builder = InlineKeyboardBuilder()
 
     first_row = []
+    if settings.REQUIRED_CHANNEL_LINK:
+        builder.row(InlineKeyboardButton(text=_(key="menu_channel_button"), url=settings.REQUIRED_CHANNEL_LINK,
+                                         icon_custom_emoji_id="5355196865124014956"))
+
     if settings.WEB_URL:
         first_row.append(
             InlineKeyboardButton(text=_(key="menu_website_button"),
@@ -114,6 +118,17 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
 
     if settings.TERMS_OF_SERVICE_URL or settings.DOCS_URL:
         builder.row(*second_row)
+
+    third_row = []
+
+    if settings.REVIEWS_URL:
+        third_row.append(
+            InlineKeyboardButton(text=_(key="menu_reviews_button"), url=settings.REVIEWS_URL,
+                                 icon_custom_emoji_id="5355197719822504108")
+        )
+
+    if settings.REVIEWS_URL:
+        builder.row(*third_row)
 
     builder.row(
         InlineKeyboardButton(

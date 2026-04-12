@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     DEFAULT_LANGUAGE: str = Field(default="ru")
 
     WEB_URL: Optional[str] = Field(default=None)
+    REVIEWS_URL: Optional[str] = Field(default=None)
     SUPPORT_LINK: Optional[str] = Field(default=None)
     SERVER_STATUS_URL: Optional[str] = Field(default=None)
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
