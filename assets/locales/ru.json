@@ -1,6 +1,4 @@
 {
-
-
   "channel_subscription_required": "Чтобы пользоваться ботом, подпишитесь на канал и нажмите \"Проверить подписку\".",
   "channel_subscription_join_button": "Перейти в канал",
   "channel_subscription_verify_button": "Проверить подписку",
@@ -56,7 +54,7 @@
   "pay_with_stars_button": "🌟 Звезды Telegram",
   "connect_button": "Подключиться",
   "proxy_not_found": "Прокси пока нет или файл не найден.",
-  "proxy_found": "<tg-emoji emoji-id=\"5355075390563981853\">\uD83D\uDD17</tg-emoji> Доступные прокси",
+  "proxy_found": "<tg-emoji emoji-id=\"5400146730123566483\">⛔\uFE0F</tg-emoji> <b><u>Telegram не должен иметь границ.</u></b>\n\nМы даём <b>бесплатный доступ</b> к мессенджеру всем, у кого его заблокировали.\n\n<tg-emoji emoji-id=\"5391128230809868015\">\uD83D\uDD0B</tg-emoji> <b>Мощные серверы до 10 Гбит/с</b>\n<tg-emoji emoji-id=\"5388863597633905090\">✈\uFE0F</tg-emoji> <b>Расположены максимально близко к Telegram</b>  \n<tg-emoji emoji-id=\"5391268659060578953\">\uD83D\uDD10</tg-emoji> <b>Надёжная защита и маскировка трафика (FAKE-TLS)</b>\n\n <tg-emoji emoji-id=\"5388969524412324844\">\uD83E\uDD1D</tg-emoji> Мы на стороне тех, кто хочет свободно общаться.  \nЗащищайте своё право на информацию и общение.\n\n<b>Подключи бесплатный прокси одной кнопкой ниже \uD83D\uDC47</b>\n<blockquote> <tg-emoji emoji-id=\"5472146462362048818\">\uD83D\uDCA1</tg-emoji> После подключения сверху чатов появится наш канал <b>@klarvpn</b> <tg-emoji emoji-id=\"5388705538542443357\">\uD83D\uDC31</tg-emoji></blockquote>",
   "proxy_website_button": "Веб-сайт с актуальными прокси",
   "free_proxies_button": "Бесплатные прокси",
 

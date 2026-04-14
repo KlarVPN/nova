@@ -163,7 +163,7 @@ def get_proxies_keyboard(i18n_instance, current_lang: str, settings: Settings, p
 
     builder.adjust(3)
     if settings.WEB_PROXY_URL:
-        builder.row(InlineKeyboardButton(text=_(key="free_proxies_button"), url=settings.WEB_PROXY_URL,
+        builder.row(InlineKeyboardButton(text=_(key="proxy_website_button"), url=settings.WEB_PROXY_URL,
                                          icon_custom_emoji_id="5354828391289757858"))
 
     builder.row(
