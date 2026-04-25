@@ -16,7 +16,7 @@ from src.keyboards.inline.user_keyboards import (
     get_main_menu_inline_keyboard,
     get_language_selection_keyboard,
     get_proxies_keyboard,
-    get_channel_subscription_keyboard, get_cabinet_keyboard, get_information_keyboard,
+    get_channel_subscription_keyboard, get_cabinet_keyboard, get_information_keyboard, get_location_info_keyboard,
 )
 from src.services.subscription_service import SubscriptionService
 from src.services.panel_api_service import PanelApiService
@@ -710,6 +710,42 @@ async def proxy_command_handler(
     else:
         text_to_send = _(key="proxy_found")
     reply_markup = get_proxies_keyboard(i18n, current_lang, settings, settings.PROXIES)
+
+    target_message_obj = event.message if isinstance(
+        event, types.CallbackQuery) else event
+    if not target_message_obj:
+        if isinstance(event, types.CallbackQuery):
+            await event.answer(_("error_occurred_try_again"), show_alert=True)
+        return
+
+    if isinstance(event, types.CallbackQuery):
+        if event.message:
+            try:
+                await event.message.edit_text(text_to_send,
+                                              reply_markup=reply_markup)
+            except Exception:
+                await target_message_obj.answer(text_to_send,
+                                                reply_markup=reply_markup)
+        await event.answer()
+    else:
+        await target_message_obj.answer(text_to_send,
+                                        reply_markup=reply_markup)
+
+
+@router.callback_query(F.data == "main_action:locations")
+async def locations_command_handler(
+    event: Union[types.Message, types.CallbackQuery],
+        i18n_data: dict,
+        settings: Settings,
+):
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs
+                                           ) if i18n else key
+
+    text_to_send = _(key="locations_text")
+    text_to_send += "\n".join(f"{loc.emoji} {loc.country} — {loc.city}" for loc in settings.LOCATIONS)
+    reply_markup = get_location_info_keyboard(i18n, current_lang, settings)
 
     target_message_obj = event.message if isinstance(
         event, types.CallbackQuery) else event

@@ -17,6 +17,7 @@ __pycache__/
 assets/locales/ru_backup.json
 assets/locales/en_backup.json
 assets/proxies.json
+assets/locations.json
 src/database/models_old.py
 .serena/
 AGENTS.md

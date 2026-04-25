@@ -86,6 +86,27 @@ def get_cabinet_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMa
     return builder.as_markup()
 
 
+def get_location_info_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+
+    builder = InlineKeyboardBuilder()
+
+    if settings.SERVER_STATUS_URL:
+        builder.row(
+            InlineKeyboardButton(text=_(key="menu_server_status_button"),
+                                 url=settings.SERVER_STATUS_URL, icon_custom_emoji_id="5352605655519763926"))
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:info",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
+
+    return builder.as_markup()
+
+
 def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
 
@@ -101,10 +122,10 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
             InlineKeyboardButton(text=_(key="menu_website_button"),
                                  url=settings.WEB_URL, icon_custom_emoji_id="5354828391289757858"))
 
-    if settings.SERVER_STATUS_URL:
+    if settings.LOCATIONS:
         first_row.append(
-            InlineKeyboardButton(text=_(key="menu_server_status_button"),
-                                 url=settings.SERVER_STATUS_URL, icon_custom_emoji_id="5352605655519763926"))
+            InlineKeyboardButton(text=_(key="menu_locations_button"),
+                                 callback_data="main_action:locations", icon_custom_emoji_id="5388848032672419971"))
 
     if settings.WEB_URL or settings.SERVER_STATUS_URL:
         builder.row(*first_row)
@@ -150,7 +171,7 @@ def get_proxies_keyboard(i18n_instance, current_lang: str, settings: Settings, p
                                                     )
     if not proxies:
         builder = InlineKeyboardBuilder()
-        return builder
+        return builder.as_markup()
 
     builder = InlineKeyboardBuilder()
 

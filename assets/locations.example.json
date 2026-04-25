@@ -1,0 +1,19 @@
+{
+  "locations": [
+    {
+      "name": "New York",
+      "country": "USA",
+      "emoji_id": "5386757878247889379"
+    },
+    {
+      "name": "London",
+      "country": "UK",
+      "emoji_id": "5388848032672419971"
+    },
+    {
+      "name": "Tokyo",
+      "country": "Japan",
+      "emoji_id": "5388628637153006163"
+    }
+  ]
+}
