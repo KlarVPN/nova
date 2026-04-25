@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest, TelegramForbiddenError
 
+from src.utils.image_sender import answer_with_image, edit_with_image
+
 from src.database.dal import user_dal
 from src.database.models import User
 
@@ -96,9 +98,9 @@ async def send_main_menu(target_event: Union[types.Message,
 
     try:
         if is_edit:
-            await target_message_obj.edit_text(text, reply_markup=reply_markup)
+            await edit_with_image(target_message_obj, "menu.png", text, reply_markup)
         else:
-            await target_message_obj.answer(text, reply_markup=reply_markup)
+            await answer_with_image(target_message_obj, "menu.png", text, reply_markup)
 
         if isinstance(target_event, types.CallbackQuery):
             try:
@@ -109,13 +111,6 @@ async def send_main_menu(target_event: Union[types.Message,
         logging.warning(
             f"Failed to send/edit main menu (user: {user_id}, is_edit: {is_edit}): {type(e_send_edit).__name__} - {e_send_edit}."
         )
-        if is_edit and target_message_obj:
-            try:
-                await target_message_obj.answer(text, reply_markup=reply_markup)
-            except Exception as e_send_new:
-                logging.error(
-                    f"Also failed to send new main menu message for user {user_id}: {e_send_new}"
-                )
         if isinstance(target_event, types.CallbackQuery):
             try:
                 await target_event.answer(
@@ -720,16 +715,10 @@ async def proxy_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            try:
-                await event.message.edit_text(text_to_send,
-                                              reply_markup=reply_markup)
-            except Exception:
-                await target_message_obj.answer(text_to_send,
-                                                reply_markup=reply_markup)
+            await edit_with_image(event.message, "menu.png", text_to_send, reply_markup)
         await event.answer()
     else:
-        await target_message_obj.answer(text_to_send,
-                                        reply_markup=reply_markup)
+        await answer_with_image(target_message_obj, "menu.png", text_to_send, reply_markup)
 
 
 @router.callback_query(F.data == "main_action:locations")
@@ -756,16 +745,10 @@ async def locations_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            try:
-                await event.message.edit_text(text_to_send,
-                                              reply_markup=reply_markup)
-            except Exception:
-                await target_message_obj.answer(text_to_send,
-                                                reply_markup=reply_markup)
+            await edit_with_image(event.message, "info.png", text_to_send, reply_markup)
         await event.answer()
     else:
-        await target_message_obj.answer(text_to_send,
-                                        reply_markup=reply_markup)
+        await answer_with_image(target_message_obj, "info.png", text_to_send, reply_markup)
 
 
 @router.message(Command("cabinet"))
@@ -792,16 +775,10 @@ async def cabinet_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            try:
-                await event.message.edit_text(text_to_send,
-                                              reply_markup=reply_markup)
-            except Exception:
-                await target_message_obj.answer(text_to_send,
-                                                reply_markup=reply_markup)
+            await edit_with_image(event.message, "personal_account.png", text_to_send, reply_markup)
         await event.answer()
     else:
-        await target_message_obj.answer(text_to_send,
-                                        reply_markup=reply_markup)
+        await answer_with_image(target_message_obj, "personal_account.png", text_to_send, reply_markup)
 
 
 @router.message(Command("info"))
@@ -828,16 +805,10 @@ async def info_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            try:
-                await event.message.edit_text(text_to_send,
-                                              reply_markup=reply_markup)
-            except Exception:
-                await target_message_obj.answer(text_to_send,
-                                                reply_markup=reply_markup)
+            await edit_with_image(event.message, "info.png", text_to_send, reply_markup)
         await event.answer()
     else:
-        await target_message_obj.answer(text_to_send,
-                                        reply_markup=reply_markup)
+        await answer_with_image(target_message_obj, "info.png", text_to_send, reply_markup)
 
 
 @router.callback_query(F.data.startswith("main_action:"))

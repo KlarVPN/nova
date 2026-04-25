@@ -8,6 +8,8 @@ from typing import Optional, Union
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.utils.image_sender import answer_with_image, edit_with_image
+
 from src.config import Settings
 from src.keyboards.inline.user_keyboards import (
     get_subscription_options_keyboard,
@@ -123,16 +125,13 @@ async def display_subscription_options(
         return
 
     if isinstance(event, types.CallbackQuery):
-        try:
-            await target_message_obj.edit_text(text_content, reply_markup=reply_markup)
-        except Exception:
-            await target_message_obj.answer(text_content, reply_markup=reply_markup)
+        await edit_with_image(target_message_obj, "subscription.png", text_content, reply_markup)
         try:
             await event.answer()
         except Exception as exc:
             logging.debug("Suppressed exception in bot/handlers/user/subscription/core.py: %s", exc)
     else:
-        await target_message_obj.answer(text_content, reply_markup=reply_markup)
+        await answer_with_image(target_message_obj, "subscription.png", text_content, reply_markup)
 
 
 @router.callback_query(F.data == "main_action:subscribe")
