@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest, TelegramForbiddenError
 
-from src.utils.image_sender import answer_with_image, edit_with_image
+from src.utils.image_sender import answer_with_image, edit_with_image, replace_with_text
 
 from src.database.dal import user_dal
 from src.database.models import User
@@ -632,16 +632,10 @@ async def language_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            try:
-                await event.message.edit_text(text_to_send,
-                                              reply_markup=reply_markup)
-            except Exception:
-                await target_message_obj.answer(text_to_send,
-                                                reply_markup=reply_markup)
+            await replace_with_text(event.message, text_to_send, reply_markup)
         await event.answer()
     else:
-        await target_message_obj.answer(text_to_send,
-                                        reply_markup=reply_markup)
+        await target_message_obj.answer(text_to_send, reply_markup=reply_markup)
 
 
 @router.callback_query(F.data.startswith("set_lang_"))

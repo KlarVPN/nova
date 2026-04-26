@@ -8,6 +8,7 @@ from src.services.referral_service import ReferralService
 
 from src.keyboards.inline.user_keyboards import get_back_to_main_menu_markup
 from src.middlewares.i18n import JsonI18n
+from src.utils.image_sender import replace_with_text
 
 router = Router(name="user_referral_router")
 
@@ -120,17 +121,7 @@ async def referral_command_handler(event: Union[types.Message,
                            reply_markup=reply_markup_val,
                            disable_web_page_preview=True)
     elif isinstance(event, types.CallbackQuery) and event.message:
-        try:
-            await event.message.edit_text(text,
-                                          reply_markup=reply_markup_val,
-                                          disable_web_page_preview=True)
-        except Exception as e_edit:
-            logging.warning(
-                f"Failed to edit message for referral info: {e_edit}. Sending new one."
-            )
-            await event.message.answer(text,
-                                       reply_markup=reply_markup_val,
-                                       disable_web_page_preview=True)
+        await replace_with_text(event.message, text, reply_markup_val, disable_web_page_preview=True)
         await event.answer()
 
 
