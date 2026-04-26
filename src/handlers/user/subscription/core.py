@@ -187,12 +187,9 @@ async def my_subscription_command_handler(
                 await event.answer()
             except Exception as exc:
                 logging.debug("Suppressed exception in bot/handlers/user/subscription/core.py: %s", exc)
-            try:
-                await event.message.edit_text(text, reply_markup=kb)
-            except Exception:
-                await event.message.answer(text, reply_markup=kb)
+            await edit_with_image(event.message, "subscription.png", text, kb)
         else:
-            await event.answer(text, reply_markup=kb)
+            await answer_with_image(event, "subscription.png", text, kb)
         return
 
     end_date = active.get("end_date")
@@ -353,18 +350,9 @@ async def my_subscription_command_handler(
             await event.answer()
         except Exception as exc:
             logging.debug("Suppressed exception in bot/handlers/user/subscription/core.py: %s", exc)
-        try:
-            await event.message.edit_text(text, reply_markup=markup, parse_mode="HTML", disable_web_page_preview=True)
-        except Exception:
-            await bot.send_message(
-                chat_id=target.chat.id,
-                text=text,
-                reply_markup=markup,
-                parse_mode="HTML",
-                disable_web_page_preview=True,
-            )
+        await edit_with_image(event.message, "subscription.png", text, markup, parse_mode="HTML")
     else:
-        await target.answer(text, reply_markup=markup, parse_mode="HTML", disable_web_page_preview=True)
+        await answer_with_image(target, "subscription.png", text, markup, parse_mode="HTML")
 
 
 @router.callback_query(F.data == "main_action:my_devices")
