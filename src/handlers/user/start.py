@@ -716,10 +716,10 @@ async def proxy_command_handler(
 
     if isinstance(event, types.CallbackQuery):
         if event.message:
-            await edit_with_image(event.message, "menu.png", text_to_send, reply_markup)
+            await edit_with_image(event.message, "proxy.png", text_to_send, reply_markup)
         await event.answer()
     else:
-        await answer_with_image(target_message_obj, "menu.png", text_to_send, reply_markup)
+        await answer_with_image(target_message_obj, "proxy.png", text_to_send, reply_markup)
 
 
 @router.callback_query(F.data == "main_action:locations")
