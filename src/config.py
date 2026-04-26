@@ -312,7 +312,7 @@ class Settings(BaseSettings):
         file_path: Path = Path("assets/locations.json")
 
         if not file_path.exists():
-            logging.warning("Proxies file %s not found. Proxies will not be loaded.", file_path)
+            logging.warning("Locations file %s not found. Locations will not be loaded.", file_path)
             self.PROXIES = []
             return self
 
@@ -323,7 +323,7 @@ class Settings(BaseSettings):
             locations_list = data.get("locations", [])
 
             if not locations_list:
-                logging.warning("The 'locations' array in proxies.json is empty.")
+                logging.warning("The 'locations' array in locations.json is empty.")
                 self.LOCATIONS = []
                 return self
 
@@ -335,7 +335,7 @@ class Settings(BaseSettings):
             logging.error("JSON decode error in file %s: %s", file_path, e)
             self.LOCATIONS = []
         except Exception as e:
-            logging.error("Unexpected error while loading proxies from %s: %s", file_path, e)
+            logging.error("Unexpected error while loading locations from %s: %s", file_path, e)
             self.LOCATIONS = []
 
         return self

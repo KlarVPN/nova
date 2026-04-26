@@ -11,4 +11,4 @@ __pycache__/
 src/database/models_old.py
 .serena/
 AGENTS.md
-
+.venv/

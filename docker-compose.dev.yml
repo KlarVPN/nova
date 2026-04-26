@@ -8,7 +8,7 @@ services:
     networks:
       - remnawave-network
     volumes:
-      - ./assets/locales:/app/locales
+      - ./assets/:/app/assets/
     restart: unless-stopped
     depends_on:
       remnawave-tg-shop-db:
