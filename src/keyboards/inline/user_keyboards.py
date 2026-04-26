@@ -34,6 +34,21 @@ def get_main_menu_inline_keyboard(
                                  url=settings.SUPPORT_LINK, icon_custom_emoji_id="5354914651412930547"))
 
     builder.row(*row)
+
+    if any([
+        settings.INSTRUCTIONS_URL,
+        settings.INSTRUCTION_MACOS_URL,
+        settings.INSTRUCTION_WINDOWS_URL,
+        settings.INSTRUCTION_LINUX_URL,
+        settings.INSTRUCTION_ANDROID_URL,
+        settings.INSTRUCTION_IOS_URL,
+    ]):
+        builder.row(InlineKeyboardButton(
+            text=_(key="menu_instructions_button"),
+            callback_data="main_action:instructions",
+            icon_custom_emoji_id="5354878084061370642",
+        ))
+
     if settings.PROXIES:
         builder.row(InlineKeyboardButton(text=_(key="free_proxies_button"), callback_data="main_action:proxy",
                                      icon_custom_emoji_id="5355075390563981853"))
@@ -100,6 +115,56 @@ def get_location_info_keyboard(i18n_instance, lang: str, settings) -> InlineKeyb
         InlineKeyboardButton(
             text=_(key="back_to_main_menu_button"),
             callback_data="main_action:info",
+            icon_custom_emoji_id="5355307842783975721",
+        )
+    )
+
+    return builder.as_markup()
+
+
+def get_instructions_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+
+    builder = InlineKeyboardBuilder()
+
+    if settings.INSTRUCTIONS_URL:
+        builder.row(
+            InlineKeyboardButton(
+                text=_(key="instructions_button"),
+                url=settings.INSTRUCTIONS_URL,
+                icon_custom_emoji_id="5354878084061370642",
+            )
+        )
+
+    row = []
+
+    if settings.INSTRUCTION_IOS_URL:
+        row.append(InlineKeyboardButton(text=_(key="instructions_ios_button"), url=settings.INSTRUCTION_IOS_URL,
+                                        icon_custom_emoji_id="5354818877937199635"))
+
+    if settings.INSTRUCTION_ANDROID_URL:
+        row.append(InlineKeyboardButton(text=_(key="instructions_android_button"), url=settings.INSTRUCTION_ANDROID_URL,
+                                        icon_custom_emoji_id="5355130426274914200"))
+
+    if settings.INSTRUCTION_MACOS_URL:
+        row.append(InlineKeyboardButton(text=_(key="instructions_macos_button"), url=settings.INSTRUCTION_ANDROID_URL,
+                                        icon_custom_emoji_id="5355335266150157313"))
+
+    if settings.INSTRUCTION_WINDOWS_URL:
+        row.append(InlineKeyboardButton(text=_(key="instructions_windows_button"), url=settings.INSTRUCTION_WINDOWS_URL,
+                                        icon_custom_emoji_id="5354879892242600832"))
+
+    if settings.INSTRUCTION_LINUX_URL:
+        row.append(InlineKeyboardButton(text=_(key="instructions_linux_button"), url=settings.INSTRUCTION_LINUX_URL,
+                                        icon_custom_emoji_id="5354790574102717262"))
+
+    for i in range(0, len(row), 3):
+        builder.row(*row[i:i + 3])
+
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
             icon_custom_emoji_id="5355307842783975721",
         )
     )

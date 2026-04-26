@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     SERVER_STATUS_URL: Optional[str] = Field(default=None)
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
     DOCS_URL: Optional[str] = Field(default=None)
+
+    INSTRUCTIONS_URL: Optional[str] = Field(default=None)
+    INSTRUCTION_ANDROID_URL: Optional[str] = Field(default=None)
+    INSTRUCTION_IOS_URL: Optional[str] = Field(default=None)
+    INSTRUCTION_MACOS_URL: Optional[str] = Field(default=None)
+    INSTRUCTION_WINDOWS_URL: Optional[str] = Field(default=None)
+    INSTRUCTION_LINUX_URL: Optional[str] = Field(default=None)
+
     REQUIRED_CHANNEL_SUBSCRIBE_TO_USE: bool = Field(
         default=False,
         description="Require users to subscribe to REQUIRED_CHANNEL_ID before using the bot",
