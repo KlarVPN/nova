@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = Field(default=5432)
     POSTGRES_DB: str = Field(default="vpn_shop_db")
 
+    REDIS_HOST: str = Field(default="localhost")
+    REDIS_PORT: int = Field(default=6379)
+    REDIS_PASSWORD: Optional[str] = Field(default=None)
+    REDIS_CACHE_TTL: int = Field(default=300, description="User data cache TTL in seconds")
+
     DEFAULT_LANGUAGE: str = Field(default="ru")
 
     WEB_URL: Optional[str] = Field(default=None)
@@ -343,6 +348,13 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+    @computed_field
+    @property
+    def REDIS_URL(self) -> str:
+        if self.REDIS_PASSWORD:
+            return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
     @computed_field
     @property
@@ -731,6 +743,7 @@ class Settings(BaseSettings):
         'TELEGRAM_WEBHOOK_SECRET',
         'PANEL_WEBHOOK_SECRET',
         'TELEGRAM_PROXY_URL',
+        'REDIS_PASSWORD',
         mode='before',
     )
     @classmethod

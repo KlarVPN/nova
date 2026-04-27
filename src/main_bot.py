@@ -7,6 +7,7 @@ from aiogram.types import (MenuButtonDefault, MenuButtonWebApp, WebAppInfo, BotC
 from sqlalchemy.orm import sessionmaker
 
 from src.config import Settings
+from src.cache.redis_client import create_redis_client, close_redis_client
 
 from src.database.database_setup import init_db_connection
 
@@ -218,17 +219,21 @@ async def on_shutdown_configured(dispatcher: Dispatcher):
         await global_async_engine.dispose()
         logging.info("SHUTDOWN: SQLAlchemy engine disposed.")
 
+    await close_redis_client()
+
     logging.info("SHUTDOWN: Bot on_shutdown_configured completed.")
 
 
 async def run_bot(settings_param: Settings):
+    redis_client = await create_redis_client(settings_param)
+
     local_async_session_factory = init_db_connection(settings_param)
     if local_async_session_factory is None:
         logging.critical(
             "Failed to initialize database connection and session factory. Exiting."
         )
         return
-    dp, bot, extra = build_dispatcher(settings_param, local_async_session_factory)
+    dp, bot, extra = build_dispatcher(settings_param, local_async_session_factory, redis_client)
     i18n_instance = extra["i18n_instance"]
 
     # Get bot username for YooKassa default return URL if needed

@@ -15,7 +15,10 @@ services:
       - ./assets/locales:/app/locales
     restart: unless-stopped
     depends_on:
-      - remnawave-tg-shop-db
+      remnawave-tg-shop-db:
+        condition: service_healthy
+      remnawave-tg-shop-redis:
+        condition: service_healthy
   remnawave-tg-shop-db:
     image: postgres:17
     container_name: remnawave-tg-shop-db
@@ -34,8 +37,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+  remnawave-tg-shop-redis:
+    image: redis:7-alpine
+    container_name: remnawave-tg-shop-redis
+    hostname: remnawave-tg-shop-redis
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru", "--save", ""]
+    environment:
+      - TZ=UTC
+    volumes:
+      - remnawave-tg-shop-redis-data:/data
+    networks:
+      - remnawave-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 networks:
   remnawave-network: null
 volumes:
   remnawave-tg-shop-db-data:
     name: remnawave-tg-shop-db-data
+  remnawave-tg-shop-redis-data:
+    name: remnawave-tg-shop-redis-data

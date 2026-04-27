@@ -1,11 +1,12 @@
 import logging
 from typing import Dict
 
+import redis.asyncio as aioredis
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from sqlalchemy.orm import sessionmaker
 
 from src.config import Settings
@@ -17,8 +18,15 @@ from src.middlewares.profile_sync import ProfileSyncMiddleware
 from src.middlewares.channel_subscription import ChannelSubscriptionMiddleware
 
 
-def build_dispatcher(settings: Settings, async_session_factory: sessionmaker) -> tuple[Dispatcher, Bot, Dict]:
-    storage = MemoryStorage()
+def build_dispatcher(
+    settings: Settings,
+    async_session_factory: sessionmaker,
+    redis_client: aioredis.Redis,
+) -> tuple[Dispatcher, Bot, Dict]:
+    storage = RedisStorage(
+        redis=redis_client,
+        key_builder=DefaultKeyBuilder(prefix="nova", with_bot_id=True),
+    )
     default_props = DefaultBotProperties(parse_mode=ParseMode.HTML)
 
     session = None

@@ -13,6 +13,8 @@ services:
     depends_on:
       remnawave-tg-shop-db:
         condition: service_healthy
+      remnawave-tg-shop-redis:
+        condition: service_healthy
 
   remnawave-tg-shop-db:
     image: postgres:17
@@ -26,10 +28,50 @@ services:
       - remnawave-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 5s
       timeout: 5s
       retries: 20
+
+  remnawave-tg-shop-redis:
+    image: valkey/valkey:latest
+    container_name: remnawave-tg-shop-redis
+    hostname: remnawave-tg-shop-redis
+    env_file:
+      - .env
+    volumes:
+      - remnawave-tg-shop-redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    networks:
+      - remnawave-network
+    restart: unless-stopped
+    command:
+      - valkey-server
+      - --port
+      - "${REDIS_PORT:-6379}"
+      - --requirepass
+      - "${REDIS_PASSWORD}"
+      - --maxmemory
+      - 384mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - ""
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "valkey-cli",
+          "-p",
+          "${REDIS_PORT:-6379}",
+          "-a",
+          "${REDIS_PASSWORD}",
+          "ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   remnawave-network:
@@ -38,3 +80,5 @@ networks:
 volumes:
   remnawave-tg-shop-db-data:
     name: remnawave-tg-shop-db-data
+  remnawave-tg-shop-redis-data:
+    name: remnawave-tg-shop-redis-data
