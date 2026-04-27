@@ -42,7 +42,6 @@ class Settings(BaseSettings):
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
     DOCS_URL: Optional[str] = Field(default=None)
 
-    INSTRUCTIONS_URL: Optional[str] = Field(default=None)
     INSTRUCTION_ANDROID_URL: Optional[str] = Field(default=None)
     INSTRUCTION_IOS_URL: Optional[str] = Field(default=None)
     INSTRUCTION_MACOS_URL: Optional[str] = Field(default=None)

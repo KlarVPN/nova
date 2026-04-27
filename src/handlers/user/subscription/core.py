@@ -321,6 +321,20 @@ async def my_subscription_command_handler(
                 )
             ])
 
+        if any([
+            settings.DOCS_URL,
+            settings.INSTRUCTION_MACOS_URL,
+            settings.INSTRUCTION_WINDOWS_URL,
+            settings.INSTRUCTION_LINUX_URL,
+            settings.INSTRUCTION_ANDROID_URL,
+            settings.INSTRUCTION_IOS_URL,
+        ]):
+            prepend_rows.append([InlineKeyboardButton(
+                text=get_text(key="menu_instructions_button"),
+                callback_data="main_action:instructions",
+                icon_custom_emoji_id="5354878084061370642",
+            )])
+
         # 2) Auto-renew toggle (YooKassa only)
         if not traffic_mode and local_sub and local_sub.provider == "yookassa" and settings.yookassa_autopayments_active:
             toggle_text = (

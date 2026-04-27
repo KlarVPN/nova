@@ -35,20 +35,6 @@ def get_main_menu_inline_keyboard(
 
     builder.row(*row)
 
-    if any([
-        settings.INSTRUCTIONS_URL,
-        settings.INSTRUCTION_MACOS_URL,
-        settings.INSTRUCTION_WINDOWS_URL,
-        settings.INSTRUCTION_LINUX_URL,
-        settings.INSTRUCTION_ANDROID_URL,
-        settings.INSTRUCTION_IOS_URL,
-    ]):
-        builder.row(InlineKeyboardButton(
-            text=_(key="menu_instructions_button"),
-            callback_data="main_action:instructions",
-            icon_custom_emoji_id="5354878084061370642",
-        ))
-
     if settings.PROXIES:
         builder.row(InlineKeyboardButton(text=_(key="free_proxies_button"), callback_data="main_action:proxy",
                                      icon_custom_emoji_id="5355075390563981853"))
@@ -127,11 +113,11 @@ def get_instructions_keyboard(i18n_instance, lang: str, settings) -> InlineKeybo
 
     builder = InlineKeyboardBuilder()
 
-    if settings.INSTRUCTIONS_URL:
+    if settings.DOCS_URL:
         builder.row(
             InlineKeyboardButton(
                 text=_(key="instructions_button"),
-                url=settings.INSTRUCTIONS_URL,
+                url=settings.DOCS_URL,
                 icon_custom_emoji_id="5354878084061370642",
             )
         )
@@ -187,12 +173,12 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
             InlineKeyboardButton(text=_(key="menu_website_button"),
                                  url=settings.WEB_URL, icon_custom_emoji_id="5354828391289757858"))
 
-    if settings.LOCATIONS:
+    if settings.DOCS_URL:
         first_row.append(
-            InlineKeyboardButton(text=_(key="menu_locations_button"),
-                                 callback_data="main_action:locations", icon_custom_emoji_id="5388848032672419971"))
+            InlineKeyboardButton(text=_(key="menu_docs_button"),
+                                 url=settings.DOCS_URL, icon_custom_emoji_id="5354836839490429519"))
 
-    if settings.WEB_URL or settings.SERVER_STATUS_URL:
+    if settings.WEB_URL or settings.DOCS_URL:
         builder.row(*first_row)
 
     second_row = []
@@ -201,12 +187,12 @@ def get_information_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboa
             InlineKeyboardButton(text=_(key="menu_terms_button"),
                                  url=settings.TERMS_OF_SERVICE_URL, icon_custom_emoji_id="5354867531326724446"))
 
-    if settings.DOCS_URL:
+    if settings.LOCATIONS:
         second_row.append(
-            InlineKeyboardButton(text=_(key="menu_docs_button"),
-                                 url=settings.DOCS_URL, icon_custom_emoji_id="5354836839490429519"))
+            InlineKeyboardButton(text=_(key="menu_locations_button"),
+                                 callback_data="main_action:locations", icon_custom_emoji_id="5438558795905145020"))
 
-    if settings.TERMS_OF_SERVICE_URL or settings.DOCS_URL:
+    if settings.TERMS_OF_SERVICE_URL or settings.LOCATIONS:
         builder.row(*second_row)
 
     third_row = []
@@ -616,6 +602,20 @@ def get_connect_and_main_keyboard(
                 callback_data="main_action:my_subscription",
             )
         )
+
+    if any([
+        settings.DOCS_URL,
+        settings.INSTRUCTION_MACOS_URL,
+        settings.INSTRUCTION_WINDOWS_URL,
+        settings.INSTRUCTION_LINUX_URL,
+        settings.INSTRUCTION_ANDROID_URL,
+        settings.INSTRUCTION_IOS_URL,
+    ]):
+        builder.row(InlineKeyboardButton(
+            text=_(key="menu_instructions_button"),
+            callback_data="main_action:instructions",
+            icon_custom_emoji_id="5354878084061370642",
+        ))
 
     back_callback = "main_action:back_to_main_keep" if preserve_message else "main_action:back_to_main"
     builder.row(
