@@ -77,7 +77,7 @@ async def send_main_menu(target_event: Union[types.Message,
                 "Method has_had_any_subscription is missing in SubscriptionService for send_main_menu!"
             )
 
-    text = _(key="main_menu_greeting", user_name=user_full_name)
+    text = _(key="main_menu_greeting", user_name=user_full_name, user_telegram_id=user_id)
     reply_markup = get_main_menu_inline_keyboard(current_lang, i18n, settings,
                                                  show_trial_button_in_menu)
 
