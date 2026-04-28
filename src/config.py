@@ -1,9 +1,17 @@
-import logging
 import json
+import logging
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationError,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, Field, ValidationError, computed_field, field_validator, model_validator
-from typing import Optional, List, Dict, Any
 
 
 class Proxy(BaseModel):
@@ -24,7 +32,8 @@ class Settings(BaseSettings):
     ADMIN_IDS_STR: str = Field(
         default="",
         alias="ADMIN_IDS",
-        description="Comma-separated list of admin Telegram User IDs")
+        description="Comma-separated list of admin Telegram User IDs",
+    )
 
     POSTGRES_USER: str = Field(default="user")
     POSTGRES_PASSWORD: str = Field(default="password")
@@ -35,7 +44,9 @@ class Settings(BaseSettings):
     REDIS_HOST: str = Field(default="localhost")
     REDIS_PORT: int = Field(default=6379)
     REDIS_PASSWORD: Optional[str] = Field(default=None)
-    REDIS_CACHE_TTL: int = Field(default=300, description="User data cache TTL in seconds")
+    REDIS_CACHE_TTL: int = Field(
+        default=300, description="User data cache TTL in seconds"
+    )
 
     DEFAULT_LANGUAGE: str = Field(default="ru")
 
@@ -59,10 +70,12 @@ class Settings(BaseSettings):
     )
     REQUIRED_CHANNEL_ID: Optional[int] = Field(
         default=None,
-        description="Telegram channel ID the user must join to access the bot")
+        description="Telegram channel ID the user must join to access the bot",
+    )
     REQUIRED_CHANNEL_LINK: Optional[str] = Field(
         default=None,
-        description="Public username or invite link to the required channel for join button")
+        description="Public username or invite link to the required channel for join button",
+    )
 
     YOOKASSA_SHOP_ID: Optional[str] = None
     YOOKASSA_SECRET_KEY: Optional[str] = None
@@ -72,47 +85,47 @@ class Settings(BaseSettings):
     YOOKASSA_VAT_CODE: int = Field(default=1)
     YOOKASSA_TAX_SYSTEM_CODE: Optional[int] = Field(
         default=None,
-        description="Tax system code for YooKassa receipts (1..6 per 54-FZ)"
+        description="Tax system code for YooKassa receipts (1..6 per 54-FZ)",
     )
     YOOKASSA_PAYMENT_MODE: Optional[str] = Field(
         default=None,
-        description="Optional override for YooKassa receipt item payment_mode."
+        description="Optional override for YooKassa receipt item payment_mode.",
     )
     YOOKASSA_PAYMENT_SUBJECT: Optional[str] = Field(
         default=None,
-        description="Optional override for YooKassa receipt item payment_subject."
+        description="Optional override for YooKassa receipt item payment_subject.",
     )
     # Single toggle to enable recurring payments (saving cards, managing payment methods, auto-renew)
     YOOKASSA_AUTOPAYMENTS_ENABLED: bool = Field(default=False)
     YOOKASSA_AUTOPAYMENTS_REQUIRE_CARD_BINDING: bool = Field(
         default=True,
-        description="When true, new YooKassa payments in autopay mode force card binding without a user checkbox."
+        description="When true, new YooKassa payments in autopay mode force card binding without a user checkbox.",
     )
 
     LKNPD_INN: Optional[str] = Field(
         default=None,
         alias="NALOGO_INN",
-        description="INN for lknpd.nalog.ru (self-employed) authentication"
+        description="INN for lknpd.nalog.ru (self-employed) authentication",
     )
     LKNPD_PASSWORD: Optional[str] = Field(
         default=None,
         alias="NALOGO_PASSWORD",
-        description="Password for lknpd.nalog.ru (self-employed) authentication"
+        description="Password for lknpd.nalog.ru (self-employed) authentication",
     )
     LKNPD_API_URL: str = Field(
         default="https://lknpd.nalog.ru/api",
         alias="NALOGO_API_URL",
-        description="Base URL for LKNPD API (can be overridden for proxies)"
+        description="Base URL for LKNPD API (can be overridden for proxies)",
     )
     LKNPD_RECEIPT_NAME_SUBSCRIPTION: str = Field(
         default="subscription {months} months",
         alias="NALOGO_RECEIPT_NAME_SUBSCRIPTION",
-        description="Receipt item name for time-based subscriptions. Use {months} placeholder for duration."
+        description="Receipt item name for time-based subscriptions. Use {months} placeholder for duration.",
     )
     LKNPD_RECEIPT_NAME_TRAFFIC: str = Field(
         default="traffic package {gb} GB",
         alias="NALOGO_RECEIPT_NAME_TRAFFIC",
-        description="Receipt item name for traffic packages. Use {gb} placeholder for traffic amount."
+        description="Receipt item name for traffic packages. Use {gb} placeholder for traffic amount.",
     )
 
     WEBHOOK_BASE_URL: Optional[str] = None
@@ -201,27 +214,35 @@ class Settings(BaseSettings):
     SUBSCRIPTION_NOTIFY_DAYS_BEFORE: int = Field(default=3)
 
     REFERRAL_BONUS_DAYS_INVITER_1_MONTH: Optional[int] = Field(
-        default=3, alias="REFERRAL_BONUS_DAYS_1_MONTH")
+        default=3, alias="REFERRAL_BONUS_DAYS_1_MONTH"
+    )
     REFERRAL_BONUS_DAYS_INVITER_3_MONTHS: Optional[int] = Field(
-        default=7, alias="REFERRAL_BONUS_DAYS_3_MONTHS")
+        default=7, alias="REFERRAL_BONUS_DAYS_3_MONTHS"
+    )
     REFERRAL_BONUS_DAYS_INVITER_6_MONTHS: Optional[int] = Field(
-        default=15, alias="REFERRAL_BONUS_DAYS_6_MONTHS")
+        default=15, alias="REFERRAL_BONUS_DAYS_6_MONTHS"
+    )
     REFERRAL_BONUS_DAYS_INVITER_12_MONTHS: Optional[int] = Field(
-        default=30, alias="REFERRAL_BONUS_DAYS_12_MONTHS")
+        default=30, alias="REFERRAL_BONUS_DAYS_12_MONTHS"
+    )
 
     REFERRAL_BONUS_DAYS_REFEREE_1_MONTH: Optional[int] = Field(
-        default=1, alias="REFEREE_BONUS_DAYS_1_MONTH")
+        default=1, alias="REFEREE_BONUS_DAYS_1_MONTH"
+    )
     REFERRAL_BONUS_DAYS_REFEREE_3_MONTHS: Optional[int] = Field(
-        default=3, alias="REFEREE_BONUS_DAYS_3_MONTHS")
+        default=3, alias="REFEREE_BONUS_DAYS_3_MONTHS"
+    )
     REFERRAL_BONUS_DAYS_REFEREE_6_MONTHS: Optional[int] = Field(
-        default=7, alias="REFEREE_BONUS_DAYS_6_MONTHS")
+        default=7, alias="REFEREE_BONUS_DAYS_6_MONTHS"
+    )
     REFERRAL_BONUS_DAYS_REFEREE_12_MONTHS: Optional[int] = Field(
-        default=15, alias="REFEREE_BONUS_DAYS_12_MONTHS")
+        default=15, alias="REFEREE_BONUS_DAYS_12_MONTHS"
+    )
 
     # Referral program configuration
     REFERRAL_ONE_BONUS_PER_REFEREE: bool = Field(
         default=True,
-        description="When true, referral bonuses (for inviter and referee) are applied only once per invited user - on their first successful payment."
+        description="When true, referral bonuses (for inviter and referee) are applied only once per invited user - on their first successful payment.",
     )
     REFERRAL_ENABLED: bool = Field(
         default=True,
@@ -229,7 +250,7 @@ class Settings(BaseSettings):
     )
     LEGACY_REFS: bool = Field(
         default=True,
-        description="Allow legacy referral links like ref_<telegram_id> to continue working. Defaults to True when unset."
+        description="Allow legacy referral links like ref_<telegram_id> to continue working. Defaults to True when unset.",
     )
 
     PANEL_API_URL: Optional[str] = None
@@ -238,42 +259,56 @@ class Settings(BaseSettings):
     USER_TRAFFIC_STRATEGY: str = Field(default="NO_RESET")
     USER_SQUAD_UUIDS: Optional[str] = Field(
         default=None,
-        description=
-        "Comma-separated UUIDs of internal squads to assign to new panel users")
+        description="Comma-separated UUIDs of internal squads to assign to new panel users",
+    )
     USER_EXTERNAL_SQUAD_UUID: Optional[str] = Field(
         default=None,
-        description=
-        "UUID of the external squad to assign to new panel users (optional)")
+        description="UUID of the external squad to assign to new panel users (optional)",
+    )
 
     TRIAL_ENABLED: bool = Field(default=True)
     TRIAL_DURATION_DAYS: int = Field(default=3)
     TRIAL_TRAFFIC_LIMIT_GB: Optional[float] = Field(default=5.0)
 
-    CRYPT4_ENABLED: bool = Field(default=False, description="Enable happ crypt4 encryption for subscription URLs")
-    CRYPT4_REDIRECT_URL: Optional[str] = Field(default=None, description="Base redirect URL used for the connect button when crypt4 is enabled")
+    CRYPT4_ENABLED: bool = Field(
+        default=False, description="Enable happ crypt4 encryption for subscription URLs"
+    )
+    CRYPT4_REDIRECT_URL: Optional[str] = Field(
+        default=None,
+        description="Base redirect URL used for the connect button when crypt4 is enabled",
+    )
 
     WEB_SERVER_HOST: str = Field(default="0.0.0.0")
     WEB_SERVER_PORT: int = Field(default=8080)
     LOGS_PAGE_SIZE: int = Field(default=10)
 
+    MINI_APP_URL: Optional[str] = Field(default=None)
     SUBSCRIPTION_MINI_APP_URL: Optional[str] = Field(default=None)
 
     START_COMMAND_DESCRIPTION: Optional[str] = Field(default=None)
 
     MY_DEVICES_SECTION_ENABLED: bool = Field(
         default=False,
-        description="Enable the My Devices section in the subscription menu"
+        description="Enable the My Devices section in the subscription menu",
     )
     USER_HWID_DEVICE_LIMIT: Optional[int] = Field(
         default=None,
-        description="Default hardware device limit for panel users (0 = unlimited)"
+        description="Default hardware device limit for panel users (0 = unlimited)",
     )
-    
+
     # Inline mode thumbnail URLs
-    INLINE_REFERRAL_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/1077/1077114.png")
-    INLINE_USER_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/681/681494.png")
-    INLINE_FINANCIAL_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/2769/2769339.png")
-    INLINE_SYSTEM_STATS_THUMBNAIL_URL: str = Field(default="https://cdn-icons-png.flaticon.com/512/2920/2920277.png")
+    INLINE_REFERRAL_THUMBNAIL_URL: str = Field(
+        default="https://cdn-icons-png.flaticon.com/512/1077/1077114.png"
+    )
+    INLINE_USER_STATS_THUMBNAIL_URL: str = Field(
+        default="https://cdn-icons-png.flaticon.com/512/681/681494.png"
+    )
+    INLINE_FINANCIAL_STATS_THUMBNAIL_URL: str = Field(
+        default="https://cdn-icons-png.flaticon.com/512/2769/2769339.png"
+    )
+    INLINE_SYSTEM_STATS_THUMBNAIL_URL: str = Field(
+        default="https://cdn-icons-png.flaticon.com/512/2920/2920277.png"
+    )
 
     PROXIES: List[Proxy] = Field(default_factory=list, init=False)
     LOCATIONS: List[Location] = Field(default_factory=list, init=False)
@@ -283,7 +318,9 @@ class Settings(BaseSettings):
         file_path: Path = Path("assets/proxies.json")
 
         if not file_path.exists():
-            logging.warning("Proxies file %s not found. Proxies will not be loaded.", file_path)
+            logging.warning(
+                "Proxies file %s not found. Proxies will not be loaded.", file_path
+            )
             self.PROXIES = []
             return self
 
@@ -300,13 +337,19 @@ class Settings(BaseSettings):
 
             self.PROXIES = [Proxy.model_validate(item) for item in proxies_list]
 
-            logging.info("Successfully loaded %d proxies from %s", len(self.PROXIES), file_path.name)
+            logging.info(
+                "Successfully loaded %d proxies from %s",
+                len(self.PROXIES),
+                file_path.name,
+            )
 
         except json.JSONDecodeError as e:
             logging.error("JSON decode error in file %s: %s", file_path, e)
             self.PROXIES = []
         except Exception as e:
-            logging.error("Unexpected error while loading proxies from %s: %s", file_path, e)
+            logging.error(
+                "Unexpected error while loading proxies from %s: %s", file_path, e
+            )
             self.PROXIES = []
 
         return self
@@ -316,7 +359,9 @@ class Settings(BaseSettings):
         file_path: Path = Path("assets/locations.json")
 
         if not file_path.exists():
-            logging.warning("Locations file %s not found. Locations will not be loaded.", file_path)
+            logging.warning(
+                "Locations file %s not found. Locations will not be loaded.", file_path
+            )
             self.PROXIES = []
             return self
 
@@ -333,13 +378,19 @@ class Settings(BaseSettings):
 
             self.LOCATIONS = [Location.model_validate(item) for item in locations_list]
 
-            logging.info("Successfully loaded %d locations from %s", len(self.LOCATIONS), file_path.name)
+            logging.info(
+                "Successfully loaded %d locations from %s",
+                len(self.LOCATIONS),
+                file_path.name,
+            )
 
         except json.JSONDecodeError as e:
             logging.error("JSON decode error in file %s: %s", file_path, e)
             self.LOCATIONS = []
         except Exception as e:
-            logging.error("Unexpected error while loading locations from %s: %s", file_path, e)
+            logging.error(
+                "Unexpected error while loading locations from %s: %s", file_path, e
+            )
             self.LOCATIONS = []
 
         return self
@@ -353,7 +404,9 @@ class Settings(BaseSettings):
     @property
     def REDIS_URL(self) -> str:
         if self.REDIS_PASSWORD:
-            return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
+            return (
+                f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
+            )
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
     @computed_field
@@ -363,7 +416,7 @@ class Settings(BaseSettings):
             try:
                 return [
                     int(admin_id.strip())
-                    for admin_id in self.ADMIN_IDS_STR.split(',')
+                    for admin_id in self.ADMIN_IDS_STR.split(",")
                     if admin_id.strip().isdigit()
                 ]
             except ValueError:
@@ -399,7 +452,7 @@ class Settings(BaseSettings):
         if self.USER_SQUAD_UUIDS:
             return [
                 uuid.strip()
-                for uuid in self.USER_SQUAD_UUIDS.split(',')
+                for uuid in self.USER_SQUAD_UUIDS.split(",")
                 if uuid.strip()
             ]
         return None
@@ -515,7 +568,9 @@ class Settings(BaseSettings):
     def yk_receipt_payment_mode(self) -> str:
         if self.YOOKASSA_PAYMENT_MODE:
             return self.YOOKASSA_PAYMENT_MODE
-        return "full_payment" if self.YOOKASSA_AUTOPAYMENTS_ENABLED else "full_prepayment"
+        return (
+            "full_payment" if self.YOOKASSA_AUTOPAYMENTS_ENABLED else "full_prepayment"
+        )
 
     @computed_field
     @property
@@ -543,13 +598,29 @@ class Settings(BaseSettings):
     @property
     def stars_subscription_options(self) -> Dict[int, int]:
         options: Dict[int, int] = {}
-        if self.STARS_ENABLED and self.MONTH_1_ENABLED and self.STARS_PRICE_1_MONTH is not None:
+        if (
+            self.STARS_ENABLED
+            and self.MONTH_1_ENABLED
+            and self.STARS_PRICE_1_MONTH is not None
+        ):
             options[1] = self.STARS_PRICE_1_MONTH
-        if self.STARS_ENABLED and self.MONTH_3_ENABLED and self.STARS_PRICE_3_MONTHS is not None:
+        if (
+            self.STARS_ENABLED
+            and self.MONTH_3_ENABLED
+            and self.STARS_PRICE_3_MONTHS is not None
+        ):
             options[3] = self.STARS_PRICE_3_MONTHS
-        if self.STARS_ENABLED and self.MONTH_6_ENABLED and self.STARS_PRICE_6_MONTHS is not None:
+        if (
+            self.STARS_ENABLED
+            and self.MONTH_6_ENABLED
+            and self.STARS_PRICE_6_MONTHS is not None
+        ):
             options[6] = self.STARS_PRICE_6_MONTHS
-        if self.STARS_ENABLED and self.MONTH_12_ENABLED and self.STARS_PRICE_12_MONTHS is not None:
+        if (
+            self.STARS_ENABLED
+            and self.MONTH_12_ENABLED
+            and self.STARS_PRICE_12_MONTHS is not None
+        ):
             options[12] = self.STARS_PRICE_12_MONTHS
         return options
 
@@ -599,7 +670,9 @@ class Settings(BaseSettings):
                 if size_gb > 0 and price_val >= 0:
                     packages[size_gb] = price_val
             except ValueError:
-                logging.warning("Invalid STARS_TRAFFIC_PACKAGES entry skipped: %s", chunk)
+                logging.warning(
+                    "Invalid STARS_TRAFFIC_PACKAGES entry skipped: %s", chunk
+                )
                 continue
         return packages
 
@@ -665,14 +738,18 @@ class Settings(BaseSettings):
             if slug:
                 methods.append(slug)
         return methods or default_order
-    
+
     # Logging Configuration
     LOG_LEVEL: str = Field(
         default="INFO",
         description="Global log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
     )
-    LOG_CHAT_ID: Optional[int] = Field(default=None, description="Telegram chat/group ID for sending notifications")
-    LOG_THREAD_ID: Optional[int] = Field(default=None, description="Thread ID for supergroup messages (optional)")
+    LOG_CHAT_ID: Optional[int] = Field(
+        default=None, description="Telegram chat/group ID for sending notifications"
+    )
+    LOG_THREAD_ID: Optional[int] = Field(
+        default=None, description="Thread ID for supergroup messages (optional)"
+    )
     LOG_STORE_MESSAGE_CONTENT: bool = Field(
         default=False,
         description="Store message/callback content in message logs",
@@ -685,13 +762,13 @@ class Settings(BaseSettings):
         default=False,
         description="Include content/raw update fields in admin CSV export",
     )
-    
+
     LOG_ADMIN_HIDE: bool = Field(
         default=False,
         description="Hide admin-generated events from admin logs UI and CSV export",
     )
 
-    @field_validator('LOG_LEVEL', mode='before')
+    @field_validator("LOG_LEVEL", mode="before")
     @classmethod
     def normalize_log_level(cls, v):
         if isinstance(v, str):
@@ -700,7 +777,7 @@ class Settings(BaseSettings):
             return "INFO"
         return v
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def drop_comment_placeholder_values(cls, values: Any):
         """
@@ -720,8 +797,8 @@ class Settings(BaseSettings):
         return sanitized
 
     @field_validator(
-        'TELEGRAM_WEBHOOK_PATH',
-        mode='before',
+        "TELEGRAM_WEBHOOK_PATH",
+        mode="before",
     )
     @classmethod
     def normalize_webhook_path(cls, v):
@@ -735,33 +812,33 @@ class Settings(BaseSettings):
         return cleaned
 
     @field_validator(
-        'REQUIRED_CHANNEL_LINK',
-        'PLATEGA_RETURN_URL',
-        'PLATEGA_FAILED_URL',
-        'SEVERPAY_RETURN_URL',
-        'CRYPT4_REDIRECT_URL',
-        'TELEGRAM_WEBHOOK_SECRET',
-        'PANEL_WEBHOOK_SECRET',
-        'TELEGRAM_PROXY_URL',
-        'REDIS_PASSWORD',
-        mode='before',
+        "REQUIRED_CHANNEL_LINK",
+        "PLATEGA_RETURN_URL",
+        "PLATEGA_FAILED_URL",
+        "SEVERPAY_RETURN_URL",
+        "CRYPT4_REDIRECT_URL",
+        "TELEGRAM_WEBHOOK_SECRET",
+        "PANEL_WEBHOOK_SECRET",
+        "TELEGRAM_PROXY_URL",
+        "REDIS_PASSWORD",
+        mode="before",
     )
     @classmethod
     def sanitize_optional_link(cls, v):
         if isinstance(v, str) and not v.strip():
             return None
         return v
-    
+
     @field_validator(
-        'REQUIRED_CHANNEL_ID',
-        'FREEKASSA_PAYMENT_METHOD_ID',
-        'USER_HWID_DEVICE_LIMIT',
-        'SEVERPAY_MID',
-        'SEVERPAY_LIFETIME_MINUTES',
-        'LOG_CHAT_ID',
-        'LOG_THREAD_ID',
-        'YOOKASSA_TAX_SYSTEM_CODE',
-        mode='before'
+        "REQUIRED_CHANNEL_ID",
+        "FREEKASSA_PAYMENT_METHOD_ID",
+        "USER_HWID_DEVICE_LIMIT",
+        "SEVERPAY_MID",
+        "SEVERPAY_LIFETIME_MINUTES",
+        "LOG_CHAT_ID",
+        "LOG_THREAD_ID",
+        "YOOKASSA_TAX_SYSTEM_CODE",
+        mode="before",
     )
     @classmethod
     def validate_optional_int(cls, v):
@@ -771,7 +848,7 @@ class Settings(BaseSettings):
                 return None
         return v
 
-    @field_validator('YOOKASSA_PAYMENT_MODE', 'YOOKASSA_PAYMENT_SUBJECT', mode='before')
+    @field_validator("YOOKASSA_PAYMENT_MODE", "YOOKASSA_PAYMENT_SUBJECT", mode="before")
     @classmethod
     def normalize_optional_yookassa_receipt_fields(cls, v):
         if isinstance(v, str):
@@ -780,7 +857,7 @@ class Settings(BaseSettings):
                 return None
         return v
 
-    @field_validator('YOOKASSA_TAX_SYSTEM_CODE')
+    @field_validator("YOOKASSA_TAX_SYSTEM_CODE")
     @classmethod
     def validate_yookassa_tax_system_code(cls, v):
         if v is None:
@@ -788,22 +865,34 @@ class Settings(BaseSettings):
         if not 1 <= v <= 6:
             raise ValueError("YOOKASSA_TAX_SYSTEM_CODE must be an integer from 1 to 6.")
         return v
-    
+
     # Notification types
-    LOG_NEW_USERS: bool = Field(default=True, description="Send notifications for new user registrations")
-    LOG_PAYMENTS: bool = Field(default=True, description="Send notifications for successful payments")
-    LOG_PROMO_ACTIVATIONS: bool = Field(default=True, description="Send notifications for promo code activations")
-    LOG_TRIAL_ACTIVATIONS: bool = Field(default=True, description="Send notifications for trial activations")
-    LOG_SUSPICIOUS_ACTIVITY: bool = Field(default=True, description="Send notifications for suspicious promo attempts")
+    LOG_NEW_USERS: bool = Field(
+        default=True, description="Send notifications for new user registrations"
+    )
+    LOG_PAYMENTS: bool = Field(
+        default=True, description="Send notifications for successful payments"
+    )
+    LOG_PROMO_ACTIVATIONS: bool = Field(
+        default=True, description="Send notifications for promo code activations"
+    )
+    LOG_TRIAL_ACTIVATIONS: bool = Field(
+        default=True, description="Send notifications for trial activations"
+    )
+    LOG_SUSPICIOUS_ACTIVITY: bool = Field(
+        default=True, description="Send notifications for suspicious promo attempts"
+    )
     DISCOUNT_PROMO_PAYMENT_TIMEOUT_MINUTES: int = Field(
         default=10,
         description="How long a discount promo reservation is kept before user payment",
     )
 
-    model_config = SettingsConfigDict(env_file='.env',
-                                      env_file_encoding='utf-8',
-                                      extra='ignore',
-                                      populate_by_name=True)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
 
 _settings_instance: Optional[Settings] = None
@@ -817,27 +906,32 @@ def get_settings() -> Settings:
             if not _settings_instance.ADMIN_IDS:
                 logging.warning(
                     "CRITICAL: ADMIN_IDS not set or contains no valid integer IDs in .env. "
-                    "Admin functionality will be restricted.")
+                    "Admin functionality will be restricted."
+                )
 
             if not _settings_instance.PANEL_API_URL:
                 logging.warning(
                     "CRITICAL: PANEL_API_URL is not set. Panel integration will not work."
                 )
-            if _settings_instance.WEBHOOK_BASE_URL and not _settings_instance.TELEGRAM_WEBHOOK_SECRET:
+            if (
+                _settings_instance.WEBHOOK_BASE_URL
+                and not _settings_instance.TELEGRAM_WEBHOOK_SECRET
+            ):
                 logging.warning(
                     "WARNING: TELEGRAM_WEBHOOK_SECRET is empty while webhook mode is enabled. "
                     "Set TELEGRAM_WEBHOOK_SECRET to validate X-Telegram-Bot-Api-Secret-Token header."
                 )
-            if not _settings_instance.YOOKASSA_SHOP_ID or not _settings_instance.YOOKASSA_SECRET_KEY:
+            if (
+                not _settings_instance.YOOKASSA_SHOP_ID
+                or not _settings_instance.YOOKASSA_SECRET_KEY
+            ):
                 logging.warning(
                     "CRITICAL: YooKassa credentials (SHOP_ID or SECRET_KEY) are not set. Payments will not work."
                 )
             if (
-                _settings_instance.LKNPD_INN
-                or _settings_instance.LKNPD_PASSWORD
+                _settings_instance.LKNPD_INN or _settings_instance.LKNPD_PASSWORD
             ) and not (
-                _settings_instance.LKNPD_INN
-                and _settings_instance.LKNPD_PASSWORD
+                _settings_instance.LKNPD_INN and _settings_instance.LKNPD_PASSWORD
             ):
                 logging.warning(
                     "WARNING: LKNPD credentials are incomplete. Receipt sending will be disabled."
@@ -868,14 +962,16 @@ def get_settings() -> Settings:
                         "CRITICAL: Platega is enabled but merchant credentials (PLATEGA_MERCHANT_ID/PLATEGA_SECRET) are missing. Platega payments will not work."
                     )
             if _settings_instance.SEVERPAY_ENABLED:
-                if not _settings_instance.SEVERPAY_MID or not _settings_instance.SEVERPAY_TOKEN:
+                if (
+                    not _settings_instance.SEVERPAY_MID
+                    or not _settings_instance.SEVERPAY_TOKEN
+                ):
                     logging.warning(
                         "CRITICAL: SeverPay is enabled but MID or TOKEN is missing. SeverPay payments will not work."
                     )
 
         except ValidationError as e:
-            logging.critical(
-                f"Pydantic validation error while loading settings: {e}")
+            logging.critical(f"Pydantic validation error while loading settings: {e}")
 
             raise SystemExit(
                 f"CRITICAL SETTINGS ERROR: {e}. Please check your .env file and Settings model."

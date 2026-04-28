@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from pathlib import Path
+
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
@@ -19,6 +21,13 @@ async def build_and_start_web_app(
     app["dp"] = dp
     app["settings"] = settings
     app["async_session_factory"] = async_session_factory
+
+    # Cache bot username for referral link generation
+    try:
+        bot_info = await bot.get_me()
+        app["bot_username"] = bot_info.username or ""
+    except Exception:
+        app["bot_username"] = ""
     # Inject shared instances used by webhook handlers
     app["i18n"] = dp.get("i18n_instance")
     for key in (
@@ -33,6 +42,7 @@ async def build_and_start_web_app(
         "panel_webhook_service",
         "platega_service",
         "severpay_service",
+        "promo_code_service",
     ):
         # Access dispatcher workflow_data directly to avoid sequence protocol issues
         if hasattr(dp, "workflow_data") and key in dp.workflow_data:  # type: ignore
@@ -96,6 +106,22 @@ async def build_and_start_web_app(
     if panel_path.startswith("/"):
         app.router.add_post(panel_path, panel_webhook_route)
         logging.info(f"Panel webhook route configured at: [POST] {panel_path}")
+
+    # Mini App API routes
+    from src.app.web.api.routes import router as api_router
+    app.router.add_routes(api_router)
+    logging.info("Mini App API routes registered at /api/*")
+
+    # Serve Mini App static files if dist exists
+    miniapp_dist = Path(__file__).parent.parent.parent.parent / "webapp" / "dist"
+    if miniapp_dist.exists():
+        app.router.add_static("/app", miniapp_dist, name="miniapp_static", show_index=True)
+
+        async def miniapp_index(_: web.Request) -> web.FileResponse:
+            return web.FileResponse(miniapp_dist / "index.html")
+
+        app.router.add_get("/app", miniapp_index)
+        logging.info("Mini App static files served from %s", miniapp_dist)
 
     web_app_runner = web.AppRunner(app)
     await web_app_runner.setup()

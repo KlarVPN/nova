@@ -1,14 +1,38 @@
+# Environment
 .env
+.env.*
+!.env.example
+
+# Python
 __pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
 .idea/
 .vscode/
+*.swp
+
+# Logs & runtime
 *.log
 *.pid
+
+# Assets (local / generated)
 /assets/locales/ru_backup.json
 /assets/locales/en_backup.json
 /assets/proxies.json
 /assets/locations.json
 src/database/models_old.py
+
+# Webapp (Mini App)
+webapp/node_modules/
+webapp/dist/
+webapp/.env
+
+# Bun (bun.lock is text format and should be committed; ignore only legacy binary)
+bun.lockb
+
+# Misc
 .serena/
 AGENTS.md
-.venv/

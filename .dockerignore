@@ -6,23 +6,21 @@
 LICENSE
 README.md
 
-
-# CI
+# CI / tooling
 .codeclimate.yml
 .travis.yml
 .taskcluster.yml
+.serena/
+AGENTS.md
 
 # Docker
 docker-compose.yml
 Dockerfile
-.docker
 .dockerignore
 
-# Byte-compiled / optimized / DLL files
+# Python byte-compiled
 **/__pycache__/
 **/*.py[cod]
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -33,60 +31,34 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
 lib64/
 parts/
 sdist/
 var/
 *.egg-info/
-.installed.cfg
 *.egg
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
+# Logs / runtime
+*.log
 pip-log.txt
 pip-delete-this-directory.txt
-
-# Unit test / coverage reports
 htmlcov/
 .tox/
 .coverage
 .cache
-nosetests.xml
-coverage.xml
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
 
 # Virtual environment
 .env*
 .venv/
 venv/
 
-# PyCharm
-.idea
-
-# Python mode for VIM
-.ropeproject
-**/.ropeproject
-
-# Vim swap files
-**/*.swp
-
-# VS Code
+# IDE
+.idea/
 .vscode/
+**/*.swp
+**/.ropeproject/
+
+# Webapp: skip source & node_modules (dist is built in Docker)
+webapp/node_modules/
+webapp/.env
+webapp/.env.*

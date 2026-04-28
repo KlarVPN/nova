@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "home": "Home",
+    "plans": "Plans",
+    "referral": "Referrals",
+    "promo": "Promo Code",
+    "configs": "Configs",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading...",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "share": "Share",
+    "apply": "Apply",
+    "back": "Back",
+    "left": "left",
+    "until": "until",
+    "or": "or",
+    "error": "Connection error",
+    "retry": "Retry",
+    "day": "{n} day | {n} days",
+    "month": "{n} month | {n} months"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "expired": "Expired",
+    "trial": "Trial",
+    "disabled": "Disabled"
+  },
+  "auth": {
+    "title": "Telegram Required",
+    "desc": "This app only works inside Telegram. Open it through the bot.",
+    "button": "Open Telegram"
+  },
+  "home": {
+    "greeting": "Welcome",
+    "subscription": "Subscription",
+    "traffic": "Traffic",
+    "autorenew": "Auto-renew",
+    "connect": "Connect",
+    "noSub": "You don't have an active subscription. Choose a plan and connect to VPN.",
+    "noSubTitle": "No active subscription",
+    "expires": "Expires",
+    "currentLocation": "Current location",
+    "subLink": "Subscription link",
+    "changePlan": "Change plan",
+    "subscribe": "Subscribe",
+    "trialBtn": "Activate trial period",
+    "choosePlan": "Choose a plan",
+    "expiringSoon": "Expiring soon",
+    "renewDesc": "Renew your subscription in advance",
+    "renewSub": "Renew subscription",
+    "expiredDesc": "Your subscription has expired. Renew it to keep using VPN.",
+    "disabledDesc": "Your subscription is disabled. Contact support."
+  },
+  "plans": {
+    "title": "Plans",
+    "subtitle": "Choose a suitable plan",
+    "loading": "Loading plans...",
+    "discountActive": "{n}% discount active",
+    "popular": "Popular",
+    "bestValue": "Best value",
+    "backToPlans": "Back to plans",
+    "selectedPlan": "Selected plan",
+    "paymentMethod": "Payment method",
+    "pay": "Pay",
+    "redirecting": "Redirecting to payment...",
+    "paymentError": "Payment creation failed"
+  },
+  "providers": {
+    "yookassa": "Bank card",
+    "stars": "Telegram Stars",
+    "cryptopay": "Cryptocurrency",
+    "freekassa": "FreeKassa",
+    "platega": "Platega",
+    "severpay": "SeverPay"
+  },
+  "referral": {
+    "title": "Referrals",
+    "subtitle": "Invite friends and earn bonuses",
+    "invited": "Invited",
+    "purchased": "Purchased",
+    "linkLabel": "Your referral link",
+    "shareText": "Try Nova VPN — fast and reliable VPN service!",
+    "bonusTitle": "Referral bonuses",
+    "plan": "Plan",
+    "you": "You",
+    "friend": "Friend",
+    "howTitle": "How it works",
+    "step1": "Share the link with a friend",
+    "step2": "Friend signs up and subscribes",
+    "step3": "Both get bonus days added to their subscription"
+  },
+  "promo": {
+    "title": "Promo Code",
+    "subtitle": "Enter a code to get a discount or bonus days",
+    "activeDiscount": "Active discount",
+    "expiresIn": "Expires in {n} min",
+    "useHint": "Subscribe to use the discount",
+    "inputLabel": "Promo code",
+    "placeholder": "NOVA2025",
+    "applied": "Code applied!",
+    "addedDays": "+{days} added to your subscription.",
+    "newExpiry": "New expiry date: {date}",
+    "discountActivated": "Discount activated!",
+    "discountApplied": "{n}% discount will be applied at checkout.",
+    "failed": "Failed to apply",
+    "types": "Promo code types",
+    "bonus": "Bonus",
+    "bonusDesc": "Adds days to your active subscription",
+    "discount": "Discount",
+    "discountDesc": "Reduces the cost of the next payment",
+    "errors": {
+      "not_found": "Promo code not found",
+      "expired": "Promo code expired",
+      "already_used": "You've already used this promo code",
+      "limit_reached": "Activation limit reached",
+      "no_subscription": "A subscription is required"
+    }
+  },
+  "devices": {
+    "title": "Devices",
+    "countOf": "{current} of {max}",
+    "countFree": "{current}",
+    "manage": "Manage devices",
+    "noDevices": "No connected devices",
+    "disconnect": "Disconnect",
+    "disconnecting": "Disconnecting...",
+    "firstSeen": "First seen",
+    "unknown": "Unknown device",
+    "loading": "Loading devices..."
+  },
+  "configs": {
+    "title": "Configs",
+    "noSub": "No active subscription",
+    "noSubDesc": "Subscribe to get configs for connecting",
+    "subLink": "Subscription link",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "quickSetup": "Quick connect",
+    "openInHapp": "Open in Happ",
+    "openInFlClash": "Open in FlClashX",
+    "instructions": "Connection instructions",
+    "happ": {
+      "title": "Happ (iOS / macOS)",
+      "step1": "Install the Happ app from the App Store",
+      "step2": "Tap the «Open in Happ» button",
+      "step3": "Confirm adding the subscription in the app",
+      "step4": "Enable VPN on the Happ home screen"
+    },
+    "flclash": {
+      "title": "FlClash (Android / Windows)",
+      "step1": "Install FlClash from Google Play or GitHub",
+      "step2": "Tap the «Open in FlClashX» button",
+      "step3": "The subscription will be added automatically",
+      "step4": "Tap Start to connect"
+    },
+    "manual": {
+      "title": "Other apps",
+      "step1": "Tap «Copy link»",
+      "step2": "Open your VPN app",
+      "step3": "Find the «Subscriptions» or «Profiles» section",
+      "step4": "Paste the copied link"
+    }
+  },
+  "profile": {
+    "language": "Language",
+    "links": "Links",
+    "support": "Support",
+    "news": "News",
+    "docs": "Documents",
+    "status": "Server status"
+  }
+}
