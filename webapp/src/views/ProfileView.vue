@@ -243,7 +243,7 @@ const router = useRouter()
     </div>
 
     <div class="flex flex-col items-center gap-2">
-      <span>Остались вопросы?</span>
+      <span>{{ t('profile.questions') }}</span>
       <Button
         v-if="botUsername"
         class="w-fit border border-neutral-700 bg-transparent p-2 px-4 text-sm text-white hover:bg-white/10"

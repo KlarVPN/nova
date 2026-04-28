@@ -216,6 +216,7 @@
     "referral": "Referral",
     "language": "Language",
     "links": "Links",
+    "questions": "Any questions left?",
     "support": "Contact support",
     "news": "News",
     "docs": "Knowledge base",
@@ -250,6 +251,7 @@
       "offline": "Offline"
     },
     "sortByPing": "Sort by ping",
+    "uptime": "uptime",
     "daysMonitored": "{n} days",
     "now": "now",
     "status": {

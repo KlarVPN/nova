@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
                     : 'text-neutral-300'
             "
           >
-            {{ item.uptime_pct != null ? `${item.uptime_pct}% uptime` : '—' }}
+            {{ item.uptime_pct != null ? `${item.uptime_pct}% ${t('locations.uptime')}` : '—' }}
           </p>
         </div>
 

@@ -131,6 +131,8 @@ const trafficBarColor = computed(() => {
   if (pct >= 50) return 'bg-yellow-500'
   return 'bg-green-500'
 })
+
+const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 </script>
 
 <template>
@@ -238,7 +240,9 @@ const trafficBarColor = computed(() => {
           <Icon icon="lucide:message-circle" class="size-5 text-white" />
         </span>
         <span class="flex flex-col items-start">
-          <span class="text-left font-sans text-sm leading-4 font-bold uppercase">Поддержка</span>
+          <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
+            t('profile.support')
+          }}</span>
         </span>
       </a>
     </template>
@@ -286,14 +290,20 @@ const trafficBarColor = computed(() => {
             <Icon icon="lucide:activity" class="size-4" />
             {{ t('home.traffic') }}
           </span>
-          <template v-if="!sub.traffic_limit_gb">
-            <span class="text-left font-medium text-white">∞ Безлимит</span>
+          <template v-if="isUnlimitedTraffic">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-white">{{ t('plans.unlimitedTraffic') }}</span>
+              <span class="text-xs text-neutral-500">∞</span>
+            </div>
+            <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+              <div class="h-full w-full rounded-full bg-green-500 transition-all duration-500" />
+            </div>
           </template>
           <template v-else>
             <div class="flex items-center justify-between">
               <span class="font-medium text-white">
                 {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
-                {{ sub.traffic_limit_gb.toFixed(0) }} GB
+                {{ sub.traffic_limit_gb?.toFixed(0) ?? '0' }} GB
               </span>
               <span class="text-xs text-neutral-500">
                 {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
