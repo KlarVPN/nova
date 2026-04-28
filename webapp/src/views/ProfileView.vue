@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
-import { locale, setLocale } from '@/i18n/i18n.ts'
+import { AVAILABLE_LOCALES, locale, setLocale } from '@/i18n/i18n.ts'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { Button } from '@/components/ui/button'
 
@@ -24,11 +24,29 @@ const displayName = computed(() => {
 })
 
 const userInitial = computed(() => displayName.value.charAt(0).toUpperCase() || '?')
+const showLanguageModal = ref(false)
+const currentLocaleLabel = computed(
+  () => AVAILABLE_LOCALES.find((item) => item.code === locale.value)?.name ?? locale.value.toUpperCase(),
+)
 
 function switchTo(lang: 'ru' | 'en') {
   if (locale.value === lang) return
   hapticImpact('light')
   setLocale(lang)
+}
+
+function openLanguageModal() {
+  hapticImpact('light')
+  showLanguageModal.value = true
+}
+
+function closeLanguageModal() {
+  showLanguageModal.value = false
+}
+
+function selectLanguage(lang: 'ru' | 'en') {
+  switchTo(lang)
+  closeLanguageModal()
 }
 
 function openExternal(url: string) {
@@ -131,30 +149,65 @@ function openExternal(url: string) {
 
     <!-- Language -->
     <div class="flex flex-col gap-3">
-      <div class="flex gap-2">
-        <Button
-          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold tracking-wide uppercase transition-colors"
-          :class="
-            locale === 'ru'
-              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
-          "
-          @click="switchTo('ru')"
-        >
-          🇷🇺 RU
-        </Button>
-        <Button
-          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold tracking-wide uppercase transition-colors"
-          :class="
-            locale === 'en'
-              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
-          "
-          @click="switchTo('en')"
-        >
-          🇬🇧 EN
-        </Button>
-      </div>
+      <Button
+        class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        @click="openLanguageModal"
+      >
+        <Icon icon="lucide:languages" class="size-4 shrink-0 text-neutral-500" />
+        <span class="font-medium text-white">{{ t('profile.language') }}</span>
+        <span class="ml-auto text-sm text-neutral-400">{{ currentLocaleLabel }}</span>
+      </Button>
     </div>
+
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showLanguageModal" class="fixed inset-0 z-50 flex flex-col justify-end">
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeLanguageModal" />
+          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6">
+            <div class="mb-4 flex justify-center">
+              <div class="h-1 w-10 rounded-full bg-neutral-700" />
+            </div>
+            <h2 class="mb-3 text-base font-medium text-white">{{ t('profile.language') }}</h2>
+            <div class="flex flex-col gap-2">
+              <button
+                v-for="item in AVAILABLE_LOCALES"
+                :key="item.code"
+                class="flex w-full cursor-pointer items-center rounded-[14px] border px-4 py-3 text-left transition-colors"
+                :class="
+                  locale === item.code
+                    ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+                    : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
+                "
+                @click="selectLanguage(item.code)"
+              >
+                <span class="font-medium">{{ item.name }}</span>
+                <Icon
+                  v-if="locale === item.code"
+                  icon="lucide:check"
+                  class="ml-auto size-4 text-[#bdfe00]"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.sheet-enter-active > div:last-child,
+.sheet-leave-active > div:last-child {
+  transition: transform 0.25s ease;
+}
+
+.sheet-enter-from > div:last-child,
+.sheet-leave-to > div:last-child {
+  transform: translateY(100%);
+}
+</style>
