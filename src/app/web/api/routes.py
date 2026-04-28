@@ -385,6 +385,8 @@ async def get_locations(request: web.Request) -> web.Response:
             status = "online"
         elif status_val in (0, "0", "down", "DOWN", "offline", "OFFLINE"):
             status = "offline"
+        elif status_val in (2, "2", "pending", "PENDING"):
+            status = "pending"
 
         ping_raw = None
         if latest_hb is not None:

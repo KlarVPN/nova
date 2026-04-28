@@ -74,7 +74,7 @@ export interface LocationStatus {
   name: string
   country: string
   emoji: string
-  status: 'online' | 'offline' | 'unknown'
+  status: 'online' | 'offline' | 'pending' | 'unknown'
   ping_ms: number | null
   uptime_pct: number | null
   availability: number[]

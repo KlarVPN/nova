@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "Home",
+    "setup": "Setup",
     "plans": "Plans",
     "referral": "Referrals",
     "promo": "Promo Code",
@@ -173,6 +174,43 @@
       "step4": "Paste the copied link"
     }
   },
+  "setup": {
+    "noSubTitle": "Subscription required first",
+    "noSubDesc": "Purchase a plan, then complete setup in 1-2 minutes.",
+    "progress": "Setup step",
+    "recommended": "recommended",
+    "subLink": "Subscription link",
+    "scene1": {
+      "title": "1. Where do you want to set up VPN?",
+      "desc": "Choose your setup scenario.",
+      "thisDevice": "On this device",
+      "thisDeviceDesc": "Quick setup right now",
+      "otherDevice": "On another device",
+      "otherDeviceDesc": "Copy the link and open it on another device"
+    },
+    "scene2": {
+      "title": "2. Choose app",
+      "desc": "For Apple devices we recommend Happ."
+    },
+    "scene3": {
+      "title": "3. Add subscription",
+      "desc": "Copy the link or open it in the app, then enable VPN."
+    },
+    "apps": {
+      "happ": {
+        "title": "Happ",
+        "desc": "Best choice for iOS and macOS"
+      },
+      "flclash": {
+        "title": "FlClashX",
+        "desc": "Good for Android, Windows, Linux"
+      },
+      "manual": {
+        "title": "Other app",
+        "desc": "Manual setup via link"
+      }
+    }
+  },
   "profile": {
     "config": "Config",
     "referral": "Referral",
@@ -217,6 +255,7 @@
     "status": {
       "online": "Online",
       "offline": "Offline",
+      "pending": "Pending",
       "unknown": "Unknown"
     }
   }
