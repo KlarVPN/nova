@@ -40,7 +40,7 @@
     "subscription": "Подписка",
     "traffic": "Трафик",
     "autorenew": "Автооплата",
-    "connect": "Подключить устройство",
+    "connect": "Подключиться",
     "noSub": "У вас нет активной подписки. Выберите тариф и подключитесь к VPN.",
     "noSubTitle": "Нет активной подписки",
     "expires": "Осталось",
@@ -123,9 +123,9 @@
     }
   },
   "devices": {
-    "title": "Мои устройства",
-    "countOf": "{current} из {max}",
-    "countFree": "{current}",
+    "title": "Устройств",
+    "countOf": "Всего {current} из {max}",
+    "countFree": "Всего {current} устройства подключено",
     "manage": "Управление устройствами",
     "noDevices": "Нет подключённых устройств",
     "disconnect": "Отключить",

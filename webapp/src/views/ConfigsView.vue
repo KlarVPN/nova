@@ -8,6 +8,8 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import { hapticImpact, hapticSuccess } from '@/lib/telegram'
 import { copyToClipboard } from '@/lib/utils'
 import QRCode from '@/components/common/QRCode.vue'
+import { Card } from '@/components/common'
+import { Button } from '@/components/ui/button'
 
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
@@ -16,7 +18,10 @@ const { t } = useI18n()
 
 const sub = computed(() => auth.subscription)
 const isActive = computed(
-  () => auth.hasSubscription && sub.value?.status_from_panel !== 'EXPIRED' && sub.value?.status_from_panel !== 'DISABLED',
+  () =>
+    auth.hasSubscription &&
+    sub.value?.status_from_panel !== 'EXPIRED' &&
+    sub.value?.status_from_panel !== 'DISABLED',
 )
 const connectUrl = computed(() => subStore.connectInfo?.connect_url ?? '')
 
@@ -35,7 +40,9 @@ async function handleCopy() {
     await copyToClipboard(connectUrl.value)
     hapticSuccess()
     copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
   } catch {
     hapticImpact('medium')
   }
@@ -61,6 +68,9 @@ function goToPlans() {
 
 <template>
   <div class="flex w-full flex-col items-center gap-5 pt-2">
+    <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
+      {{ t('configs.title') }}
+    </h1>
     <!-- NO SUBSCRIPTION -->
     <template v-if="!isActive">
       <div class="flex flex-col items-center gap-5 pt-6 text-center">
@@ -97,72 +107,69 @@ function goToPlans() {
     <!-- ACTIVE WITH CONNECT URL -->
     <template v-else-if="connectUrl">
       <!-- QR Code -->
-      <div class="flex w-full items-center justify-center border border-neutral-800 bg-neutral-950 p-4">
+      <div
+        class="flex w-full items-center justify-center rounded-[14px] border border-neutral-800 bg-neutral-950 p-4"
+      >
         <QRCode :url="connectUrl" :size="220" level="H" />
       </div>
 
       <!-- Subscription link -->
-      <div class="flex w-full flex-col gap-2 border border-neutral-800 bg-neutral-950 px-4 py-3 text-neutral-400">
-        <span class="flex items-center gap-2 font-mono text-xs uppercase">
+      <Card>
+        <span class="flex items-center gap-2 text-xs">
           <Icon icon="lucide:link" class="size-3.5" />
           {{ t('configs.subLink') }}
         </span>
-        <span class="truncate font-mono text-xs font-medium text-white">{{ connectUrl }}</span>
-      </div>
+        <span class="truncate text-xs font-medium text-white">{{ connectUrl }}</span>
+      </Card>
 
       <!-- Copy button -->
-      <button
+      <Button
         class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black transition-opacity active:opacity-70"
         @click="handleCopy"
       >
-        <span class="flex bg-black p-2">
-          <Icon
-            :icon="copied ? 'lucide:check' : 'lucide:copy'"
-            class="size-5 text-white"
-          />
-        </span>
-        <span class="text-left font-sans text-sm leading-4 font-bold uppercase">
+        <Icon :icon="copied ? 'lucide:check' : 'lucide:copy'" class="size-5" />
+        <span class="font-sans text-sm">
           {{ copied ? t('configs.copied') : t('configs.copyLink') }}
         </span>
-      </button>
+      </Button>
 
       <!-- Quick connect -->
       <div class="flex w-full flex-col gap-3">
-        <h2 class="font-mono text-xs font-semibold uppercase tracking-wider text-neutral-400">
+        <h2 class="text-xs font-medium text-neutral-400">
           {{ t('configs.quickSetup') }}
         </h2>
         <div class="flex gap-3">
           <!-- Happ -->
-          <button
-            class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 border border-neutral-800 bg-neutral-950 p-2 transition-opacity active:opacity-70"
+          <Button
+            class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 border border-neutral-800 bg-neutral-950 p-2 hover:bg-neutral-900 active:opacity-70"
             @click="openInHapp"
           >
             <Icon icon="lucide:smartphone" class="size-4 text-neutral-400" />
-            <span class="font-sans text-sm font-extrabold text-white uppercase">
+            <span class="font-sans text-sm text-white">
               {{ t('configs.openInHapp') }}
             </span>
-          </button>
+          </Button>
           <!-- FlClashX -->
-          <button
-            class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 border border-neutral-800 bg-neutral-950 p-2 transition-opacity active:opacity-70"
+          <Button
+            class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 border border-neutral-800 bg-neutral-950 p-2 hover:bg-neutral-900 active:opacity-70"
             @click="openInFlClash"
           >
             <Icon icon="lucide:zap" class="size-4 text-neutral-400" />
-            <span class="font-sans text-sm font-extrabold text-white uppercase">
+            <span class="font-sans text-sm text-white">
               {{ t('configs.openInFlClash') }}
             </span>
-          </button>
+          </Button>
         </div>
       </div>
 
       <!-- Instructions toggle -->
-      <button
-        class="flex h-12 w-full cursor-pointer items-center justify-between gap-3 border border-neutral-800 bg-neutral-950 px-4 py-2 transition-opacity active:opacity-70"
+      <Button
+        class="flex h-12 w-full cursor-pointer items-center justify-between gap-3 border border-neutral-800 bg-neutral-950 px-4 py-2 hover:bg-neutral-900 active:opacity-70"
         @click="showInstructions = !showInstructions"
       >
         <span class="flex items-center gap-2">
           <Icon icon="lucide:book-open" class="size-4 text-neutral-400" />
-          <span class="font-sans text-sm font-extrabold text-white uppercase">
+          <span class="font-sans text-sm text-white">
             {{ t('configs.instructions') }}
           </span>
         </span>
@@ -170,25 +177,25 @@ function goToPlans() {
           :icon="showInstructions ? 'lucide:chevron-up' : 'lucide:chevron-down'"
           class="size-4 text-neutral-400"
         />
-      </button>
+      </Button>
 
       <!-- Instructions content -->
-      <div v-if="showInstructions" class="flex w-full flex-col gap-4">
+      <div v-if="showInstructions" class="flex w-full flex-col gap-3">
         <!-- Happ instructions -->
-        <div class="flex flex-col gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3">
+        <div
+          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+        >
           <div class="flex items-center gap-2">
             <Icon icon="lucide:smartphone" class="size-4 text-white" />
-            <h3 class="font-mono text-sm font-bold uppercase text-white">
+            <h3 class="text-sm font-bold text-white">
               {{ t('configs.happ.title') }}
             </h3>
           </div>
           <ol class="flex flex-col gap-2">
-            <li
-              v-for="n in 4"
-              :key="n"
-              class="flex items-start gap-3 text-sm text-neutral-300"
-            >
-              <span class="flex size-5 shrink-0 items-center justify-center border border-neutral-700 font-mono text-xs text-neutral-400">
+            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
+              <span
+                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
+              >
                 {{ n }}
               </span>
               {{ t(`configs.happ.step${n}`) }}
@@ -197,20 +204,20 @@ function goToPlans() {
         </div>
 
         <!-- FlClash instructions -->
-        <div class="flex flex-col gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3">
+        <div
+          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+        >
           <div class="flex items-center gap-2">
             <Icon icon="lucide:zap" class="size-4 text-white" />
-            <h3 class="font-mono text-sm font-bold uppercase text-white">
+            <h3 class="text-sm font-bold text-white">
               {{ t('configs.flclash.title') }}
             </h3>
           </div>
           <ol class="flex flex-col gap-2">
-            <li
-              v-for="n in 4"
-              :key="n"
-              class="flex items-start gap-3 text-sm text-neutral-300"
-            >
-              <span class="flex size-5 shrink-0 items-center justify-center border border-neutral-700 font-mono text-xs text-neutral-400">
+            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
+              <span
+                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
+              >
                 {{ n }}
               </span>
               {{ t(`configs.flclash.step${n}`) }}
@@ -219,20 +226,20 @@ function goToPlans() {
         </div>
 
         <!-- Manual instructions -->
-        <div class="flex flex-col gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3">
+        <div
+          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+        >
           <div class="flex items-center gap-2">
             <Icon icon="lucide:settings" class="size-4 text-white" />
-            <h3 class="font-mono text-sm font-bold uppercase text-white">
+            <h3 class="text-sm font-bold text-white">
               {{ t('configs.manual.title') }}
             </h3>
           </div>
           <ol class="flex flex-col gap-2">
-            <li
-              v-for="n in 4"
-              :key="n"
-              class="flex items-start gap-3 text-sm text-neutral-300"
-            >
-              <span class="flex size-5 shrink-0 items-center justify-center border border-neutral-700 font-mono text-xs text-neutral-400">
+            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
+              <span
+                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
+              >
                 {{ n }}
               </span>
               {{ t(`configs.manual.step${n}`) }}

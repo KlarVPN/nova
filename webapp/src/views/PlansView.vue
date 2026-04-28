@@ -115,8 +115,8 @@ function resetPromo() {
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-5 pt-2 pb-6">
-    <h1 class="font-extrabold uppercase text-3xl leading-[0.9] tracking-tighter text-white">
+  <div class="flex w-full flex-col items-center gap-5 pt-2 pb-6">
+    <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('plans.title') }}
     </h1>
 
@@ -127,8 +127,11 @@ function resetPromo() {
 
     <template v-else>
       <!-- Active Discount Banner -->
-      <div v-if="discount" class="bg-neutral-950 border border-[#bdfe00]/30 py-2 px-4 flex items-center gap-3">
-        <Icon icon="lucide:percent" class="size-4 text-[#bdfe00] shrink-0" />
+      <div
+        v-if="discount"
+        class="flex items-center gap-3 border border-[#bdfe00]/30 bg-neutral-950 px-4 py-2"
+      >
+        <Icon icon="lucide:percent" class="size-4 shrink-0 text-[#bdfe00]" />
         <div>
           <p class="text-sm font-semibold text-[#bdfe00]">
             {{ t('plans.discountActive', { n: discount.discount_percentage }) }}
@@ -144,15 +147,25 @@ function resetPromo() {
             <button
               v-for="plan in store.activePlans"
               :key="plan.months"
-              class="flex flex-col gap-1 p-4 text-left border transition-colors cursor-pointer"
-              :class="selectedMonths === plan.months
-                ? 'border-[#bdfe00] bg-neutral-900'
-                : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'"
+              class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
+              :class="
+                selectedMonths === plan.months
+                  ? 'border-[#bdfe00] bg-neutral-900'
+                  : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+              "
               @click="selectPlan(plan.months)"
             >
-              <span class="font-extrabold uppercase text-2xl tracking-tighter text-white">{{ monthsLabel(plan.months) }}</span>
-              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{ formatPrice(discountedPrice(plan.price_rub!)) }}</span>
-              <span v-if="discount && plan.price_rub" class="font-mono text-xs text-neutral-500 line-through">{{ formatPrice(plan.price_rub) }}</span>
+              <span class="text-2xl font-extrabold tracking-tighter text-white uppercase">{{
+                monthsLabel(plan.months)
+              }}</span>
+              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
+                formatPrice(discountedPrice(plan.price_rub!))
+              }}</span>
+              <span
+                v-if="discount && plan.price_rub"
+                class="font-mono text-xs text-neutral-500 line-through"
+                >{{ formatPrice(plan.price_rub) }}</span
+              >
             </button>
           </template>
 
@@ -160,42 +173,52 @@ function resetPromo() {
             <button
               v-for="pkg in store.activeTrafficPackages"
               :key="pkg.gb"
-              class="flex flex-col gap-1 p-4 text-left border transition-colors cursor-pointer"
-              :class="selectedGb === pkg.gb
-                ? 'border-[#bdfe00] bg-neutral-900'
-                : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'"
+              class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
+              :class="
+                selectedGb === pkg.gb
+                  ? 'border-[#bdfe00] bg-neutral-900'
+                  : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+              "
               @click="selectTraffic(pkg.gb)"
             >
-              <span class="font-extrabold uppercase text-2xl tracking-tighter text-white">{{ pkg.gb }} GB</span>
-              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{ formatPrice(discountedPrice(pkg.price_rub!)) }}</span>
-              <span v-if="discount && pkg.price_rub" class="font-mono text-xs text-neutral-500 line-through">{{ formatPrice(pkg.price_rub) }}</span>
+              <span class="text-2xl font-extrabold tracking-tighter text-white uppercase"
+                >{{ pkg.gb }} GB</span
+              >
+              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
+                formatPrice(discountedPrice(pkg.price_rub!))
+              }}</span>
+              <span
+                v-if="discount && pkg.price_rub"
+                class="font-mono text-xs text-neutral-500 line-through"
+                >{{ formatPrice(pkg.price_rub) }}</span
+              >
             </button>
           </template>
         </div>
 
         <!-- Promo Code -->
-        <div class="border border-neutral-800 bg-neutral-950 px-4 py-3 flex flex-col gap-3">
-          <p class="text-xs font-mono uppercase tracking-wide text-neutral-500">
+        <div class="flex flex-col gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3">
+          <p class="font-mono text-xs tracking-wide text-neutral-500 uppercase">
             {{ t('promo.inputLabel') }}
           </p>
           <div class="flex gap-2">
             <input
               v-model="promoCode"
               :placeholder="t('promo.placeholder')"
-              class="min-w-0 flex-1 border border-neutral-800 bg-transparent px-3 py-2 font-mono text-sm uppercase tracking-widest text-white placeholder:text-neutral-600 outline-none focus:border-neutral-600 disabled:opacity-40"
+              class="min-w-0 flex-1 border border-neutral-800 bg-transparent px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-600 focus:border-neutral-600 disabled:opacity-40"
               autocomplete="off"
               :disabled="promoLoading || promoApplied"
               @keydown.enter="applyPromo"
             />
             <button
               v-if="promoApplied || promoCode"
-              class="border border-neutral-800 bg-neutral-900 px-3 text-neutral-400 cursor-pointer"
+              class="cursor-pointer border border-neutral-800 bg-neutral-900 px-3 text-neutral-400"
               @click="resetPromo"
             >
               <Icon icon="lucide:x" class="size-4" />
             </button>
             <button
-              class="bg-white px-4 font-mono text-xs font-bold uppercase text-black cursor-pointer transition-opacity disabled:opacity-40"
+              class="cursor-pointer bg-white px-4 font-mono text-xs font-bold text-black uppercase transition-opacity disabled:opacity-40"
               :disabled="!promoCode.trim() || promoLoading || promoApplied"
               @click="applyPromo"
             >
@@ -216,13 +239,18 @@ function resetPromo() {
 
       <!-- STEP: Payment Method -->
       <div v-else class="flex flex-col gap-4">
-        <button class="flex cursor-pointer items-center gap-2 text-sm text-neutral-400" @click="backToPlan">
+        <button
+          class="flex cursor-pointer items-center gap-2 text-sm text-neutral-400"
+          @click="backToPlan"
+        >
           <Icon icon="lucide:chevron-left" class="size-4" />
           {{ t('plans.backToPlans') }}
         </button>
 
         <!-- Selected plan summary -->
-        <div class="bg-neutral-950 border border-neutral-800 py-2 px-4 flex items-center justify-between">
+        <div
+          class="flex items-center justify-between border border-neutral-800 bg-neutral-950 px-4 py-2"
+        >
           <div>
             <p class="text-xs text-neutral-500 uppercase">{{ t('plans.selectedPlan') }}</p>
             <p class="font-mono font-medium text-white">
@@ -232,25 +260,32 @@ function resetPromo() {
           <Icon icon="lucide:clock" class="size-5 text-neutral-500" />
         </div>
 
-        <p class="text-sm font-semibold uppercase tracking-wide text-neutral-400">{{ t('plans.paymentMethod') }}</p>
+        <p class="text-sm font-semibold tracking-wide text-neutral-400 uppercase">
+          {{ t('plans.paymentMethod') }}
+        </p>
 
         <!-- Provider list -->
         <div class="flex flex-col gap-2">
           <button
             v-for="provider in store.availableProviders"
             :key="provider"
-            class="bg-neutral-950 border py-2 px-4 flex items-center gap-3 w-full cursor-pointer transition-colors"
-            :class="selectedProvider === provider
-              ? 'border-[#bdfe00]'
-              : 'border-neutral-800 hover:border-neutral-700'"
-            @click="selectedProvider = provider as PaymentProvider; hapticImpact('light')"
+            class="flex w-full cursor-pointer items-center gap-3 border bg-neutral-950 px-4 py-2 transition-colors"
+            :class="
+              selectedProvider === provider
+                ? 'border-[#bdfe00]'
+                : 'border-neutral-800 hover:border-neutral-700'
+            "
+            @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
           >
             <Icon
               :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
               class="size-4 shrink-0"
               :class="selectedProvider === provider ? 'text-[#bdfe00]' : 'text-neutral-500'"
             />
-            <span class="font-medium flex-1 text-left" :class="selectedProvider === provider ? 'text-white' : 'text-neutral-400'">
+            <span
+              class="flex-1 text-left font-medium"
+              :class="selectedProvider === provider ? 'text-white' : 'text-neutral-400'"
+            >
               {{ providerLabel(provider) }}
             </span>
             <Icon
@@ -263,7 +298,7 @@ function resetPromo() {
 
         <!-- Pay button -->
         <button
-          class="h-12 bg-white text-black flex items-center justify-center cursor-pointer w-full font-extrabold uppercase tracking-tight text-sm transition-opacity disabled:opacity-40"
+          class="flex h-12 w-full cursor-pointer items-center justify-center bg-white text-sm font-extrabold tracking-tight text-black uppercase transition-opacity disabled:opacity-40"
           :disabled="!selectedProvider || store.processingPayment"
           @click="pay"
         >

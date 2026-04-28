@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
-import { formatDateE, formatDaysRemaining } from '@/lib/utils'
+import { formatDaysRemaining } from '@/lib/utils'
 import { Card } from '@/components/common'
 import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
 import type { Device } from '@/types'
+import { Button } from '@/components/ui/button'
+import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
 
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
@@ -18,6 +20,8 @@ const { t } = useI18n()
 const sub = computed(() => auth.subscription)
 
 const statusKey = computed(() => {
+  if (auth.loading && !auth.profile) return 'loading'
+  if (auth.error && !auth.profile) return 'error'
   if (!auth.hasSubscription || !sub.value) return 'none'
   if (sub.value.status_from_panel === 'EXPIRED') return 'expired'
   if (sub.value.status_from_panel === 'DISABLED') return 'disabled'
@@ -26,11 +30,21 @@ const statusKey = computed(() => {
 
 const showDevices = ref(false)
 
-onMounted(async () => {
-  if (auth.hasSubscription && statusKey.value === 'active') {
-    await Promise.all([subStore.fetchConnect(), subStore.fetchDevices()])
+onMounted(() => {
+  if (statusKey.value === 'active') {
+    Promise.all([subStore.fetchConnect(), subStore.fetchDevices()])
   }
 })
+
+watch(
+  () => auth.profile,
+  (profile) => {
+    if (profile?.has_active_subscription && statusKey.value === 'active') {
+      if (!subStore.connectInfo) subStore.fetchConnect()
+      if (!subStore.devicesData) subStore.fetchDevices()
+    }
+  },
+)
 
 async function openDevicesModal() {
   hapticImpact('light')
@@ -121,19 +135,50 @@ const trafficBarColor = computed(() => {
 
 <template>
   <div class="flex h-full w-full flex-col items-center justify-center gap-5 pt-2 text-center">
-    <!-- NO SUBSCRIPTION -->
-    <template v-if="statusKey === 'none'">
+    <!-- LOADING SKELETON -->
+    <template v-if="statusKey === 'loading'">
       <div class="flex flex-col items-center gap-5 pt-6">
-        <span class="flex rounded-full bg-white p-3">
-          <Icon icon="lucide:shield-off" class="size-12 text-black" />
+        <span class="flex animate-pulse rounded-full bg-neutral-900 p-3">
+          <span class="block size-12" />
+        </span>
+        <div class="flex w-full flex-col items-center gap-2">
+          <div class="h-7 w-32 animate-pulse bg-neutral-900" />
+          <div class="h-4 w-24 animate-pulse bg-neutral-900" />
+        </div>
+      </div>
+      <div class="flex w-full flex-col gap-3">
+        <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
+        <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
+      </div>
+    </template>
+
+    <!-- ERROR -->
+    <template v-else-if="statusKey === 'error'">
+      <div class="flex flex-col items-center gap-5 pt-6">
+        <span class="flex rounded-full bg-neutral-900 p-3">
+          <Icon icon="lucide:wifi-off" class="size-12 text-neutral-400" />
         </span>
         <div>
           <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-            {{ t('home.noSubTitle') }}
+            {{ t('common.error') }}
           </span>
-          <p class="mt-2 text-sm text-neutral-400">{{ t('home.noSub') }}</p>
+          <p class="mt-2 text-sm text-neutral-400">{{ auth.error }}</p>
         </div>
       </div>
+      <button
+        class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+        @click="auth.init()"
+      >
+        <Icon icon="lucide:refresh-cw" class="size-5 text-neutral-400" />
+        <span class="font-sans text-sm font-extrabold text-white uppercase">{{
+          t('common.retry')
+        }}</span>
+      </button>
+    </template>
+
+    <!-- NO SUBSCRIPTION -->
+    <template v-else-if="statusKey === 'none'">
+      <SubscriptionBadge :type="statusKey" />
       <div class="flex w-full flex-col gap-3">
         <button
           v-if="auth.trialAvailable"
@@ -164,17 +209,7 @@ const trafficBarColor = computed(() => {
 
     <!-- EXPIRED -->
     <template v-else-if="statusKey === 'expired'">
-      <div class="flex flex-col items-center gap-5 pt-6">
-        <span class="flex rounded-full bg-white p-3">
-          <Icon icon="lucide:clock-alert" class="size-12 text-black" />
-        </span>
-        <div>
-          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-            {{ t('status.expired') }}
-          </span>
-          <p class="mt-2 text-sm text-neutral-400">{{ t('home.expiredDesc') }}</p>
-        </div>
-      </div>
+      <SubscriptionBadge :type="statusKey" />
       <button
         class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
         @click="goToPlans"
@@ -192,18 +227,8 @@ const trafficBarColor = computed(() => {
 
     <!-- DISABLED -->
     <template v-else-if="statusKey === 'disabled'">
-      <div class="flex flex-col items-center gap-5 pt-6">
-        <span class="flex rounded-full bg-white p-3">
-          <Icon icon="lucide:ban" class="size-12 text-black" />
-        </span>
+      <SubscriptionBadge :type="statusKey" />
 
-        <div>
-          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-            {{ t('status.disabled') }}
-          </span>
-          <p class="mt-2 text-sm text-neutral-400">{{ t('home.disabledDesc') }}</p>
-        </div>
-      </div>
       <a
         :href="supportLink"
         target="_blank"
@@ -220,113 +245,86 @@ const trafficBarColor = computed(() => {
 
     <!-- ACTIVE -->
     <template v-else-if="statusKey === 'active' && sub">
-      <div class="flex flex-col items-center gap-5 pt-4">
-        <span class="bg-primary flex rounded-full p-3">
-          <Icon icon="lucide:check" class="size-12 text-black" />
-        </span>
-        <div class="flex flex-col gap-2">
-          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-            {{ t('status.active') }}
-          </span>
-          <span class="text-xs font-light tracking-tighter text-white/60 uppercase">
-            {{ t('home.until', { date: formatDateE(sub.end_date) }) }}
-          </span>
-        </div>
-      </div>
+      <SubscriptionBadge :type="statusKey" :sub="sub" />
 
       <!-- Data Cards -->
       <div class="flex w-full flex-col gap-3">
-        <!-- Expires -->
-        <Card>
-          <span class="flex items-center gap-2 font-mono text-sm uppercase">
-            <Icon icon="lucide:calendar" class="size-4" />
-            {{ t('home.expires') }}
-          </span>
-          <div class="flex items-center gap-2">
-            <span class="text-left font-mono font-medium text-white">
-              {{ formatDateE(sub.end_date) }}
+        <div class="flex items-center gap-3">
+          <!-- Expires / Days remaining -->
+          <Card>
+            <span class="flex items-center gap-2 text-sm">
+              <Icon icon="lucide:calendar" class="size-4" />
+              {{ t('home.expires') }}
             </span>
-            <span class="text-left font-mono font-medium text-white/50">
-              ({{ formatDaysRemaining(sub.days_remaining) }})
+            <span class="text-left font-medium text-white">
+              {{ formatDaysRemaining(sub.days_remaining) }}
             </span>
-          </div>
-        </Card>
+          </Card>
+
+          <!-- Devices -->
+          <Card @click="openDevicesModal" class="cursor-pointer">
+            <span class="flex items-center gap-2 text-sm">
+              <Icon icon="lucide:monitor-smartphone" class="size-4" />
+              {{ t('devices.title') }}
+              <Icon icon="lucide:chevron-right" class="size-3" />
+            </span>
+            <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
+              <Icon icon="lucide:loader-circle" class="size-4 animate-spin text-neutral-400" />
+              <span class="text-sm text-neutral-500">{{ t('devices.loading') }}</span>
+            </div>
+            <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
+              <span class="font-medium text-white">
+                {{ subStore.devicesData.current_count }}
+                <span class="text-white/50"> / {{ subStore.devicesData.max_devices ?? '∞' }} </span>
+              </span>
+            </div>
+            <div v-else class="text-sm text-neutral-500">—</div>
+          </Card>
+        </div>
         <!-- Traffic -->
-        <Card v-if="sub.traffic_limit_gb">
-          <span class="flex items-center gap-2 font-mono text-sm uppercase">
+        <Card>
+          <span class="flex items-center gap-2 text-sm">
             <Icon icon="lucide:activity" class="size-4" />
             {{ t('home.traffic') }}
           </span>
-          <div class="flex items-center justify-between">
-            <span class="font-mono font-medium text-white">
-              {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
-              {{ sub.traffic_limit_gb?.toFixed(0) }} GB
-            </span>
-            <span class="font-mono text-xs text-neutral-500">
-              {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
-            </span>
-          </div>
-          <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-            <div
-              class="h-full rounded-full transition-all duration-500"
-              :class="trafficBarColor"
-              :style="{ width: trafficUsedPct + '%' }"
-            />
-          </div>
-        </Card>
-
-        <Card v-if="subStore.connectInfo?.connect_url">
-          <span class="flex items-center gap-2 font-mono text-sm uppercase">
-            <Icon icon="lucide:link" class="size-4" />
-            {{ t('home.subLink') }}
-          </span>
-          <span class="text-left font-mono font-medium text-white">
-            {{ subStore.connectInfo?.connect_url }}
-          </span>
+          <template v-if="!sub.traffic_limit_gb">
+            <span class="text-left font-medium text-white">∞ Безлимит</span>
+          </template>
+          <template v-else>
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-white">
+                {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
+                {{ sub.traffic_limit_gb.toFixed(0) }} GB
+              </span>
+              <span class="text-xs text-neutral-500">
+                {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
+              </span>
+            </div>
+            <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+              <div
+                class="h-full rounded-full transition-all duration-500"
+                :class="trafficBarColor"
+                :style="{ width: trafficUsedPct + '%' }"
+              />
+            </div>
+          </template>
         </Card>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex w-full flex-col gap-3">
         <div class="flex w-full items-center gap-2">
-          <button
-            class="flex h-14 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
+          <Button
             :disabled="subStore.loadingConnect || !subStore.connectInfo"
             @click="router.push({ name: 'configs' })"
           >
-            <span class="flex bg-black p-2">
-              <Icon icon="lucide:monitor-smartphone" class="size-5 text-white" />
-            </span>
-            <span class="flex flex-col items-start">
-              <span class="text-left font-sans text-sm leading-4 font-bold uppercase">
-                {{ t('home.connect') }}
-              </span>
-              <span class="text-left text-sm leading-4"
-                >{{ deviceCountLabel }} из - подключено</span
-              >
-            </span>
-          </button>
-          <button
-            class="flex h-14 cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
-            @click="openDevicesModal"
-          >
-            <span class="text-left font-sans text-sm leading-4 font-extrabold uppercase">
-              {{ t('devices.title') }}
-            </span>
-
-            <span class="flex bg-white p-2">
-              <Icon icon="lucide:monitor-cog" class="size-5 text-black" />
-            </span>
-          </button>
+            {{ t('home.connect') }}
+            <Icon icon="lucide:chevron-right" class="size-4" />
+          </Button>
         </div>
-        <button
-          class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
-          @click="goToPlans"
-        >
-          <span class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase">{{
-            t('home.changePlan')
-          }}</span>
-        </button>
+        <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
+          {{ t('home.renewSub') }}
+        </Button>
       </div>
     </template>
   </div>
@@ -335,93 +333,66 @@ const trafficBarColor = computed(() => {
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="showDevices" class="fixed inset-0 z-50 flex flex-col justify-end">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeDevicesModal" />
-
-        <!-- Sheet panel -->
         <div
-          class="sheet-panel relative flex max-h-[82vh] flex-col border-t border-white/10 bg-[#0a0a0a]"
+          class="sheet-panel relative flex max-h-[90vh] flex-col border-t border-white/10 bg-[#0a0a0a]"
         >
-          <!-- Handle bar -->
           <div class="flex justify-center pt-3 pb-1">
             <div class="h-1 w-10 rounded-full bg-neutral-700" />
           </div>
-
-          <!-- Header -->
           <div class="flex items-center justify-between px-4 py-3">
             <div>
-              <h2 class="font-mono text-base font-bold text-white uppercase">
+              <h2 class="text-base font-medium text-white">
                 {{ t('devices.manage') }}
               </h2>
-              <p v-if="deviceCountLabel" class="mt-0.5 font-mono text-xs text-neutral-400">
+              <p v-if="deviceCountLabel" class="mt-0.5 text-xs text-neutral-400">
                 {{ deviceCountLabel }}
               </p>
             </div>
-            <button
-              class="flex size-8 cursor-pointer items-center justify-center border border-neutral-800 text-neutral-400 transition-opacity active:opacity-70"
-              @click="closeDevicesModal"
-            >
-              <Icon icon="lucide:x" class="size-4" />
-            </button>
           </div>
-
           <div class="h-px bg-neutral-900" />
-
-          <!-- Content -->
           <div class="flex-1 overflow-y-auto p-4">
-            <!-- Loading -->
             <div
               v-if="subStore.loadingDevices"
               class="flex flex-col items-center gap-3 py-10 text-neutral-400"
             >
               <Icon icon="lucide:loader-circle" class="size-8 animate-spin" />
-              <span class="font-mono text-sm">{{ t('devices.loading') }}</span>
+              <span class="text-sm">{{ t('devices.loading') }}</span>
             </div>
-
-            <!-- Empty -->
             <div
               v-else-if="!subStore.devicesData?.devices?.length"
-              class="flex flex-col items-center gap-3 py-10 text-neutral-400"
+              class="flex flex-col items-center gap-3 rounded-[14px] py-10 text-neutral-400"
             >
               <Icon icon="lucide:monitor-smartphone" class="size-10" />
-              <span class="font-mono text-sm">{{ t('devices.noDevices') }}</span>
+              <span class="text-sm">{{ t('devices.noDevices') }}</span>
             </div>
-
-            <!-- Device list -->
             <div v-else class="flex flex-col gap-2">
               <div
                 v-for="device in subStore.devicesData.devices"
                 :key="device.hwid"
-                class="flex items-start gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3"
+                class="flex items-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
               >
-                <!-- Platform icon -->
                 <div
-                  class="flex size-9 shrink-0 items-center justify-center border border-neutral-800 bg-neutral-900"
+                  class="flex size-9 shrink-0 items-center justify-center rounded-[14px] border border-neutral-800 bg-neutral-900"
                 >
                   <Icon :icon="platformIcon(device.platform)" class="size-4 text-neutral-300" />
                 </div>
-
-                <!-- Info -->
                 <div class="flex min-w-0 flex-1 flex-col gap-px">
                   <p class="truncate font-sans text-sm leading-tight font-semibold text-white">
                     {{ deviceDisplayName(device) }}
                   </p>
-                  <p class="font-mono text-xs text-neutral-500">
-                    <template v-if="device.platform"
-                      >{{ device.platform
-                      }}<template v-if="device.osVersion">
-                        {{ device.osVersion }}</template
-                      ></template
-                    >
+                  <p class="text-xs text-neutral-500">
+                    <template v-if="device.platform">
+                      {{ device.platform
+                      }}<template v-if="device.osVersion"> {{ device.osVersion }}</template>
+                    </template>
                   </p>
-                  <p class="font-mono text-xs text-neutral-500">
+                  <p class="text-xs text-neutral-500">
                     {{ t('devices.firstSeen') }} {{ formatDeviceDate(device.createdAt) }}
                   </p>
                 </div>
-
-                <!-- Disconnect button -->
                 <button
-                  class="flex shrink-0 cursor-pointer items-center justify-center border border-red-700 bg-red-950 px-2 py-1.5 font-mono text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
+                  class="flex shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-red-700 bg-red-950 px-2 py-1.5 text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
                   :disabled="subStore.disconnectingHwid === device.hwid"
                   @click="handleDisconnect(device.hwid)"
                 >
@@ -435,8 +406,6 @@ const trafficBarColor = computed(() => {
               </div>
             </div>
           </div>
-
-          <!-- Safe area bottom padding -->
           <div style="height: max(env(safe-area-inset-bottom), 12px)" />
         </div>
       </div>
