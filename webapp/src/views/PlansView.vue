@@ -3,28 +3,20 @@ import { onMounted, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
-import { useAuthStore } from '@/stores/auth'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import { formatPrice, monthsLabel, providerLabel, pluralDays } from '@/lib/utils'
-import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
+import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
+import { hapticImpact } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api'
-import type { PaymentProvider, PromoResult } from '@/types'
+import type { PaymentProvider } from '@/types'
 
 const store = useSubscriptionStore()
-const auth = useAuthStore()
-const { t, te } = useI18n()
+const { t } = useI18n()
 const { success, error } = useToast()
 
 const selectedMonths = ref<number | null>(null)
 const selectedGb = ref<number | null>(null)
 const selectedProvider = ref<PaymentProvider | null>(null)
 const step = ref<'plan' | 'payment'>('plan')
-
-const promoCode = ref('')
-const promoLoading = ref(false)
-const promoApplied = ref(false)
-const promoResult = ref<PromoResult | null>(null)
 
 onMounted(() => store.fetchPlans())
 
@@ -74,43 +66,6 @@ async function pay() {
   } else {
     error(t('plans.paymentError'))
   }
-}
-
-async function applyPromo() {
-  const trimmed = promoCode.value.trim().toUpperCase()
-  if (!trimmed) return
-  promoLoading.value = true
-  promoResult.value = null
-  try {
-    const res = await api.promo.apply(trimmed)
-    promoResult.value = res
-    if (res.success) {
-      hapticSuccess()
-      promoApplied.value = true
-      if (res.type === 'bonus_days') {
-        success(t('promo.addedDays', { days: pluralDays(res.bonus_days ?? 0) }))
-        await auth.fetchProfile()
-      } else if (res.type === 'discount') {
-        success(t('promo.discountActivated'))
-        await store.fetchPlans()
-      }
-    } else {
-      hapticError()
-      const errKey = `promo.errors.${res.error}`
-      error(te(errKey) ? t(errKey as never) : t('promo.failed'))
-    }
-  } catch {
-    hapticError()
-    error(t('promo.failed'))
-  } finally {
-    promoLoading.value = false
-  }
-}
-
-function resetPromo() {
-  promoCode.value = ''
-  promoResult.value = null
-  promoApplied.value = false
 }
 </script>
 
@@ -196,45 +151,6 @@ function resetPromo() {
           </template>
         </div>
 
-        <!-- Promo Code -->
-        <div class="flex flex-col gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3">
-          <p class="font-mono text-xs tracking-wide text-neutral-500 uppercase">
-            {{ t('promo.inputLabel') }}
-          </p>
-          <div class="flex gap-2">
-            <input
-              v-model="promoCode"
-              :placeholder="t('promo.placeholder')"
-              class="min-w-0 flex-1 border border-neutral-800 bg-transparent px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-600 focus:border-neutral-600 disabled:opacity-40"
-              autocomplete="off"
-              :disabled="promoLoading || promoApplied"
-              @keydown.enter="applyPromo"
-            />
-            <button
-              v-if="promoApplied || promoCode"
-              class="cursor-pointer border border-neutral-800 bg-neutral-900 px-3 text-neutral-400"
-              @click="resetPromo"
-            >
-              <Icon icon="lucide:x" class="size-4" />
-            </button>
-            <button
-              class="cursor-pointer bg-white px-4 font-mono text-xs font-bold text-black uppercase transition-opacity disabled:opacity-40"
-              :disabled="!promoCode.trim() || promoLoading || promoApplied"
-              @click="applyPromo"
-            >
-              <Icon v-if="promoLoading" icon="lucide:loader-circle" class="size-4 animate-spin" />
-              <span v-else>{{ t('common.apply') }}</span>
-            </button>
-          </div>
-          <p v-if="promoResult?.success" class="text-xs text-[#bdfe00]">
-            <template v-if="promoResult.type === 'bonus_days'">
-              {{ t('promo.addedDays', { days: pluralDays(promoResult.bonus_days ?? 0) }) }}
-            </template>
-            <template v-else-if="promoResult.type === 'discount'">
-              {{ t('promo.discountApplied', { n: promoResult.discount_percentage }) }}
-            </template>
-          </p>
-        </div>
       </div>
 
       <!-- STEP: Payment Method -->
