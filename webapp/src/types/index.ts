@@ -60,12 +60,24 @@ export interface PlansData {
   traffic_sale_mode: boolean
   plans: SubscriptionPlan[]
   traffic_packages: TrafficPackage[]
+  included_traffic_gb: number | null
+  max_devices: number | null
   active_discount: ActiveDiscount | null
   payment_methods: string[]
   trial_enabled: boolean
   trial_days: number
   trial_traffic_gb: number
   has_had_subscription: boolean
+}
+
+export interface LocationStatus {
+  name: string
+  country: string
+  emoji: string
+  status: 'online' | 'offline' | 'unknown'
+  ping_ms: number | null
+  uptime_pct: number | null
+  availability: number[]
 }
 
 export interface ReferralBonus {

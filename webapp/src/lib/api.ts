@@ -1,5 +1,13 @@
 import { getInitData } from './telegram'
-import type { UserProfile, PlansData, ReferralData, PromoResult, PaymentResult, DevicesData } from '@/types'
+import type {
+  UserProfile,
+  PlansData,
+  ReferralData,
+  PromoResult,
+  PaymentResult,
+  DevicesData,
+  LocationStatus,
+} from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
@@ -82,6 +90,10 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ hwid }),
       }),
+  },
+
+  locations: {
+    list: () => request<{ locations: LocationStatus[] }>('/locations'),
   },
 }
 

@@ -63,6 +63,9 @@ const availableProvidersForSelection = computed(() =>
 onMounted(() => store.fetchPlans())
 
 const discount = computed(() => store.activeDiscount)
+const includedTrafficGb = computed(() => store.plansData?.included_traffic_gb ?? null)
+const maxDevices = computed(() => store.plansData?.max_devices ?? null)
+const sortedPlans = computed(() => [...displayPlans.value].sort((a, b) => a.months - b.months))
 
 const providerIconMap: Record<string, string> = {
   yookassa: 'lucide:credit-card',
@@ -82,6 +85,33 @@ function planDisplayPrice(priceRub: number | null, priceStars: number | null) {
   if (priceRub != null) return formatPrice(discountedPrice(priceRub))
   if (priceStars != null) return `${priceStars} ⭐`
   return '—'
+}
+
+function planCostValue(plan: { price_rub: number | null; price_stars: number | null }): number | null {
+  if (plan.price_rub != null) return discountedPrice(plan.price_rub)
+  if (plan.price_stars != null) return plan.price_stars
+  return null
+}
+
+function planSavings(months: number): number | null {
+  const base = sortedPlans.value.find((p) => p.months === 1)
+  const target = sortedPlans.value.find((p) => p.months === months)
+  if (!base || !target || months <= 1) return null
+  const baseCost = planCostValue(base)
+  const targetCost = planCostValue(target)
+  if (baseCost == null || targetCost == null) return null
+  const save = baseCost * months - targetCost
+  return save > 0 ? Math.round(save) : null
+}
+
+function trafficLabel(): string {
+  if (includedTrafficGb.value == null || includedTrafficGb.value <= 0) return t('plans.unlimitedTraffic')
+  return `${includedTrafficGb.value} GB`
+}
+
+function devicesLabel(): string {
+  if (maxDevices.value == null || maxDevices.value <= 0) return t('plans.unlimitedDevices')
+  return String(maxDevices.value)
 }
 
 function selectPlan(months: number) {
@@ -145,6 +175,9 @@ watch(
     <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('plans.title') }}
     </h1>
+    <p class="-mt-2 max-w-[34ch] text-center text-sm text-neutral-400">
+      {{ t('plans.description') }}
+    </p>
 
     <!-- Loading -->
     <div v-if="store.loadingPlans" class="flex items-center justify-center py-12">
@@ -180,12 +213,12 @@ watch(
             {{ t('common.retry') }}
           </button>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-3">
           <template v-if="!store.isTrafficMode">
             <button
-              v-for="plan in displayPlans"
+              v-for="plan in sortedPlans"
               :key="plan.months"
-              class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
+              class="flex cursor-pointer flex-col gap-2 rounded-[14px] border p-4 text-left transition-colors"
               :class="
                 selectedMonths === plan.months
                   ? 'border-[#bdfe00] bg-neutral-900'
@@ -193,17 +226,28 @@ watch(
               "
               @click="selectPlan(plan.months)"
             >
-              <span class="text-2xl font-extrabold tracking-tighter text-white uppercase">{{
-                monthsLabel(plan.months)
-              }}</span>
+              <div class="flex items-start justify-between gap-3">
+                <span class="text-2xl font-extrabold tracking-tighter text-white uppercase">{{
+                  monthsLabel(plan.months)
+                }}</span>
+                <span
+                  v-if="plan.months > 1 && planSavings(plan.months)"
+                  class="rounded-full border border-emerald-600/40 bg-emerald-950/40 px-2 py-0.5 text-xs font-semibold text-emerald-300"
+                >
+                  {{ t('plans.saving', { amount: planSavings(plan.months) }) }}
+                </span>
+              </div>
               <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
                 planDisplayPrice(plan.price_rub, plan.price_stars)
               }}</span>
-              <span
-                v-if="discount && plan.price_rub !== null"
-                class="font-mono text-xs text-neutral-500 line-through"
-                >{{ formatPrice(plan.price_rub) }}</span
-              >
+              <div class="mt-1 grid grid-cols-2 gap-2 text-xs text-neutral-400">
+                <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
+                  {{ t('plans.traffic') }}: <span class="text-white">{{ trafficLabel() }}</span>
+                </div>
+                <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
+                  {{ t('plans.devices') }}: <span class="text-white">{{ devicesLabel() }}</span>
+                </div>
+              </div>
             </button>
           </template>
 

@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     REVIEWS_URL: Optional[str] = Field(default=None)
     SUPPORT_LINK: Optional[str] = Field(default=None)
     SERVER_STATUS_URL: Optional[str] = Field(default=None)
+    UPTIME_KUMA_STATUS_URL: Optional[str] = Field(
+        default=None,
+        description="Public Uptime Kuma status API URL returning monitors with status/ping fields",
+    )
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
     DOCS_URL: Optional[str] = Field(default=None)
 

@@ -198,6 +198,13 @@ const router = useRouter()
           <Icon icon="lucide:circle-help" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.faq') }}</span>
         </Button>
+        <Button
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'locations' })"
+        >
+          <Icon icon="lucide:map-pin" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.status') }}</span>
+        </Button>
       </div>
       <div
         class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
@@ -220,14 +227,6 @@ const router = useRouter()
           <span class="font-medium text-white">{{ t('profile.privacy') }}</span>
         </Button>
 
-        <Button
-          v-if="statusUrl"
-          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="openExternal(statusUrl)"
-        >
-          <Icon icon="lucide:activity" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.status') }}</span>
-        </Button>
       </div>
     </div>
 

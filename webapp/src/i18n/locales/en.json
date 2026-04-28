@@ -59,10 +59,16 @@
   "plans": {
     "title": "Plans",
     "subtitle": "Choose a suitable plan",
+    "description": "Choose subscription period, compare savings, and get connected in minutes.",
     "loading": "Loading plans...",
     "discountActive": "{n}% discount active",
     "popular": "Popular",
     "bestValue": "Best value",
+    "traffic": "Traffic",
+    "devices": "Devices",
+    "saving": "Save {amount}",
+    "unlimitedTraffic": "Unlimited",
+    "unlimitedDevices": "Unlimited",
     "backToPlans": "Back to plans",
     "selectedPlan": "Selected plan",
     "paymentMethod": "Payment method",
@@ -176,6 +182,7 @@
     "news": "News",
     "docs": "Knowledge base",
     "faq": "FAQ",
+    "locations": "Locations",
     "promo": "Promo code",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
@@ -196,5 +203,19 @@
     "a5": "Reopen the app and wait a few seconds. If status is still unchanged, contact support and include your profile ID and payment time.",
     "q6": "How do I change the interface language?",
     "a6": "Go to Profile and tap Language. In the popup window, choose the language you need."
+  },
+  "locations": {
+    "title": "Locations",
+    "filters": {
+      "all": "All locations",
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "sortByPing": "Sort by ping",
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "unknown": "Unknown"
+    }
   }
 }

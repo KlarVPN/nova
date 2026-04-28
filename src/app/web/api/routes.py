@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
-from aiohttp import web
+from aiohttp import ClientSession, ClientTimeout, web
 
 from .auth import validate_init_data
 from src.database.dal import user_dal, subscription_dal, payment_dal
@@ -25,6 +25,35 @@ def _json(data: Any, status: int = 200) -> web.Response:
 
 def _error(detail: str, status: int = 400) -> web.Response:
     return _json({"detail": detail}, status=status)
+
+
+async def _fetch_kuma_monitors(status_url: str) -> list[dict[str, Any]]:
+    timeout = ClientTimeout(total=10)
+    async with ClientSession(timeout=timeout) as client:
+        async with client.get(status_url) as resp:
+            if resp.status != 200:
+                return []
+            data = await resp.json(content_type=None)
+
+    if isinstance(data, dict):
+        if isinstance(data.get("monitors"), list):
+            return data["monitors"]
+        if isinstance(data.get("data"), dict) and isinstance(data["data"].get("monitors"), list):
+            return data["data"]["monitors"]
+        if isinstance(data.get("monitorList"), list):
+            return data["monitorList"]
+    if isinstance(data, list):
+        return data
+    return []
+
+
+async def _fetch_json(url: str) -> dict[str, Any] | list[Any] | None:
+    timeout = ClientTimeout(total=15)
+    async with ClientSession(timeout=timeout) as client:
+        async with client.get(url) as resp:
+            if resp.status != 200:
+                return None
+            return await resp.json(content_type=None)
 
 
 async def _get_user(request: web.Request) -> tuple[dict | None, web.Response | None]:
@@ -194,6 +223,8 @@ async def get_plans(request: web.Request) -> web.Response:
         "traffic_sale_mode": settings.traffic_sale_mode,
         "plans": plans,
         "traffic_packages": traffic_packages,
+        "included_traffic_gb": settings.USER_TRAFFIC_LIMIT_GB,
+        "max_devices": settings.USER_HWID_DEVICE_LIMIT,
         "active_discount": active_discount,
         "payment_methods": active_methods,
         "trial_enabled": settings.TRIAL_ENABLED,
@@ -257,6 +288,127 @@ async def get_referral(request: web.Request) -> web.Response:
         "purchased_count": purchased_count,
         "bonus_structure": bonus_structure,
     })
+
+
+# ─── Locations ────────────────────────────────────────────────────────────────
+
+@router.get("/api/locations")
+async def get_locations(request: web.Request) -> web.Response:
+    tg_user, err = await _get_user(request)
+    if err:
+        return err
+
+    _ = tg_user
+    settings = request.app["settings"]
+    status_url = (settings.UPTIME_KUMA_STATUS_URL or "").strip()
+    if not status_url:
+        return _json({"locations": []})
+
+    if status_url:
+        try:
+            status_data = await _fetch_json(status_url)
+        except Exception as e:
+            log.warning(
+                "Failed to fetch Uptime Kuma status from %s: %r",
+                status_url,
+                e,
+            )
+            return _json({"locations": []})
+
+    if not isinstance(status_data, dict):
+        return _json({"locations": []})
+
+    # Main status page payload contains publicGroupList[*].monitorList[*]
+    monitors: list[dict[str, Any]] = []
+    for group in status_data.get("publicGroupList", []) or []:
+        group_name = str(group.get("name") or "")
+        for mon in group.get("monitorList", []) or []:
+            if isinstance(mon, dict):
+                mon = {**mon, "_group": group_name}
+                monitors.append(mon)
+
+    # Fallback if custom schema uses top-level monitors key
+    if not monitors and isinstance(status_data.get("monitors"), list):
+        monitors = [m for m in status_data.get("monitors", []) if isinstance(m, dict)]
+
+    heartbeat_url = status_url.replace("/api/status-page/", "/api/status-page/heartbeat/")
+    heartbeat_data: dict[str, Any] | list[Any] | None = None
+    try:
+        heartbeat_data = await _fetch_json(heartbeat_url)
+    except Exception as e:
+        log.warning(
+            "Failed to fetch Uptime Kuma heartbeat from %s: %r",
+            heartbeat_url,
+            e,
+        )
+
+    heartbeat_map: dict[str, list[dict[str, Any]]] = {}
+    if isinstance(heartbeat_data, dict) and isinstance(heartbeat_data.get("heartbeatList"), dict):
+        for key, value in heartbeat_data["heartbeatList"].items():
+            if isinstance(value, list):
+                heartbeat_map[str(key)] = [item for item in value if isinstance(item, dict)]
+
+    items: list[dict[str, Any]] = []
+    for mon in monitors:
+        monitor_id = mon.get("id")
+        monitor_name = str(mon.get("name") or "")
+        country = str(mon.get("_group") or "")
+
+        latest_hb = None
+        hb_list = heartbeat_map.get(str(monitor_id), [])
+        if hb_list:
+            latest_hb = hb_list[-1]
+
+        status = "unknown"
+        status_val = None
+        if latest_hb is not None:
+            status_val = latest_hb.get("status")
+        elif "status" in mon:
+            status_val = mon.get("status")
+
+        if status_val in (1, "1", "up", "UP", "online", "ONLINE", "ok", "OK"):
+            status = "online"
+        elif status_val in (0, "0", "down", "DOWN", "offline", "OFFLINE"):
+            status = "offline"
+
+        ping_raw = None
+        if latest_hb is not None:
+            ping_raw = latest_hb.get("ping")
+        if ping_raw is None:
+            ping_raw = mon.get("ping")
+
+        ping_ms: float | None = None
+        if ping_raw is not None:
+            try:
+                ping_ms = float(ping_raw)
+            except (TypeError, ValueError):
+                ping_ms = None
+
+        items.append(
+            {
+                "name": monitor_name,
+                "country": country,
+                "emoji": "",
+                "status": status,
+                "ping_ms": ping_ms,
+                "uptime_pct": round(
+                    (
+                        sum(1 for hb in hb_list if hb.get("status") in (1, "1"))
+                        / len(hb_list)
+                        * 100
+                    ),
+                    1,
+                )
+                if hb_list
+                else None,
+                "availability": [
+                    1 if hb.get("status") in (1, "1") else 0
+                    for hb in hb_list[-30:]
+                ],
+            }
+        )
+
+    return _json({"locations": items})
 
 
 # ─── Promo ────────────────────────────────────────────────────────────────────

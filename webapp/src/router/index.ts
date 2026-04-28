@@ -39,6 +39,12 @@ const router = createRouter({
       component: () => import('@/views/FaqView.vue'),
       meta: { title: 'FAQ' },
     },
+    {
+      name: 'locations',
+      path: '/locations',
+      component: () => import('@/views/LocationsView.vue'),
+      meta: { title: 'Locations' },
+    },
     { path: '/promo', redirect: '/plans' },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
