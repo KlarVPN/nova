@@ -8,9 +8,11 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import AuthErrorView from '@/views/AuthErrorView.vue'
 import Toaster from '@/components/ui/toast/Toaster.vue'
 import { i18n } from '@/i18n/i18n.ts'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const router = useRouter()
 
 const isTelegram = isTelegramWebApp() || import.meta.env.DEV
 
@@ -22,9 +24,15 @@ watch(
   { immediate: true },
 )
 
-onMounted(() => {
+onMounted(async () => {
   initLocale()
-  if (isTelegram) auth.init()
+  if (!isTelegram) return
+
+  try {
+    await auth.init()
+  } finally {
+    await router.replace({ name: 'home' })
+  }
 })
 </script>
 

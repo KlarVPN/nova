@@ -40,6 +40,7 @@ const router = createRouter({
       meta: { title: 'FAQ' },
     },
     { path: '/promo', redirect: '/plans' },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })
