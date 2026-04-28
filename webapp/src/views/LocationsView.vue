@@ -23,12 +23,6 @@ const counts = computed(() => ({
   offline: locations.value.filter((item) => item.status === 'offline').length,
 }))
 
-function statusClass(status: LocationStatus['status']) {
-  if (status === 'online') return 'text-emerald-400'
-  if (status === 'offline') return 'text-rose-400'
-  return 'text-neutral-500'
-}
-
 async function fetchLocations() {
   loading.value = true
   try {
@@ -92,31 +86,39 @@ onMounted(fetchLocations)
       <div
         v-for="item in filtered"
         :key="`${item.country}-${item.name}`"
-        class="flex items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+        class="rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
       >
-        <span class="text-lg">{{ item.emoji || '📍' }}</span>
-        <div class="min-w-0 flex-1">
-          <p class="truncate font-medium text-white">{{ item.name }}</p>
-          <p class="text-xs text-neutral-500">{{ item.country }}</p>
-        </div>
-        <div class="text-right">
-          <p class="text-xs font-semibold" :class="statusClass(item.status)">
-            {{ t(`locations.status.${item.status}`) }}
-          </p>
-          <p class="font-mono text-xs text-neutral-300">
+        <div class="flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <p class="truncate font-medium text-white">{{ item.name }}</p>
+            </div>
+          </div>
+          <p
+            class="font-mono text-sm font-semibold"
+            :class="
+              item.status === 'online'
+                ? 'text-emerald-300'
+                : item.status === 'offline'
+                  ? 'text-rose-300'
+                  : 'text-neutral-300'
+            "
+          >
             {{ item.uptime_pct != null ? `${item.uptime_pct}% uptime` : '—' }}
           </p>
-          <p class="font-mono text-xs text-neutral-300">
-            {{ item.ping_ms != null ? `${Math.round(item.ping_ms)} ms` : '—' }}
-          </p>
         </div>
-        <div class="ml-2 flex items-center gap-0.5">
+
+        <div class="mt-2 flex w-full items-center gap-0.5">
           <span
             v-for="(point, idx) in item.availability"
             :key="idx"
-            class="h-4 w-0.5 rounded-full"
-            :class="point ? 'bg-emerald-400' : 'bg-rose-500/80'"
+            class="h-4 min-w-0 flex-1 rounded-[2px]"
+            :class="point ? 'bg-emerald-400' : 'bg-rose-500'"
           />
+        </div>
+        <div class="mt-1 flex items-center justify-between text-[10px] text-neutral-500">
+          <span>{{ t('locations.daysMonitored', { n: item.availability.length }) }}</span>
+          <span>{{ t('locations.now') }}</span>
         </div>
       </div>
     </div>

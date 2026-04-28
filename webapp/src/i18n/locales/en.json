@@ -212,6 +212,8 @@
       "offline": "Offline"
     },
     "sortByPing": "Sort by ping",
+    "daysMonitored": "{n} days",
+    "now": "now",
     "status": {
       "online": "Online",
       "offline": "Offline",

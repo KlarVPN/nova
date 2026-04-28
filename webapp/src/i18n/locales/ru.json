@@ -212,6 +212,8 @@
       "offline": "Офлайн"
     },
     "sortByPing": "Сортировка по пингу",
+    "daysMonitored": "{n} дней",
+    "now": "сейчас",
     "status": {
       "online": "Онлайн",
       "offline": "Офлайн",

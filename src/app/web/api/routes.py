@@ -9,6 +9,7 @@ from aiohttp import ClientSession, ClientTimeout, web
 from .auth import validate_init_data
 from src.database.dal import user_dal, subscription_dal, payment_dal
 from src.database.dal.active_discount_dal import get_active_discount
+from src.cache.redis_client import get_redis_client
 
 log = logging.getLogger(__name__)
 
@@ -304,6 +305,20 @@ async def get_locations(request: web.Request) -> web.Response:
     if not status_url:
         return _json({"locations": []})
 
+    redis_client = get_redis_client()
+    cache_key = f"miniapp:locations:{status_url}"
+    if redis_client:
+        try:
+            cached = await redis_client.get(cache_key)
+            if cached:
+                return web.Response(
+                    body=cached,
+                    content_type="application/json",
+                    status=200,
+                )
+        except Exception as e:
+            log.warning("Locations cache read failed: %r", e)
+
     if status_url:
         try:
             status_data = await _fetch_json(status_url)
@@ -408,7 +423,18 @@ async def get_locations(request: web.Request) -> web.Response:
             }
         )
 
-    return _json({"locations": items})
+    payload = json.dumps({"locations": items}, ensure_ascii=False, default=str)
+    if redis_client:
+        try:
+            await redis_client.setex(cache_key, 300, payload.encode("utf-8"))
+        except Exception as e:
+            log.warning("Locations cache write failed: %r", e)
+
+    return web.Response(
+        body=payload,
+        content_type="application/json",
+        status=200,
+    )
 
 
 # ─── Promo ────────────────────────────────────────────────────────────────────
