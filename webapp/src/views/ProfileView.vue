@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { AVAILABLE_LOCALES, locale, setLocale } from '@/i18n/i18n.ts'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const { t } = useI18n()
@@ -55,6 +56,7 @@ function openExternal(url: string) {
   hapticImpact('light')
   openLink(url)
 }
+const router = useRouter()
 </script>
 
 <template>
@@ -68,9 +70,11 @@ function openExternal(url: string) {
       v-if="auth.profile"
       class="items-base flex gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
     >
-      <div class="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-white">
-        <span class="text-lg font-bold text-black">{{ userInitial }}</span>
-      </div>
+      <img
+        :src="`https://api.dicebear.com/9.x/notionists/svg?seed=${auth.profile.user_id}`"
+        class="size-10 shrink-0 rounded-[14px] bg-neutral-700"
+        alt="avatar"
+      />
       <div class="min-w-0">
         <p class="truncate font-semibold text-white">{{ displayName }}</p>
         <p v-if="auth.profile.username" class="text-sm text-neutral-400">
@@ -86,22 +90,50 @@ function openExternal(url: string) {
       >
         <Button
           v-if="channelUsername"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="openExternal(`https://t.me/${channelUsername}`)"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'configs' })"
         >
-          <Icon icon="lucide:newspaper" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.news') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
+          <Icon icon="lucide:qr-code" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.config') }}</span>
         </Button>
 
         <Button
           v-if="docsUrl"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'referral' })"
+        >
+          <Icon icon="lucide:users-round" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.referral') }}</span>
+        </Button>
+      </div>
+
+      <div
+        class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
+      >
+        <Button
+          v-if="channelUsername"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="openExternal(`https://t.me/${channelUsername}`)"
+        >
+          <Icon icon="lucide:newspaper" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.news') }}</span>
+        </Button>
+
+        <Button
+          v-if="docsUrl"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(docsUrl)"
         >
           <Icon icon="lucide:book-text" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.docs') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
+        </Button>
+
+        <Button
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'faq' })"
+        >
+          <Icon icon="lucide:circle-help" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.faq') }}</span>
         </Button>
       </div>
       <div
@@ -109,32 +141,29 @@ function openExternal(url: string) {
       >
         <Button
           v-if="termsUrl"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(termsUrl)"
         >
           <Icon icon="lucide:file-text" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.terms') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
         </Button>
 
         <Button
           v-if="privacyUrl"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(privacyUrl)"
         >
           <Icon icon="lucide:book-lock" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.privacy') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
         </Button>
 
         <Button
           v-if="statusUrl"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(statusUrl)"
         >
           <Icon icon="lucide:activity" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.status') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
         </Button>
       </div>
     </div>
@@ -142,7 +171,7 @@ function openExternal(url: string) {
     <!-- Language -->
     <div class="flex flex-col gap-3">
       <Button
-        class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openLanguageModal"
       >
         <Icon icon="lucide:languages" class="size-4 shrink-0 text-neutral-500" />

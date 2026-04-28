@@ -168,13 +168,32 @@
     }
   },
   "profile": {
+    "config": "Config",
+    "referral": "Referral",
     "language": "Language",
     "links": "Links",
     "support": "Contact support",
     "news": "News",
     "docs": "Knowledge base",
+    "faq": "FAQ",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "status": "Server status"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "The most important things about subscription and setup",
+    "q1": "How do I start using VPN quickly?",
+    "a1": "Purchase a plan in the Plans section, then open Configs and connect your app using the setup instructions. It usually takes 1-2 minutes.",
+    "q2": "Where can I find my subscription link?",
+    "a2": "Open the Configs section and tap Copy link. You can paste this link into any supported app.",
+    "q3": "Why can't I connect?",
+    "a3": "Check that your subscription is active, not expired, and that your app has the latest profile. If needed, refresh config and restart the app.",
+    "q4": "Can I use it on multiple devices?",
+    "a4": "Yes. The number of available connections depends on your plan. You can manage connected devices from the devices block on the Home page.",
+    "q5": "What if payment succeeded but subscription was not activated?",
+    "a5": "Reopen the app and wait a few seconds. If status is still unchanged, contact support and include your profile ID and payment time.",
+    "q6": "How do I change the interface language?",
+    "a6": "Go to Profile and tap Language. In the popup window, choose the language you need."
   }
 }
