@@ -25,6 +25,26 @@ const counts = computed(() => ({
   offline: locations.value.filter((item) => item.status === 'offline').length,
 }))
 
+function flagEmojiToCode(flagEmoji: string): string | null {
+  const chars = Array.from(flagEmoji)
+  if (chars.length !== 2) return null
+  const base = 0x1f1e6
+  const first = chars[0].codePointAt(0)
+  const second = chars[1].codePointAt(0)
+  if (!first || !second) return null
+  if (first < base || first > 0x1f1ff || second < base || second > 0x1f1ff) return null
+  return String.fromCharCode(first - base + 65, second - base + 65).toLowerCase()
+}
+
+function splitLocationName(rawName: string): { flagCode: string | null; title: string } {
+  const match = rawName.trim().match(/^([\u{1F1E6}-\u{1F1FF}]{2})\s*(.+)$/u)
+  if (!match) return { flagCode: null, title: rawName }
+  return {
+    flagCode: flagEmojiToCode(match[1]),
+    title: match[2].trim() || rawName,
+  }
+}
+
 async function fetchLocations() {
   if (loading.value) return
   loading.value = true
@@ -110,31 +130,26 @@ onBeforeUnmount(() => {
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span
-                class="size-2.5 rounded-full"
-                :class="
-                  item.status === 'online'
-                    ? 'bg-emerald-400'
-                    : item.status === 'offline'
-                      ? 'bg-rose-400'
-                      : item.status === 'pending'
-                        ? 'bg-amber-400'
-                        : 'bg-neutral-400'
-                "
+              <Icon
+                v-if="splitLocationName(item.name).flagCode"
+                :icon="`circle-flags:${splitLocationName(item.name).flagCode}`"
+                class="size-4 rounded-full"
               />
-              <p class="truncate font-medium text-white">{{ item.name }}</p>
+              <p class="truncate font-medium text-white">
+                {{ splitLocationName(item.name).title }}
+              </p>
             </div>
           </div>
           <p
             class="font-mono text-sm font-semibold"
             :class="
-                item.status === 'online'
-                  ? 'text-emerald-300'
-                  : item.status === 'offline'
-                    ? 'text-rose-300'
-                    : item.status === 'pending'
-                      ? 'text-amber-300'
-                  : 'text-neutral-300'
+              item.status === 'online'
+                ? 'text-emerald-300'
+                : item.status === 'offline'
+                  ? 'text-rose-300'
+                  : item.status === 'pending'
+                    ? 'text-amber-300'
+                    : 'text-neutral-300'
             "
           >
             {{ item.uptime_pct != null ? `${item.uptime_pct}% uptime` : '—' }}
