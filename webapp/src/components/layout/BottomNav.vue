@@ -29,7 +29,7 @@ function navigate(path: string) {
 
 <template>
   <nav
-    class="fixed bottom-0 left-0 z-50 flex h-16 w-full items-center justify-center border-t border-white/5 bg-black/50 py-4 backdrop-blur-xl"
+    class="fixed bottom-0 left-0 z-50 flex h-16 w-full items-center justify-center border-t border-white/5 bg-black/10 py-4 backdrop-blur-md"
     style="padding-bottom: max(env(safe-area-inset-bottom), 16px)"
   >
     <div class="flex w-full max-w-md justify-around px-4">

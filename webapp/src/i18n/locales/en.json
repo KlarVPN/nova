@@ -35,6 +35,7 @@
     "button": "Open Telegram"
   },
   "home": {
+    "until": "until {date}",
     "greeting": "Welcome",
     "subscription": "Subscription",
     "traffic": "Traffic",

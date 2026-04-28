@@ -35,6 +35,7 @@
     "button": "Открыть Telegram"
   },
   "home": {
+    "until": "до {date} г.",
     "greeting": "Добро пожаловать",
     "subscription": "Подписка",
     "traffic": "Трафик",

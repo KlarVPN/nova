@@ -21,7 +21,7 @@
   --color-lime-accent-dark: oklch(0.8561 0.234351 126.141);
 
   /* Font families */
-  --font-sans: Inter, sans-serif;
+  --font-sans: Geist, sans-serif;
   --font-mono: Geist Mono, monospace;
   --font-logo: Montserrat, sans-serif;
 
@@ -163,14 +163,15 @@
   }
   body {
     /* Background and text color */
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground ;
   }
 }
+
 
 /* Font and rendering settings */
 :root {
   font-family:
-    'Inter',
+    'Geist',
     -apple-system,
     BlinkMacSystemFont,
     Segoe UI,

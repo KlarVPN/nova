@@ -6,7 +6,8 @@ import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { formatDateE, formatDaysRemaining } from '@/lib/utils'
-import { hapticImpact, hapticSuccess, hapticError, openLink } from '@/lib/telegram'
+import { Card } from '@/components/common'
+import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
 import type { Device } from '@/types'
 
 const auth = useAuthStore()
@@ -220,20 +221,23 @@ const trafficBarColor = computed(() => {
     <!-- ACTIVE -->
     <template v-else-if="statusKey === 'active' && sub">
       <div class="flex flex-col items-center gap-5 pt-4">
-        <span class="flex rounded-full bg-primary p-3">
+        <span class="bg-primary flex rounded-full p-3">
           <Icon icon="lucide:check" class="size-12 text-black" />
         </span>
-        <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-          {{ t('status.active') }}
-        </span>
+        <div class="flex flex-col gap-2">
+          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
+            {{ t('status.active') }}
+          </span>
+          <span class="text-xs font-light tracking-tighter text-white/60 uppercase">
+            {{ t('home.until', { date: formatDateE(sub.end_date) }) }}
+          </span>
+        </div>
       </div>
 
       <!-- Data Cards -->
       <div class="flex w-full flex-col gap-3">
         <!-- Expires -->
-        <div
-          class="flex w-full flex-col gap-2 border border-neutral-800 bg-neutral-950 px-4 py-2 text-neutral-400"
-        >
+        <Card>
           <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:calendar" class="size-4" />
             {{ t('home.expires') }}
@@ -246,12 +250,9 @@ const trafficBarColor = computed(() => {
               ({{ formatDaysRemaining(sub.days_remaining) }})
             </span>
           </div>
-        </div>
+        </Card>
         <!-- Traffic -->
-        <div
-          v-if="sub.traffic_limit_gb"
-          class="flex w-full flex-col gap-2 border border-neutral-800 bg-neutral-950 px-4 py-2 text-neutral-400"
-        >
+        <Card v-if="sub.traffic_limit_gb">
           <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:activity" class="size-4" />
             {{ t('home.traffic') }}
@@ -272,12 +273,9 @@ const trafficBarColor = computed(() => {
               :style="{ width: trafficUsedPct + '%' }"
             />
           </div>
-        </div>
+        </Card>
 
-        <div
-          v-if="subStore.connectInfo?.connect_url"
-          class="flex w-full flex-col gap-2 border border-neutral-800 bg-neutral-950 px-4 py-2 text-neutral-400"
-        >
+        <Card v-if="subStore.connectInfo?.connect_url">
           <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:link" class="size-4" />
             {{ t('home.subLink') }}
@@ -285,7 +283,7 @@ const trafficBarColor = computed(() => {
           <span class="text-left font-mono font-medium text-white">
             {{ subStore.connectInfo?.connect_url }}
           </span>
-        </div>
+        </Card>
       </div>
 
       <!-- Action Buttons -->
