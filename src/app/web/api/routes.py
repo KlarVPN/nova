@@ -7,7 +7,7 @@ from typing import Any
 from aiohttp import web
 
 from .auth import validate_init_data
-from src.database.dal import user_dal, subscription_dal
+from src.database.dal import user_dal, subscription_dal, payment_dal
 from src.database.dal.active_discount_dal import get_active_discount
 
 log = logging.getLogger(__name__)
@@ -131,24 +131,37 @@ async def get_plans(request: web.Request) -> web.Response:
 
     plans = []
     month_configs = [
-        (1, settings.MONTH_1_ENABLED, settings.RUB_PRICE_1_MONTHS, settings.STARS_PRICE_1_MONTHS),
+        (1, settings.MONTH_1_ENABLED, settings.RUB_PRICE_1_MONTH, settings.STARS_PRICE_1_MONTH),
         (3, settings.MONTH_3_ENABLED, settings.RUB_PRICE_3_MONTHS, settings.STARS_PRICE_3_MONTHS),
         (6, settings.MONTH_6_ENABLED, settings.RUB_PRICE_6_MONTHS, settings.STARS_PRICE_6_MONTHS),
         (12, settings.MONTH_12_ENABLED, settings.RUB_PRICE_12_MONTHS, settings.STARS_PRICE_12_MONTHS),
     ]
     for months, enabled, rub_price, stars_price in month_configs:
+        has_price = rub_price is not None or stars_price is not None
         plans.append({
             "months": months,
             "price_rub": rub_price,
             "price_stars": stars_price,
-            "enabled": enabled and rub_price is not None,
+            "enabled": bool(enabled and has_price),
             "is_popular": months == 6,
             "is_best_value": months == 12,
         })
 
+    traffic_packages_map: dict[float, dict[str, float | None]] = {}
+    for gb, rub_price in settings.traffic_packages.items():
+        traffic_packages_map[float(gb)] = {"price_rub": rub_price, "price_stars": None}
+    for gb, stars_price in settings.stars_traffic_packages.items():
+        key = float(gb)
+        pkg = traffic_packages_map.get(key)
+        if pkg is None:
+            traffic_packages_map[key] = {"price_rub": None, "price_stars": stars_price}
+        else:
+            pkg["price_stars"] = stars_price
+
     traffic_packages = [
-        {"gb": gb, "price_rub": price, "price_stars": None}
-        for gb, price in settings.traffic_packages.items()
+        {"gb": gb, "price_rub": data["price_rub"], "price_stars": data["price_stars"]}
+        for gb, data in sorted(traffic_packages_map.items(), key=lambda item: item[0])
+        if data["price_rub"] is not None or data["price_stars"] is not None
     ]
 
     active_discount = None
@@ -381,6 +394,12 @@ async def create_payment(request: web.Request) -> web.Response:
     settings = request.app["settings"]
     session_factory = request.app["async_session_factory"]
 
+    if provider not in {"yookassa", "stars", "cryptopay", "freekassa", "platega", "severpay"}:
+        return _error(f"Provider '{provider}' not supported via Mini App", 400)
+
+    sale_mode = "traffic" if (gb is not None and not months) else "subscription"
+    value = gb if sale_mode == "traffic" else months
+
     async with session_factory() as session:
         user = await user_dal.get_user_by_id(session, user_id)
         if not user:
@@ -389,95 +408,229 @@ async def create_payment(request: web.Request) -> web.Response:
         discount = await get_active_discount(session, user_id)
         discount_pct = discount.discount_percentage if discount else 0
 
-    # Calculate price
-    if months:
-        base_price = settings.subscription_options.get(months)
-        stars_price = settings.stars_subscription_options.get(months)
-    else:
-        base_price = settings.traffic_packages.get(gb)
-        stars_price = settings.stars_traffic_packages.get(gb)
-
-    if base_price is None and provider != "stars":
-        return _error("Invalid plan selected")
-
-    if provider == "stars":
-        price = stars_price
-    else:
-        price = base_price
-        if discount_pct and price:
-            price = int(price * (1 - discount_pct / 100))
-
-    # Build description
-    if months:
-        from src.lib.utils import monthsLabel  # noqa – not available, use inline
-        desc = f"Nova VPN — {months} мес."
-    else:
-        desc = f"Nova VPN — {gb} GB"
-
-    # Create payment via provider service
-    metadata = {
-        "user_id": user_id,
-        "subscription_months": months,
-        "traffic_gb": gb,
-    }
-
-    try:
-        if provider == "yookassa":
-            svc = request.app.get("yookassa_service")
-            if not svc:
-                return _error("Yookassa not configured", 503)
-            payment = await svc.create_payment(
-                amount=str(price),
-                currency="RUB",
-                description=desc,
-                metadata=metadata,
-            )
-            return _json({
-                "payment_id": payment.get("id", ""),
-                "payment_url": payment.get("confirmation", {}).get("confirmation_url"),
-                "invoice_link": None,
-                "provider": provider,
-            })
-
-        elif provider == "stars":
-            bot = request.app["bot"]
-            invoice = await bot.create_invoice_link(
-                title="Nova VPN",
-                description=desc,
-                payload=f"miniapp_{user_id}_{months or gb}",
-                currency="XTR",
-                prices=[{"label": "Nova VPN", "amount": int(stars_price or 1)}],
-            )
-            return _json({
-                "payment_id": "",
-                "payment_url": None,
-                "invoice_link": invoice,
-                "provider": provider,
-            })
-
-        elif provider == "cryptopay":
-            svc = request.app.get("cryptopay_service")
-            if not svc:
-                return _error("CryptoPay not configured", 503)
-            invoice = await svc.create_invoice(
-                amount=str(price),
-                currency="RUB",
-                description=desc,
-                metadata=metadata,
-            )
-            return _json({
-                "payment_id": str(invoice.get("invoice_id", "")),
-                "payment_url": invoice.get("pay_url"),
-                "invoice_link": None,
-                "provider": provider,
-            })
-
+        # Calculate price
+        if months:
+            base_price = settings.subscription_options.get(months)
+            stars_price = settings.stars_subscription_options.get(months)
         else:
-            return _error(f"Provider '{provider}' not supported via Mini App", 400)
+            base_price = settings.traffic_packages.get(gb)
+            stars_price = settings.stars_traffic_packages.get(gb)
 
-    except Exception as e:
-        log.error("Payment creation failed for user %s provider %s: %s", user_id, provider, e)
-        return _error("Payment creation failed", 502)
+        if base_price is None and provider != "stars":
+            return _error("Invalid plan selected")
+
+        if provider == "stars":
+            price = stars_price
+        else:
+            price = base_price
+            if discount_pct and price:
+                price = int(price * (1 - discount_pct / 100))
+
+        if price is None:
+            return _error("Invalid plan selected")
+
+        if sale_mode == "traffic":
+            desc = f"Nova VPN — {value:g} GB"
+        else:
+            desc = f"Nova VPN — {int(value)} мес."
+
+        metadata = {
+            "user_id": user_id,
+            "subscription_months": months,
+            "traffic_gb": gb,
+            "sale_mode": sale_mode,
+        }
+
+        try:
+            if provider == "yookassa":
+                svc = request.app.get("yookassa_service")
+                if not svc:
+                    return _error("Yookassa not configured", 503)
+                payment = await svc.create_payment(
+                    amount=float(price),
+                    currency="RUB",
+                    description=desc,
+                    metadata=metadata,
+                )
+                if not payment:
+                    return _error("Payment creation failed", 502)
+                return _json({
+                    "payment_id": payment.get("id", ""),
+                    "payment_url": payment.get("confirmation_url"),
+                    "invoice_link": None,
+                    "provider": provider,
+                })
+
+            if provider == "stars":
+                bot = request.app["bot"]
+                invoice = await bot.create_invoice_link(
+                    title="Nova VPN",
+                    description=desc,
+                    payload=f"miniapp_{user_id}_{value}",
+                    currency="XTR",
+                    prices=[{"label": "Nova VPN", "amount": int(stars_price or 1)}],
+                )
+                return _json({
+                    "payment_id": "",
+                    "payment_url": None,
+                    "invoice_link": invoice,
+                    "provider": provider,
+                })
+
+            if provider == "cryptopay":
+                svc = request.app.get("cryptopay_service")
+                if not svc:
+                    return _error("CryptoPay not configured", 503)
+                invoice_url = await svc.create_invoice(
+                    session=session,
+                    user_id=user_id,
+                    months=value,
+                    amount=float(price),
+                    description=desc,
+                    sale_mode=sale_mode,
+                    promo_code_service=request.app.get("promo_code_service"),
+                )
+                if not invoice_url:
+                    return _error("Payment creation failed", 502)
+                return _json({
+                    "payment_id": "",
+                    "payment_url": invoice_url,
+                    "invoice_link": None,
+                    "provider": provider,
+                })
+
+            status_map = {
+                "freekassa": "pending_freekassa",
+                "platega": "pending_platega",
+                "severpay": "pending_severpay",
+            }
+            payment_record = await payment_dal.create_payment_record(
+                session,
+                {
+                    "user_id": user_id,
+                    "amount": float(price),
+                    "original_amount": None,
+                    "discount_applied": None,
+                    "currency": "RUB",
+                    "status": status_map[provider],
+                    "description": desc,
+                    "subscription_duration_months": int(value),
+                    "provider": provider,
+                    "promo_code_id": None,
+                },
+            )
+            await session.commit()
+
+            if provider == "freekassa":
+                svc = request.app.get("freekassa_service")
+                if not svc:
+                    return _error("FreeKassa not configured", 503)
+                ok, resp = await svc.create_order(
+                    payment_db_id=payment_record.payment_id,
+                    user_id=user_id,
+                    months=value,
+                    amount=float(price),
+                    currency=svc.default_currency,
+                    ip_address=svc.server_ip,
+                    payment_method_id=svc.payment_method_id,
+                    extra_params={"us_method": svc.payment_method_id},
+                    promo_code_service=request.app.get("promo_code_service"),
+                    session=session,
+                )
+                if not ok:
+                    return _error("Payment creation failed", 502)
+                provider_identifier = resp.get("orderHash") or resp.get("orderId")
+                if provider_identifier:
+                    await payment_dal.update_provider_payment_and_status(
+                        session, payment_record.payment_id, str(provider_identifier), payment_record.status
+                    )
+                    await session.commit()
+                return _json({
+                    "payment_id": str(payment_record.payment_id),
+                    "payment_url": resp.get("location"),
+                    "invoice_link": None,
+                    "provider": provider,
+                })
+
+            if provider == "platega":
+                svc = request.app.get("platega_service")
+                if not svc:
+                    return _error("Platega not configured", 503)
+                payload_meta = json.dumps(
+                    {
+                        "payment_db_id": payment_record.payment_id,
+                        "user_id": user_id,
+                        "months": value,
+                        "sale_mode": sale_mode,
+                    }
+                )
+                ok, resp = await svc.create_transaction(
+                    payment_db_id=payment_record.payment_id,
+                    user_id=user_id,
+                    months=value,
+                    amount=float(price),
+                    currency="RUB",
+                    description=desc,
+                    payload=payload_meta,
+                    promo_code_service=request.app.get("promo_code_service"),
+                    session=session,
+                )
+                if not ok:
+                    return _error("Payment creation failed", 502)
+                provider_identifier = resp.get("transactionId") or resp.get("id")
+                provider_status = resp.get("status", payment_record.status)
+                if provider_identifier:
+                    await payment_dal.update_provider_payment_and_status(
+                        session, payment_record.payment_id, str(provider_identifier), str(provider_status)
+                    )
+                    await session.commit()
+                return _json({
+                    "payment_id": str(payment_record.payment_id),
+                    "payment_url": resp.get("redirect") or resp.get("url") or resp.get("paymentUrl"),
+                    "invoice_link": None,
+                    "provider": provider,
+                })
+
+            if provider == "severpay":
+                svc = request.app.get("severpay_service")
+                if not svc:
+                    return _error("SeverPay not configured", 503)
+                ok, resp = await svc.create_payment(
+                    payment_db_id=payment_record.payment_id,
+                    user_id=user_id,
+                    months=value,
+                    amount=float(price),
+                    currency="RUB",
+                    description=desc,
+                    promo_code_service=request.app.get("promo_code_service"),
+                    session=session,
+                )
+                if not ok:
+                    return _error("Payment creation failed", 502)
+                provider_identifier = resp.get("id") or resp.get("uid")
+                if provider_identifier:
+                    await payment_dal.update_provider_payment_and_status(
+                        session, payment_record.payment_id, str(provider_identifier), payment_record.status
+                    )
+                    await session.commit()
+                return _json({
+                    "payment_id": str(payment_record.payment_id),
+                    "payment_url": resp.get("url") or resp.get("payment_url") or resp.get("paymentUrl"),
+                    "invoice_link": None,
+                    "provider": provider,
+                })
+
+            return _error(f"Provider '{provider}' not supported via Mini App", 400)
+        except Exception as e:
+            await session.rollback()
+            log.error(
+                "Payment creation failed for user %s provider %s: %s",
+                user_id,
+                provider,
+                e,
+                exc_info=True,
+            )
+            return _error("Payment creation failed", 502)
 
 
 # ─── Devices ──────────────────────────────────────────────────────────────────

@@ -32,6 +32,33 @@ const paymentProviders = computed(() =>
     supportedProviders.includes(provider as PaymentProvider),
   ),
 )
+const displayPlans = computed(() => {
+  if (store.activePlans.length) return store.activePlans
+  return (store.plansData?.plans ?? []).filter((p) => p.price_rub !== null || p.price_stars !== null)
+})
+const displayTrafficPackages = computed(() => {
+  if (store.activeTrafficPackages.length) return store.activeTrafficPackages
+  return (store.plansData?.traffic_packages ?? []).filter(
+    (p) => p.price_rub !== null || p.price_stars !== null,
+  )
+})
+const selectedPlan = computed(() =>
+  selectedMonths.value ? displayPlans.value.find((p) => p.months === selectedMonths.value) : null,
+)
+const selectedTraffic = computed(() =>
+  selectedGb.value ? displayTrafficPackages.value.find((p) => p.gb === selectedGb.value) : null,
+)
+
+const availableProvidersForSelection = computed(() =>
+  paymentProviders.value.filter((provider) => {
+    if (provider === 'stars') {
+      if (store.isTrafficMode) return selectedTraffic.value?.price_stars != null
+      return selectedPlan.value?.price_stars != null
+    }
+    if (store.isTrafficMode) return selectedTraffic.value?.price_rub != null
+    return selectedPlan.value?.price_rub != null
+  }),
+)
 
 onMounted(() => store.fetchPlans())
 
@@ -49,6 +76,12 @@ const providerIconMap: Record<string, string> = {
 function discountedPrice(price: number) {
   if (!discount.value) return price
   return Math.ceil(price * (1 - discount.value.discount_percentage / 100))
+}
+
+function planDisplayPrice(priceRub: number | null, priceStars: number | null) {
+  if (priceRub != null) return formatPrice(discountedPrice(priceRub))
+  if (priceStars != null) return `${priceStars} ⭐`
+  return '—'
 }
 
 function selectPlan(months: number) {
@@ -92,7 +125,7 @@ async function pay() {
 }
 
 watch(
-  () => [step.value, paymentProviders.value] as const,
+  () => [step.value, availableProvidersForSelection.value] as const,
   ([currentStep, providers]) => {
     if (currentStep !== 'payment') return
     if (!providers.length) {
@@ -135,10 +168,22 @@ watch(
 
       <!-- STEP: Plan Selection -->
       <div v-if="step === 'plan'" class="flex flex-col gap-4">
+        <div
+          v-if="!displayPlans.length && !displayTrafficPackages.length"
+          class="flex flex-col items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 py-6 text-center"
+        >
+          <p class="text-sm text-neutral-400">{{ t('plans.loading') }}</p>
+          <button
+            class="cursor-pointer border border-neutral-700 bg-neutral-900 px-4 py-2 text-xs font-semibold text-white uppercase"
+            @click="store.fetchPlans()"
+          >
+            {{ t('common.retry') }}
+          </button>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <template v-if="!store.isTrafficMode">
             <button
-              v-for="plan in store.activePlans"
+              v-for="plan in displayPlans"
               :key="plan.months"
               class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
               :class="
@@ -152,10 +197,10 @@ watch(
                 monthsLabel(plan.months)
               }}</span>
               <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
-                formatPrice(discountedPrice(plan.price_rub!))
+                planDisplayPrice(plan.price_rub, plan.price_stars)
               }}</span>
               <span
-                v-if="discount && plan.price_rub"
+                v-if="discount && plan.price_rub !== null"
                 class="font-mono text-xs text-neutral-500 line-through"
                 >{{ formatPrice(plan.price_rub) }}</span
               >
@@ -164,7 +209,7 @@ watch(
 
           <template v-else>
             <button
-              v-for="pkg in store.activeTrafficPackages"
+              v-for="pkg in displayTrafficPackages"
               :key="pkg.gb"
               class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
               :class="
@@ -178,17 +223,16 @@ watch(
                 >{{ pkg.gb }} GB</span
               >
               <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
-                formatPrice(discountedPrice(pkg.price_rub!))
+                planDisplayPrice(pkg.price_rub, pkg.price_stars)
               }}</span>
               <span
-                v-if="discount && pkg.price_rub"
+                v-if="discount && pkg.price_rub !== null"
                 class="font-mono text-xs text-neutral-500 line-through"
                 >{{ formatPrice(pkg.price_rub) }}</span
               >
             </button>
           </template>
         </div>
-
       </div>
 
       <!-- STEP: Payment Method -->
@@ -221,14 +265,14 @@ watch(
         <!-- Provider list -->
         <div class="flex flex-col gap-2">
           <div
-            v-if="!paymentProviders.length"
+            v-if="!availableProvidersForSelection.length"
             class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
           >
             {{ t('plans.paymentError') }}
           </div>
 
           <button
-            v-for="provider in paymentProviders"
+            v-for="provider in availableProvidersForSelection"
             :key="provider"
             class="flex w-full cursor-pointer items-center gap-3 border bg-neutral-950 px-4 py-2 transition-colors"
             :class="

@@ -21,10 +21,10 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const processingTrial = ref(false)
 
   const activePlans = computed(() =>
-    (plansData.value?.plans ?? []).filter((p) => p.enabled && p.price_rub !== null),
+    (plansData.value?.plans ?? []).filter((p) => p.enabled && (p.price_rub !== null || p.price_stars !== null)),
   )
   const activeTrafficPackages = computed(
-    () => plansData.value?.traffic_packages ?? [],
+    () => (plansData.value?.traffic_packages ?? []).filter((p) => p.price_rub !== null || p.price_stars !== null),
   )
   const isTrafficMode = computed(() => plansData.value?.traffic_sale_mode ?? false)
   const availableProviders = computed(() => plansData.value?.payment_methods ?? [])
