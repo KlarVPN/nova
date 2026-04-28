@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
@@ -17,6 +17,21 @@ const selectedMonths = ref<number | null>(null)
 const selectedGb = ref<number | null>(null)
 const selectedProvider = ref<PaymentProvider | null>(null)
 const step = ref<'plan' | 'payment'>('plan')
+
+const supportedProviders: PaymentProvider[] = [
+  'yookassa',
+  'stars',
+  'cryptopay',
+  'freekassa',
+  'platega',
+  'severpay',
+]
+
+const paymentProviders = computed(() =>
+  store.availableProviders.filter((provider): provider is PaymentProvider =>
+    supportedProviders.includes(provider as PaymentProvider),
+  ),
+)
 
 onMounted(() => store.fetchPlans())
 
@@ -57,7 +72,15 @@ function backToPlan() {
 }
 
 async function pay() {
-  if (!selectedProvider.value) return
+  if (!selectedProvider.value) {
+    error(t('plans.paymentError'))
+    return
+  }
+  if (!selectedMonths.value && !selectedGb.value) {
+    error(t('plans.paymentError'))
+    return
+  }
+
   hapticImpact('medium')
   const params = selectedMonths.value ? { months: selectedMonths.value } : { gb: selectedGb.value! }
   const result = await store.createPayment(params, selectedProvider.value)
@@ -67,6 +90,21 @@ async function pay() {
     error(t('plans.paymentError'))
   }
 }
+
+watch(
+  () => [step.value, paymentProviders.value] as const,
+  ([currentStep, providers]) => {
+    if (currentStep !== 'payment') return
+    if (!providers.length) {
+      selectedProvider.value = null
+      return
+    }
+    if (!selectedProvider.value || !providers.includes(selectedProvider.value)) {
+      selectedProvider.value = providers[0]
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -182,8 +220,15 @@ async function pay() {
 
         <!-- Provider list -->
         <div class="flex flex-col gap-2">
+          <div
+            v-if="!paymentProviders.length"
+            class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
+          >
+            {{ t('plans.paymentError') }}
+          </div>
+
           <button
-            v-for="provider in store.availableProviders"
+            v-for="provider in paymentProviders"
             :key="provider"
             class="flex w-full cursor-pointer items-center gap-3 border bg-neutral-950 px-4 py-2 transition-colors"
             :class="

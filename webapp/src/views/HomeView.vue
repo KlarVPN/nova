@@ -251,7 +251,7 @@ const trafficBarColor = computed(() => {
       <div class="flex w-full flex-col gap-3">
         <div class="flex items-center gap-3">
           <!-- Expires / Days remaining -->
-          <Card>
+          <Card class="h-18">
             <span class="flex items-center gap-2 text-sm">
               <Icon icon="lucide:calendar" class="size-4" />
               {{ t('home.expires') }}
@@ -262,7 +262,7 @@ const trafficBarColor = computed(() => {
           </Card>
 
           <!-- Devices -->
-          <Card @click="openDevicesModal" class="cursor-pointer">
+          <Card @click="openDevicesModal" class="h-18 cursor-pointer">
             <span class="flex items-center gap-2 text-sm">
               <Icon icon="lucide:monitor-smartphone" class="size-4" />
               {{ t('devices.title') }}
@@ -270,7 +270,6 @@ const trafficBarColor = computed(() => {
             </span>
             <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
               <Icon icon="lucide:loader-circle" class="size-4 animate-spin text-neutral-400" />
-              <span class="text-sm text-neutral-500">{{ t('devices.loading') }}</span>
             </div>
             <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
               <span class="font-medium text-white">

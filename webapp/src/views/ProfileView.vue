@@ -147,7 +147,6 @@ const router = useRouter()
         class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
-          v-if="channelUsername"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'configs' })"
         >
@@ -156,12 +155,18 @@ const router = useRouter()
         </Button>
 
         <Button
-          v-if="docsUrl"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'referral' })"
         >
           <Icon icon="lucide:users-round" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.referral') }}</span>
+        </Button>
+        <Button
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="openPromoModal"
+        >
+          <Icon icon="lucide:ticket-percent" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.promo') }}</span>
         </Button>
       </div>
 
@@ -192,14 +197,6 @@ const router = useRouter()
         >
           <Icon icon="lucide:circle-help" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.faq') }}</span>
-        </Button>
-
-        <Button
-          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="openPromoModal"
-        >
-          <Icon icon="lucide:ticket-percent" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.promo') }}</span>
         </Button>
       </div>
       <div

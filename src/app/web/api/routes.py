@@ -589,21 +589,31 @@ async def activate_trial(request: web.Request) -> web.Response:
     if not sub_service:
         return _error("Service unavailable", 503)
 
-    async with session_factory() as session:
-        has_any = await subscription_dal.has_any_subscription_for_user(session, user_id)
-        if has_any:
-            return _error("Trial already used", 403)
-
-        user = await user_dal.get_user_by_id(session, user_id)
-        if not user:
-            return _error("User not found", 404)
-
     try:
-        from datetime import timedelta
-        trial_days = settings.TRIAL_DURATION_DAYS
-        # Delegate to subscription service to create trial
-        end_date = await sub_service.create_trial_subscription(user_id)
-        return _json({"success": True, "end_date": end_date.isoformat()})
+        async with session_factory() as session:
+            has_any = await subscription_dal.has_any_subscription_for_user(session, user_id)
+            if has_any:
+                return _error("Trial already used", 403)
+
+            user = await user_dal.get_user_by_id(session, user_id)
+            if not user:
+                return _error("User not found", 404)
+
+            result = await sub_service.activate_trial_subscription(session, user_id)
+            if not result:
+                return _error("Trial activation failed", 502)
+            if not result.get("eligible"):
+                return _error("Trial already used", 403)
+            if not result.get("activated"):
+                return _error("Trial activation failed", 502)
+
+            end_date = result.get("end_date")
+            return _json(
+                {
+                    "success": True,
+                    "end_date": end_date.isoformat() if end_date else None,
+                }
+            )
     except Exception as e:
-        log.error("Trial activation failed for user %s: %s", user_id, e)
+        log.error("Trial activation failed for user %s: %s", user_id, e, exc_info=True)
         return _error("Trial activation failed", 502)
