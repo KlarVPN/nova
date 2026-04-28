@@ -82,6 +82,7 @@
     "subtitle": "Invite friends and earn bonuses",
     "invited": "Invited",
     "purchased": "Purchased",
+    "link": "Link",
     "linkLabel": "Your referral link",
     "shareText": "Try Nova VPN — fast and reliable VPN service!",
     "bonusTitle": "Referral bonuses",
@@ -170,7 +171,9 @@
     "links": "Links",
     "support": "Support",
     "news": "News",
-    "docs": "Documents",
+    "docs": "Knowledge base",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
     "status": "Server status"
   }
 }

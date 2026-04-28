@@ -25,6 +25,7 @@ async def answer_with_image(
         caption=text,
         reply_markup=reply_markup,
         parse_mode=parse_mode,
+        message_effect_id="5104841245755180586",
     )
 
 
@@ -44,6 +45,7 @@ async def replace_with_text(
         reply_markup=reply_markup,
         parse_mode=parse_mode,
         disable_web_page_preview=disable_web_page_preview,
+        message_effect_id="5104841245755180586",
     )
 
 
@@ -62,8 +64,11 @@ async def edit_with_image(
 
     try:
         await target.edit_media(
-            media=InputMediaPhoto(media=FSInputFile(image_path), caption=text, parse_mode=parse_mode),
+            media=InputMediaPhoto(
+                media=FSInputFile(image_path), caption=text, parse_mode=parse_mode
+            ),
             reply_markup=reply_markup,
+            message_effect_id="5104841245755180586",
         )
     except Exception:
         await target.answer_photo(
@@ -71,4 +76,5 @@ async def edit_with_image(
             caption=text,
             reply_markup=reply_markup,
             parse_mode=parse_mode,
+            message_effect_id="5104841245755180586",
         )

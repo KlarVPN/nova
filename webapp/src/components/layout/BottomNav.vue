@@ -11,9 +11,9 @@ const router = useRouter()
 const { t } = useI18n()
 
 const tabs = computed(() => [
-  { path: '/plans', icon: 'lucide:wallet', label: t('nav.plans') },
-  { path: '/configs', icon: 'lucide:qr-code', label: t('nav.configs') },
   { path: '/', label: t('nav.home'), isLogotype: true },
+  { path: '/configs', icon: 'lucide:qr-code', label: t('nav.configs') },
+  { path: '/plans', icon: 'lucide:wallet', label: t('nav.plans') },
   { path: '/referral', icon: 'lucide:users-round', label: t('nav.referral') },
   { path: '/profile', icon: 'lucide:user', label: t('nav.profile') },
 ])

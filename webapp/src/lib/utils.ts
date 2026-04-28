@@ -34,16 +34,17 @@ export function pluralDays(n: number): string {
   return i18n.global.t('common.day', n)
 }
 
-export function formatExpiryDate(dateStr: string, daysRemaining?: number): string {
+export function formatDateE(dateStr: string): string {
   const date = new Date(dateStr)
   const dd = String(date.getDate()).padStart(2, '0')
   const mm = String(date.getMonth() + 1).padStart(2, '0')
   const yyyy = date.getFullYear()
-  const formatted = `${dd}.${mm}.${yyyy}`
-  if (daysRemaining !== undefined) {
-    return `${formatted} (${pluralDays(daysRemaining)})`
-  }
-  return formatted
+
+  return `${dd}.${mm}.${yyyy}`
+}
+
+export function formatDaysRemaining(days: number): string {
+  return pluralDays(days)
 }
 
 export function monthsLabel(months: number): string {

@@ -46,14 +46,14 @@ const monthOrder = [1, 3, 6, 12]
       <!-- Stats -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-neutral-950 border border-neutral-800 py-2 px-4 flex flex-col gap-2 text-neutral-400">
-          <span class="flex items-center gap-2 uppercase text-sm">
+          <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:users" class="size-4" />
             {{ t('referral.invited') }}
           </span>
           <span class="text-white text-left font-mono font-medium text-2xl">{{ store.referralData.referred_count }}</span>
         </div>
         <div class="bg-neutral-950 border border-neutral-800 py-2 px-4 flex flex-col gap-2 text-neutral-400">
-          <span class="flex items-center gap-2 uppercase text-sm">
+          <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:shopping-cart" class="size-4" />
             {{ t('referral.purchased') }}
           </span>
@@ -65,9 +65,9 @@ const monthOrder = [1, 3, 6, 12]
       <div class="flex flex-col gap-3">
         <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">{{ t('referral.linkLabel') }}</p>
         <div class="bg-neutral-950 border border-neutral-800 py-2 px-4 flex flex-col gap-2 text-neutral-400">
-          <span class="flex items-center gap-2 uppercase text-sm">
+          <span class="flex items-center gap-2 font-mono text-sm uppercase">
             <Icon icon="lucide:link" class="size-4" />
-            Link
+            {{ t('referral.link') }}
           </span>
           <span class="text-white text-left font-mono font-medium text-xs truncate">{{ store.referralData.referral_link }}</span>
         </div>

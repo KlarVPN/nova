@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
-import { formatExpiryDate } from '@/lib/utils'
+import { formatDateE, formatDaysRemaining } from '@/lib/utils'
 import { hapticImpact, hapticSuccess, hapticError, openLink } from '@/lib/telegram'
 import type { Device } from '@/types'
 
@@ -55,7 +55,8 @@ function platformIcon(platform: string | null): string {
   if (!platform) return 'lucide:smartphone'
   const p = platform.toLowerCase()
   if (p.includes('windows')) return 'lucide:monitor'
-  if (p.includes('mac') || p.includes('ios') || p.includes('iphone') || p.includes('ipad')) return 'lucide:tablet-smartphone'
+  if (p.includes('mac') || p.includes('ios') || p.includes('iphone') || p.includes('ipad'))
+    return 'lucide:tablet-smartphone'
   if (p.includes('android')) return 'lucide:smartphone'
   if (p.includes('linux')) return 'lucide:terminal'
   return 'lucide:laptop'
@@ -74,7 +75,11 @@ function deviceDisplayName(device: Device): string {
 function formatDeviceDate(iso: string | null): string {
   if (!iso) return '—'
   try {
-    return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+    return new Date(iso).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
   } catch {
     return '—'
   }
@@ -90,13 +95,6 @@ const deviceCountLabel = computed(() => {
 function goToPlans() {
   hapticImpact()
   router.push('/plans')
-}
-
-function openConnect() {
-  if (subStore.connectInfo?.connect_url) {
-    hapticImpact('medium')
-    openLink(subStore.connectInfo.connect_url)
-  }
 }
 
 async function activateTrial() {
@@ -121,7 +119,7 @@ const trafficBarColor = computed(() => {
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center gap-5 pt-2 text-center">
+  <div class="flex h-full w-full flex-col items-center justify-center gap-5 pt-2 text-center">
     <!-- NO SUBSCRIPTION -->
     <template v-if="statusKey === 'none'">
       <div class="flex flex-col items-center gap-5 pt-6">
@@ -129,9 +127,9 @@ const trafficBarColor = computed(() => {
           <Icon icon="lucide:shield-off" class="size-12 text-black" />
         </span>
         <div>
-          <h1 class="text-3xl leading-[0.9] font-extrabold tracking-tighter text-white uppercase">
+          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
             {{ t('home.noSubTitle') }}
-          </h1>
+          </span>
           <p class="mt-2 text-sm text-neutral-400">{{ t('home.noSub') }}</p>
         </div>
       </div>
@@ -170,9 +168,9 @@ const trafficBarColor = computed(() => {
           <Icon icon="lucide:clock-alert" class="size-12 text-black" />
         </span>
         <div>
-          <h1 class="text-3xl leading-[0.9] font-extrabold tracking-tighter text-white uppercase">
+          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
             {{ t('status.expired') }}
-          </h1>
+          </span>
           <p class="mt-2 text-sm text-neutral-400">{{ t('home.expiredDesc') }}</p>
         </div>
       </div>
@@ -199,9 +197,9 @@ const trafficBarColor = computed(() => {
         </span>
 
         <div>
-          <h1 class="text-3xl leading-[0.9] font-extrabold tracking-tighter text-white uppercase">
+          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
             {{ t('status.disabled') }}
-          </h1>
+          </span>
           <p class="mt-2 text-sm text-neutral-400">{{ t('home.disabledDesc') }}</p>
         </div>
       </div>
@@ -222,12 +220,12 @@ const trafficBarColor = computed(() => {
     <!-- ACTIVE -->
     <template v-else-if="statusKey === 'active' && sub">
       <div class="flex flex-col items-center gap-5 pt-4">
-        <span class="flex rounded-full bg-white p-3">
+        <span class="flex rounded-full bg-primary p-3">
           <Icon icon="lucide:check" class="size-12 text-black" />
         </span>
-        <h1 class="text-3xl leading-[0.9] font-extrabold tracking-tighter text-white uppercase">
+        <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
           {{ t('status.active') }}
-        </h1>
+        </span>
       </div>
 
       <!-- Data Cards -->
@@ -240,9 +238,14 @@ const trafficBarColor = computed(() => {
             <Icon icon="lucide:calendar" class="size-4" />
             {{ t('home.expires') }}
           </span>
-          <span class="text-left font-mono font-medium text-white">{{
-            formatExpiryDate(sub.end_date, sub.days_remaining)
-          }}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-left font-mono font-medium text-white">
+              {{ formatDateE(sub.end_date) }}
+            </span>
+            <span class="text-left font-mono font-medium text-white/50">
+              ({{ formatDaysRemaining(sub.days_remaining) }})
+            </span>
+          </div>
         </div>
         <!-- Traffic -->
         <div
@@ -255,7 +258,8 @@ const trafficBarColor = computed(() => {
           </span>
           <div class="flex items-center justify-between">
             <span class="font-mono font-medium text-white">
-              {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} / {{ sub.traffic_limit_gb?.toFixed(0) }} GB
+              {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
+              {{ sub.traffic_limit_gb?.toFixed(0) }} GB
             </span>
             <span class="font-mono text-xs text-neutral-500">
               {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
@@ -270,44 +274,53 @@ const trafficBarColor = computed(() => {
           </div>
         </div>
 
-        <!-- Devices -->
-        <button
-          class="flex w-full cursor-pointer items-center justify-between border border-neutral-800 bg-neutral-950 px-4 py-3 text-neutral-400 transition-opacity active:opacity-70"
-          @click="openDevicesModal"
+        <div
+          v-if="subStore.connectInfo?.connect_url"
+          class="flex w-full flex-col gap-2 border border-neutral-800 bg-neutral-950 px-4 py-2 text-neutral-400"
         >
           <span class="flex items-center gap-2 font-mono text-sm uppercase">
-            <Icon icon="lucide:monitor-smartphone" class="size-4" />
-            {{ t('devices.title') }}
+            <Icon icon="lucide:link" class="size-4" />
+            {{ t('home.subLink') }}
           </span>
-          <span class="flex items-center gap-2">
-            <span v-if="subStore.loadingDevices">
-              <Icon icon="lucide:loader-circle" class="size-3.5 animate-spin" />
-            </span>
-            <span v-else-if="deviceCountLabel" class="font-mono text-sm font-medium text-white">
-              {{ deviceCountLabel }}
-            </span>
-            <Icon icon="lucide:chevron-right" class="size-4" />
+          <span class="text-left font-mono font-medium text-white">
+            {{ subStore.connectInfo?.connect_url }}
           </span>
-        </button>
+        </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex w-full flex-col gap-3">
-        <button
-          class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
-          :disabled="subStore.loadingConnect || !subStore.connectInfo"
-          @click="openConnect"
-        >
-          <span class="flex bg-black p-2">
-            <Icon icon="lucide:monitor-smartphone" class="size-5 text-white" />
-          </span>
-          <span class="flex flex-col items-start">
-            <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
-              t('home.connect')
-            }}</span>
-          </span>
-        </button>
+        <div class="flex w-full items-center gap-2">
+          <button
+            class="flex h-14 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
+            :disabled="subStore.loadingConnect || !subStore.connectInfo"
+            @click="router.push({ name: 'configs' })"
+          >
+            <span class="flex bg-black p-2">
+              <Icon icon="lucide:monitor-smartphone" class="size-5 text-white" />
+            </span>
+            <span class="flex flex-col items-start">
+              <span class="text-left font-sans text-sm leading-4 font-bold uppercase">
+                {{ t('home.connect') }}
+              </span>
+              <span class="text-left text-sm leading-4"
+                >{{ deviceCountLabel }} из - подключено</span
+              >
+            </span>
+          </button>
+          <button
+            class="flex h-14 cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+            @click="openDevicesModal"
+          >
+            <span class="text-left font-sans text-sm leading-4 font-extrabold uppercase">
+              {{ t('devices.title') }}
+            </span>
 
+            <span class="flex bg-white p-2">
+              <Icon icon="lucide:monitor-cog" class="size-5 text-black" />
+            </span>
+          </button>
+        </div>
         <button
           class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
           @click="goToPlans"
@@ -315,9 +328,6 @@ const trafficBarColor = computed(() => {
           <span class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase">{{
             t('home.changePlan')
           }}</span>
-          <span class="flex bg-white p-2">
-            <Icon icon="lucide:shield" class="size-5 text-black" />
-          </span>
         </button>
       </div>
     </template>
@@ -331,7 +341,9 @@ const trafficBarColor = computed(() => {
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeDevicesModal" />
 
         <!-- Sheet panel -->
-        <div class="sheet-panel relative flex max-h-[82vh] flex-col border-t border-white/10 bg-[#0a0a0a]">
+        <div
+          class="sheet-panel relative flex max-h-[82vh] flex-col border-t border-white/10 bg-[#0a0a0a]"
+        >
           <!-- Handle bar -->
           <div class="flex justify-center pt-3 pb-1">
             <div class="h-1 w-10 rounded-full bg-neutral-700" />
@@ -340,7 +352,7 @@ const trafficBarColor = computed(() => {
           <!-- Header -->
           <div class="flex items-center justify-between px-4 py-3">
             <div>
-              <h2 class="font-mono text-base font-bold uppercase text-white">
+              <h2 class="font-mono text-base font-bold text-white uppercase">
                 {{ t('devices.manage') }}
               </h2>
               <p v-if="deviceCountLabel" class="mt-0.5 font-mono text-xs text-neutral-400">
@@ -360,7 +372,10 @@ const trafficBarColor = computed(() => {
           <!-- Content -->
           <div class="flex-1 overflow-y-auto p-4">
             <!-- Loading -->
-            <div v-if="subStore.loadingDevices" class="flex flex-col items-center gap-3 py-10 text-neutral-400">
+            <div
+              v-if="subStore.loadingDevices"
+              class="flex flex-col items-center gap-3 py-10 text-neutral-400"
+            >
               <Icon icon="lucide:loader-circle" class="size-8 animate-spin" />
               <span class="font-mono text-sm">{{ t('devices.loading') }}</span>
             </div>
@@ -379,26 +394,36 @@ const trafficBarColor = computed(() => {
               <div
                 v-for="device in subStore.devicesData.devices"
                 :key="device.hwid"
-                class="flex items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3"
+                class="flex items-start gap-3 border border-neutral-800 bg-neutral-950 px-4 py-3"
               >
                 <!-- Platform icon -->
-                <div class="flex size-9 shrink-0 items-center justify-center border border-neutral-800 bg-neutral-900">
+                <div
+                  class="flex size-9 shrink-0 items-center justify-center border border-neutral-800 bg-neutral-900"
+                >
                   <Icon :icon="platformIcon(device.platform)" class="size-4 text-neutral-300" />
                 </div>
 
                 <!-- Info -->
-                <div class="min-w-0 flex-1">
-                  <p class="truncate font-sans text-sm font-semibold leading-tight text-white">
+                <div class="flex min-w-0 flex-1 flex-col gap-px">
+                  <p class="truncate font-sans text-sm leading-tight font-semibold text-white">
                     {{ deviceDisplayName(device) }}
                   </p>
-                  <p class="mt-0.5 font-mono text-xs text-neutral-500">
-                    <template v-if="device.platform">{{ device.platform }}<template v-if="device.osVersion"> {{ device.osVersion }}</template> · </template>{{ t('devices.firstSeen') }} {{ formatDeviceDate(device.createdAt) }}
+                  <p class="font-mono text-xs text-neutral-500">
+                    <template v-if="device.platform"
+                      >{{ device.platform
+                      }}<template v-if="device.osVersion">
+                        {{ device.osVersion }}</template
+                      ></template
+                    >
+                  </p>
+                  <p class="font-mono text-xs text-neutral-500">
+                    {{ t('devices.firstSeen') }} {{ formatDeviceDate(device.createdAt) }}
                   </p>
                 </div>
 
                 <!-- Disconnect button -->
                 <button
-                  class="flex shrink-0 cursor-pointer items-center justify-center border border-neutral-700 px-2 py-1.5 font-mono text-xs font-semibold uppercase text-neutral-400 transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
+                  class="flex shrink-0 cursor-pointer items-center justify-center border border-red-700 bg-red-950 px-2 py-1.5 font-mono text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
                   :disabled="subStore.disconnectingHwid === device.hwid"
                   @click="handleDisconnect(device.hwid)"
                 >

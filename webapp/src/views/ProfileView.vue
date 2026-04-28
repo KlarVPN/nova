@@ -12,6 +12,8 @@ const { t } = useI18n()
 const botUsername = import.meta.env.VITE_BOT_USERNAME
 const channelUsername = import.meta.env.VITE_CHANNEL_USERNAME
 const docsUrl = import.meta.env.VITE_DOCS_URL
+const privacyUrl = import.meta.env.VITE_PRIVACY_POLICY_URL
+const termsUrl = import.meta.env.VITE_TERMS_OR_SERVICE_URL
 const statusUrl = import.meta.env.VITE_STATUS_URL
 
 const displayName = computed(() => {
@@ -53,37 +55,9 @@ function openExternal(url: string) {
         <p v-if="auth.profile.username" class="font-mono text-sm text-neutral-400">
           @{{ auth.profile.username }}
         </p>
-      </div>
-    </div>
-
-    <!-- Language -->
-    <div class="flex flex-col gap-3">
-      <p class="font-mono text-xs uppercase tracking-wide text-neutral-500">
-        {{ t('profile.language') }}
-      </p>
-      <div class="flex gap-2">
-        <button
-          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold uppercase tracking-wide transition-colors"
-          :class="
-            locale === 'ru'
-              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
-          "
-          @click="switchTo('ru')"
-        >
-          🇷🇺 RU
-        </button>
-        <button
-          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold uppercase tracking-wide transition-colors"
-          :class="
-            locale === 'en'
-              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
-          "
-          @click="switchTo('en')"
-        >
-          🇬🇧 EN
-        </button>
+        <p class="font-mono text-xs text-neutral-400">
+          ID: {{ auth.profile.user_id }}
+        </p>
       </div>
     </div>
 
@@ -118,8 +92,28 @@ function openExternal(url: string) {
           class="flex h-12 w-full cursor-pointer items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:border-neutral-700"
           @click="openExternal(docsUrl)"
         >
-          <Icon icon="lucide:file-text" class="size-4 shrink-0 text-neutral-500" />
+          <Icon icon="lucide:book-text" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.docs') }}</span>
+          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
+        </button>
+
+        <button
+          v-if="termsUrl"
+          class="flex h-12 w-full cursor-pointer items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:border-neutral-700"
+          @click="openExternal(termsUrl)"
+        >
+          <Icon icon="lucide:file-text" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.terms') }}</span>
+          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
+        </button>
+
+        <button
+          v-if="privacyUrl"
+          class="flex h-12 w-full cursor-pointer items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:border-neutral-700"
+          @click="openExternal(privacyUrl)"
+        >
+          <Icon icon="lucide:book-lock" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.privacy') }}</span>
           <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
         </button>
 
@@ -134,5 +128,37 @@ function openExternal(url: string) {
         </button>
       </div>
     </div>
+
+    <!-- Language -->
+    <div class="flex flex-col gap-3">
+      <p class="font-mono text-xs uppercase tracking-wide text-neutral-500">
+        {{ t('profile.language') }}
+      </p>
+      <div class="flex gap-2">
+        <button
+          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold uppercase tracking-wide transition-colors"
+          :class="
+            locale === 'ru'
+              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
+          "
+          @click="switchTo('ru')"
+        >
+          🇷🇺 RU
+        </button>
+        <button
+          class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 border font-mono text-sm font-semibold uppercase tracking-wide transition-colors"
+          :class="
+            locale === 'en'
+              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+              : 'border-neutral-800 bg-neutral-950 text-neutral-400'
+          "
+          @click="switchTo('en')"
+        >
+          🇬🇧 EN
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
