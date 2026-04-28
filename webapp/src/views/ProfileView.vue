@@ -26,7 +26,9 @@ const displayName = computed(() => {
 const userInitial = computed(() => displayName.value.charAt(0).toUpperCase() || '?')
 const showLanguageModal = ref(false)
 const currentLocaleLabel = computed(
-  () => AVAILABLE_LOCALES.find((item) => item.code === locale.value)?.name ?? locale.value.toUpperCase(),
+  () =>
+    AVAILABLE_LOCALES.find((item) => item.code === locale.value)?.name ??
+    locale.value.toUpperCase(),
 )
 
 function switchTo(lang: 'ru' | 'en') {
@@ -106,16 +108,6 @@ function openExternal(url: string) {
         class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
-          v-if="botUsername"
-          class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="openExternal(`https://t.me/${botUsername}`)"
-        >
-          <Icon icon="lucide:message-circle" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.support') }}</span>
-          <Icon icon="lucide:external-link" class="ml-auto size-3 text-neutral-600" />
-        </Button>
-
-        <Button
           v-if="termsUrl"
           class="flex h-12 w-full cursor-pointer items-center gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(termsUrl)"
@@ -156,6 +148,17 @@ function openExternal(url: string) {
         <Icon icon="lucide:languages" class="size-4 shrink-0 text-neutral-500" />
         <span class="font-medium text-white">{{ t('profile.language') }}</span>
         <span class="ml-auto text-sm text-neutral-400">{{ currentLocaleLabel }}</span>
+      </Button>
+    </div>
+
+    <div class="flex flex-col items-center gap-2">
+      <span>Остались вопросы?</span>
+      <Button
+        v-if="botUsername"
+        class="w-fit border border-neutral-700 bg-transparent p-2 px-4 text-sm text-white hover:bg-white/10"
+        @click="openExternal(`https://t.me/${botUsername}`)"
+      >
+        {{ t('profile.support') }}
       </Button>
     </div>
 
