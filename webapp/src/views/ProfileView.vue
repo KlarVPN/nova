@@ -166,7 +166,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-4 pt-4 pb-24">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-4 pb-24 md:pb-6">
     <!-- User info -->
     <div
       v-if="auth.profile"

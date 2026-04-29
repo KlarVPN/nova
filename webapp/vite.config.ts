@@ -29,13 +29,20 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/vue/') || id.includes('node_modules/vue-router/') || id.includes('node_modules/pinia/')) {
+          if (
+            id.includes('node_modules/vue/') ||
+            id.includes('node_modules/vue-router/') ||
+            id.includes('node_modules/pinia/')
+          ) {
             return 'vue'
           }
           if (id.includes('node_modules/radix-vue/')) {
             return 'radix'
           }
-          if (id.includes('node_modules/@iconify/vue/') || id.includes('node_modules/@iconify-json/lucide/')) {
+          if (
+            id.includes('node_modules/@iconify/vue/') ||
+            id.includes('node_modules/@iconify-json/lucide/')
+          ) {
             return 'iconify'
           }
           return undefined
@@ -44,7 +51,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['040d-144-31-218-145.ngrok-free.app'],
+    allowedHosts: ['nlpfv-77-239-126-205.run.pinggy-free.link'],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

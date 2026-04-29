@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative flex min-h-[calc(100dvh-9rem)] w-full flex-col justify-center gap-5 py-4">
+  <div class="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-5 py-4 md:min-h-[calc(100dvh-3rem)]">
     <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ pageTitle }}
     </h1>

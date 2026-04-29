@@ -31,7 +31,7 @@ function openSupport() {
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-4 pt-3 pb-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-3 pb-6">
     <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('support.title') }}
     </h1>

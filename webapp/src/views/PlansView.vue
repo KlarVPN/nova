@@ -253,7 +253,7 @@ watch(
 </script>
 
 <template>
-  <div class="plans-page relative flex w-full flex-col items-center gap-5 pt-2 pb-6">
+  <div class="plans-page relative mx-auto flex w-full max-w-5xl flex-col items-center gap-5 pt-2 pb-6">
     <div class="plans-glow" aria-hidden="true" />
     <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('plans.title') }}

@@ -10,7 +10,7 @@ const BOT_URL = import.meta.env.VITE_BOT_USERNAME
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col items-center justify-center gap-8 px-6 text-center">
+  <div class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col items-center justify-center gap-8 px-6 text-center">
     <!-- Animated lock icon -->
     <div class="relative flex items-center justify-center">
       <div class="bg-accent/10 absolute h-32 w-32 animate-ping rounded-full" />

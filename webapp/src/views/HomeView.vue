@@ -141,7 +141,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 
 <template>
   <div
-    class="flex min-h-[calc(100dvh-4.75rem)] w-full flex-col items-center justify-center gap-5 text-center"
+    class="mx-auto flex min-h-[calc(100dvh-4.75rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 text-center md:min-h-[calc(100dvh-2rem)]"
   >
     <Transition name="content-fade" mode="out-in">
       <div :key="statusKey" class="flex w-full flex-col items-center justify-center gap-5">

@@ -90,7 +90,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col items-center justify-center gap-8 px-6 py-10">
+  <div class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col items-center justify-center gap-8 px-6 py-10">
     <!-- Logo -->
     <Logotype class="h-10" />
 

@@ -36,7 +36,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative flex h-full w-full flex-col items-center justify-center gap-4 pt-2 pb-6">
+  <div class="relative mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-center gap-4 pt-2 pb-6">
     <h1 class="relative text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('faq.title') }}
     </h1>

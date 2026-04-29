@@ -60,7 +60,7 @@ function openOtherPlatforms() {
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-4 pt-3 pb-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-3 pb-6">
     <button class="-mb-1 flex cursor-pointer items-center gap-2 text-sm text-neutral-400" @click="goBack">
       <Icon icon="lucide:arrow-left" class="size-4" />
       {{ t('common.back') }}
