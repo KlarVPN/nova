@@ -457,7 +457,7 @@ watch(
         >
           <div class="absolute inset-0 bg-black/70" @click="backToPlan" />
           <div
-            class="relative mb-6 border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+            class="relative mb-6 border border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
           >
             <div class="rounded-[16px] border border-white/10 bg-neutral-950/80 px-4 py-3">
               <p class="text-xs text-neutral-500 uppercase">{{ t('plans.selectedPlan') }}</p>
@@ -548,7 +548,7 @@ watch(
         >
           <div class="absolute inset-0 bg-black/70" @click="showProviderModal = false" />
           <div
-            class="relative mb-6 border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+            class="relative mb-6 border border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
           >
             <h2 class="mb-3 text-base font-medium text-white">{{ t('plans.paymentMethod') }}</h2>
             <div class="flex flex-col gap-2">

@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
         {{ t('locations.title') }}
       </h1>
       <button
-        class="inline-flex cursor-pointer items-center justify-center rounded-[10px] border border-neutral-800 bg-neutral-950 p-2 text-neutral-300 hover:bg-neutral-900"
+        class="inline-flex cursor-pointer items-center justify-center rounded-[10px] bg-neutral-950 p-2 text-neutral-300 hover:bg-neutral-900"
         :disabled="loading"
         @click="fetchLocations"
       >
@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
         class="cursor-pointer rounded-[12px] border px-3 py-2 text-xs font-semibold"
         :class="
           filter === 'all'
-            ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+            ? 'border-white/30 bg-neutral-900 text-white'
             : 'border-neutral-800 bg-neutral-950 text-neutral-300'
         "
         @click="filter = 'all'"
@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
       <div
         v-for="item in filtered"
         :key="`${item.country}-${item.name}`"
-        class="rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+        class="rounded-[14px] bg-neutral-950 px-4 py-3"
       >
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">

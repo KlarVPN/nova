@@ -34,7 +34,7 @@ async function copySubscriptionLink() {
         style="bottom: calc(env(safe-area-inset-bottom) + 80px)"
       >
         <button
-          class="pointer-events-auto mx-auto flex w-full max-w-md cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-700 bg-neutral-950/95 px-4 py-3 text-left backdrop-blur"
+          class="pointer-events-auto mx-auto flex w-full max-w-md cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950/95 px-4 py-3 text-left backdrop-blur"
           @click="copySubscriptionLink"
         >
           <div class="min-w-0 flex-1">

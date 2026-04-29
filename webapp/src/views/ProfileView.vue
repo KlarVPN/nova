@@ -151,7 +151,7 @@ const router = useRouter()
     <!-- User info -->
     <div
       v-if="auth.profile"
-      class="flex cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3 transition-colors hover:bg-neutral-900"
+      class="flex cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950 px-4 py-3 transition-colors hover:bg-neutral-900"
       @click="copyTelegramId"
     >
       <img
@@ -168,7 +168,7 @@ const router = useRouter()
       </div>
       <button
         type="button"
-        class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-400"
+        class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-neutral-400"
         @click.stop="copyTelegramId"
       >
         <Icon icon="lucide:copy" class="size-4" />
@@ -177,9 +177,7 @@ const router = useRouter()
 
     <!-- Links -->
     <div class="flex flex-col gap-3">
-      <div
-        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
-      >
+      <div class="profile-links-group flex flex-col overflow-hidden rounded-[14px] bg-neutral-950">
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'referral' })"
@@ -217,9 +215,7 @@ const router = useRouter()
         </Button>
       </div>
 
-      <div
-        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
-      >
+      <div class="profile-links-group flex flex-col overflow-hidden rounded-[14px] bg-neutral-950">
         <Button
           v-if="reviewsUrl"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
@@ -238,9 +234,7 @@ const router = useRouter()
           <span class="font-medium text-white">{{ t('profile.docs') }}</span>
         </Button>
       </div>
-      <div
-        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
-      >
+      <div class="profile-links-group flex flex-col overflow-hidden rounded-[14px] bg-neutral-950">
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(termsUrl)"
@@ -262,7 +256,7 @@ const router = useRouter()
     <!-- Language -->
     <div class="flex flex-col gap-3">
       <Button
-        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openLanguageModal"
       >
         <Icon icon="lucide:languages" class="size-4 shrink-0 text-neutral-500" />
@@ -273,7 +267,7 @@ const router = useRouter()
 
     <Button
       v-if="!auth.isTelegram"
-      class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-red-900/60 bg-red-950/50 px-4 text-left transition-colors hover:bg-red-950/70"
+      class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] bg-red-950/50 px-4 text-left transition-colors hover:bg-red-950/70"
       @click="handleLogout"
     >
       <Icon icon="lucide:log-out" class="size-4 shrink-0 text-red-400" />
@@ -333,11 +327,11 @@ const router = useRouter()
       <Transition name="sheet">
         <div
           v-if="showPromoModal"
-          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-end md:p-4"
         >
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closePromoModal" />
+          <div class="absolute inset-0 bg-black/70" @click="closePromoModal" />
           <div
-            class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+            class="relative bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
           >
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
@@ -350,7 +344,7 @@ const router = useRouter()
               <input
                 v-model="promoCode"
                 :placeholder="t('promo.placeholder')"
-                class="promo-input min-w-0 rounded-[14px] border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-500 focus:border-neutral-500 disabled:opacity-40"
+                class="promo-input min-w-0 rounded-[14px] bg-neutral-900 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-500 disabled:opacity-40"
                 autocomplete="off"
                 :disabled="promoLoading || promoApplied"
                 @keydown.enter="applyPromo"

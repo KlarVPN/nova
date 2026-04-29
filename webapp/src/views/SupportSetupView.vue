@@ -82,7 +82,7 @@ function openOtherPlatforms() {
         v-for="tile in tiles"
         :key="tile.key"
         :disabled="!tile.url"
-        class="flex min-h-24 cursor-pointer flex-col items-start justify-center gap-2 rounded-[14px] border border-neutral-800 bg-neutral-950 p-5 text-white transition-colors hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
+        class="flex min-h-24 cursor-pointer flex-col items-start justify-center gap-2 rounded-[14px] bg-neutral-950 p-5 text-white transition-colors hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
         @click="openPlatform(tile.url)"
       >
         <span class="rounded-[14px] bg-white p-3"
@@ -97,7 +97,7 @@ function openOtherPlatforms() {
 
     <Button
       :disabled="!docsUrl"
-      class="mt-1 h-12 w-full rounded-[14px] border border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900"
+      class="mt-1 h-12 w-full rounded-[14px] bg-neutral-950 text-white hover:bg-neutral-900"
       @click="openOtherPlatforms"
     >
       {{ t('support.otherPlatforms') }}

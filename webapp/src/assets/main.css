@@ -198,17 +198,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Borderless Apple-like look */
-.border,
-[class*=' border-'],
-[class^='border-'] {
-  border-color: transparent !important;
-}
-
-[class*='divide-'] > :not([hidden]) ~ :not([hidden]) {
-  border-color: transparent !important;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

@@ -48,7 +48,7 @@ function openSupport() {
 
     <div class="mt-2 flex flex-col gap-3">
       <Button
-        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openFaq"
       >
         <Icon icon="lucide:circle-help" class="size-4 shrink-0 text-neutral-500" />
@@ -56,7 +56,7 @@ function openSupport() {
       </Button>
 
       <Button
-        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openOtherDeviceSetup"
       >
         <Icon icon="lucide:monitor-smartphone" class="size-4 shrink-0 text-neutral-500" />
@@ -65,7 +65,7 @@ function openSupport() {
 
       <Button
         :disabled="!supportUrl"
-        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
+        class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openSupport"
       >
         <Icon icon="lucide:message-circle" class="size-4 shrink-0 text-neutral-500" />

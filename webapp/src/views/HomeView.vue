@@ -157,8 +157,8 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
             </div>
           </div>
           <div class="flex w-full flex-col gap-3">
-            <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
-            <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
+            <div class="h-14 w-full animate-pulse bg-neutral-900" />
+            <div class="h-14 w-full animate-pulse bg-neutral-900" />
           </div>
         </template>
 
@@ -176,7 +176,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
             </div>
           </div>
           <Button
-            class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+            class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 bg-neutral-900 p-2"
             @click="auth.init()"
           >
             <Icon icon="lucide:refresh-cw" class="size-5 text-neutral-400" />
@@ -192,7 +192,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
           <div class="flex w-full flex-col gap-3">
             <Button
               v-if="auth.trialAvailable"
-              class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+              class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 bg-neutral-900 p-2"
               :disabled="subStore.processingTrial"
               @click="activateTrial"
             >
@@ -359,7 +359,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
       <div v-if="showDevices" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeDevicesModal" />
         <div
-          class="sheet-panel relative flex max-h-[90vh] flex-col border-t border-white/10 bg-[#0a0a0a] md:w-full md:max-w-2xl md:rounded-2xl md:border md:shadow-2xl"
+          class="sheet-panel relative flex max-h-[90vh] flex-col bg-[#0a0a0a] md:w-full md:max-w-2xl md:rounded-2xl md:shadow-2xl"
         >
           <div class="flex justify-center pt-3 pb-1 md:hidden">
             <div class="h-1 w-10 rounded-full bg-neutral-700" />
@@ -394,10 +394,10 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
               <div
                 v-for="device in subStore.devicesData.devices"
                 :key="device.hwid"
-                class="flex items-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+                class="flex items-start gap-3 rounded-[14px] bg-neutral-950 px-4 py-3"
               >
                 <div
-                  class="flex size-9 shrink-0 items-center justify-center rounded-[14px] border border-neutral-800 bg-neutral-900"
+                  class="flex size-9 shrink-0 items-center justify-center rounded-[14px] bg-neutral-900"
                 >
                   <Icon :icon="platformIcon(device.platform)" class="size-4 text-neutral-300" />
                 </div>
@@ -416,7 +416,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                   </p>
                 </div>
                 <button
-                  class="flex shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-red-700 bg-red-950 px-2 py-1.5 text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
+                  class="flex shrink-0 cursor-pointer items-center justify-center rounded-[14px] bg-red-950 px-2 py-1.5 text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
                   :disabled="subStore.disconnectingHwid === device.hwid"
                   @click="handleDisconnect(device.hwid)"
                 >
