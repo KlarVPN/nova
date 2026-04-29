@@ -35,11 +35,11 @@ async function copyLink() {
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-4 pb-6">
-    <div class="rounded-[14px] border border-neutral-800 bg-neutral-950 p-4">
+    <div class="rounded-[14px] bg-neutral-950 p-4">
       <h1 class="text-lg font-semibold text-white">{{ t('accessSave.title') }}</h1>
     </div>
 
-    <div class="rounded-[14px] border border-neutral-800 bg-neutral-950 p-4">
+    <div class="rounded-[14px] bg-neutral-950 p-4">
       <div class="mb-2 flex items-center gap-2">
         <Icon icon="lucide:megaphone" class="size-4 text-[#bdfe00]" />
         <p class="font-medium text-white">{{ t('accessSave.channelTitle') }}</p>
@@ -47,18 +47,18 @@ async function copyLink() {
       <p class="text-sm text-neutral-400">{{ t('accessSave.channelDesc') }}</p>
     </div>
 
-    <div class="rounded-[14px] border border-neutral-800 bg-neutral-950 p-4">
+    <div class="rounded-[14px] bg-neutral-950 p-4">
       <div class="mb-2 flex items-center gap-2">
         <Icon icon="lucide:link" class="size-4 text-[#bdfe00]" />
         <p class="font-medium text-white">{{ t('accessSave.linkTitle') }}</p>
       </div>
       <p class="mb-3 text-sm text-neutral-400">{{ t('accessSave.linkDesc') }}</p>
 
-      <div v-if="loading" class="h-12 animate-pulse rounded-[14px] border border-neutral-700 bg-neutral-900" />
+      <div v-if="loading" class="h-12 animate-pulse rounded-[14px] bg-neutral-900" />
       <button
         v-else
         type="button"
-        class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-700 bg-neutral-950/95 px-4 py-3 text-left"
+        class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950/95 px-4 py-3 text-left"
         @click="copyLink"
       >
         <div class="min-w-0 flex-1">
