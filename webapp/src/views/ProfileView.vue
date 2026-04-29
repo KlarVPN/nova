@@ -271,10 +271,10 @@ const router = useRouter()
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showLanguageModal" class="fixed inset-0 z-50 flex flex-col justify-end">
+        <div v-if="showLanguageModal" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeLanguageModal" />
-          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6">
-            <div class="mb-4 flex justify-center">
+          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4">
+            <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
             <h2 class="mb-3 text-base font-medium text-white">{{ t('profile.language') }}</h2>
@@ -305,10 +305,10 @@ const router = useRouter()
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showPromoModal" class="fixed inset-0 z-50 flex flex-col justify-end">
+        <div v-if="showPromoModal" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closePromoModal" />
-          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6">
-            <div class="mb-4 flex justify-center">
+          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4">
+            <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
             <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
@@ -393,5 +393,12 @@ const router = useRouter()
 .sheet-enter-from > div:last-child,
 .sheet-leave-to > div:last-child {
   transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .sheet-enter-from > div:last-child,
+  .sheet-leave-to > div:last-child {
+    transform: translateY(0) scale(0.96);
+  }
 }
 </style>

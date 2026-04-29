@@ -356,12 +356,12 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
   <!-- Device Management Bottom Sheet -->
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="showDevices" class="fixed inset-0 z-50 flex flex-col justify-end">
+      <div v-if="showDevices" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeDevicesModal" />
         <div
-          class="sheet-panel relative flex max-h-[90vh] flex-col border-t border-white/10 bg-[#0a0a0a]"
+          class="sheet-panel relative flex max-h-[90vh] flex-col border-t border-white/10 bg-[#0a0a0a] md:w-full md:max-w-2xl md:rounded-2xl md:border md:shadow-2xl"
         >
-          <div class="flex justify-center pt-3 pb-1">
+          <div class="flex justify-center pt-3 pb-1 md:hidden">
             <div class="h-1 w-10 rounded-full bg-neutral-700" />
           </div>
           <div class="flex items-center justify-between px-4 py-3">
@@ -430,7 +430,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
               </div>
             </div>
           </div>
-          <div style="height: max(env(safe-area-inset-bottom), 12px)" />
+          <div class="md:hidden" style="height: max(env(safe-area-inset-bottom), 12px)" />
         </div>
       </div>
     </Transition>
@@ -463,5 +463,12 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 .sheet-enter-from .sheet-panel,
 .sheet-leave-to .sheet-panel {
   transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .sheet-enter-from .sheet-panel,
+  .sheet-leave-to .sheet-panel {
+    transform: translateY(0) scale(0.96);
+  }
 }
 </style>

@@ -261,13 +261,13 @@ onBeforeUnmount(() => {
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showInstallWarning" class="fixed inset-0 z-50 flex flex-col justify-end">
+        <div v-if="showInstallWarning" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
           <div
             class="absolute inset-0 bg-black/70 backdrop-blur-sm"
             @click="showInstallWarning = false"
           />
-          <div class="relative bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)]">
-            <div class="mb-4 flex justify-center">
+          <div class="relative bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)] md:w-full md:max-w-lg md:rounded-2xl md:pb-4">
+            <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
             <h2 class="mb-3 text-base font-semibold text-white">Важная информация</h2>
@@ -339,5 +339,12 @@ onBeforeUnmount(() => {
 .sheet-enter-from > div:last-child,
 .sheet-leave-to > div:last-child {
   transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .sheet-enter-from > div:last-child,
+  .sheet-leave-to > div:last-child {
+    transform: translateY(0) scale(0.96);
+  }
 }
 </style>
