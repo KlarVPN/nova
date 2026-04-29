@@ -74,6 +74,7 @@
     "unlimitedDevices": "Без лимита",
     "backToPlans": "Назад к тарифам",
     "selectedPlan": "Выбранный тариф",
+    "activeUntil": "Действует до",
     "paymentMethod": "Способ оплаты",
     "pay": "Оплатить",
     "redirecting": "Перенаправляем на оплату...",
@@ -84,7 +85,7 @@
     "stars": "Telegram Stars",
     "cryptopay": "Криптовалюта",
     "freekassa": "FreeKassa",
-    "platega": "Platega",
+    "platega": "Оплата по СБП",
     "severpay": "SeverPay"
   },
   "referral": {

@@ -3,12 +3,14 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
+import { useAuthStore } from '@/stores/auth'
 import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
 import { hapticImpact } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import type { PaymentProvider } from '@/types'
 
 const store = useSubscriptionStore()
+const auth = useAuthStore()
 const { t } = useI18n()
 const { success, error } = useToast()
 
@@ -62,6 +64,19 @@ const availableProvidersForSelection = computed(() =>
   }),
 )
 
+const selectedAmountLabel = computed(() => {
+  const selected = store.isTrafficMode ? selectedTraffic.value : selectedPlan.value
+  if (!selected || !selectedProvider.value) return null
+
+  if (selectedProvider.value === 'stars') {
+    if (selected.price_stars == null) return null
+    return String(selected.price_stars)
+  }
+
+  if (selected.price_rub == null) return null
+  return formatPrice(discountedPrice(selected.price_rub))
+})
+
 onMounted(() => {
   if (store.plansData) {
     hasRequestedPlans.value = true
@@ -90,12 +105,41 @@ const cheapestMonthlyPlan = computed(() => {
 
 const providerIconMap: Record<string, string> = {
   yookassa: 'lucide:credit-card',
-  stars: 'lucide:star',
+  stars: 'mingcute:star-fill',
   cryptopay: 'lucide:bitcoin',
   freekassa: 'lucide:banknote',
-  platega: 'lucide:wallet',
   severpay: 'lucide:shield',
 }
+
+const selectedUntilText = computed(() => {
+  const now = new Date()
+  const currentEnd = auth.subscription?.end_date ? new Date(auth.subscription.end_date) : null
+  const base = currentEnd && currentEnd > now ? currentEnd : now
+
+  if (selectedMonths.value) {
+    const end = new Date(base)
+    end.setMonth(end.getMonth() + selectedMonths.value)
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(end)
+  }
+
+  if (currentEnd) {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(currentEnd)
+  }
+
+  return '—'
+})
 
 function discountedPrice(price: number) {
   if (!discount.value) return price
@@ -360,6 +404,15 @@ watch(
               <p class="text-base font-semibold tracking-tight text-white">
                 {{ selectedMonths ? monthsLabel(selectedMonths) : `${selectedGb} GB` }}
               </p>
+              <p class="mt-1 text-xs text-neutral-400">
+                {{ t('plans.activeUntil') }}: <span class="text-neutral-200">{{ selectedUntilText }}</span>
+              </p>
+              <p class="mt-1 text-xs text-neutral-400">
+                {{ t('plans.devices') }}: <span class="text-neutral-200">{{ devicesLabel() }}</span>
+              </p>
+              <p class="mt-1 text-xs text-neutral-400">
+                {{ t('plans.traffic') }}: <span class="text-neutral-200">{{ trafficLabel() }}</span>
+              </p>
             </div>
           </div>
 
@@ -387,7 +440,14 @@ watch(
                 "
                 @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
               >
+              <img
+                v-if="provider === 'platega'"
+                src="/SBP.svg"
+                alt="SBP"
+                class="size-4 shrink-0"
+              />
               <Icon
+                v-else
                 :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
                 class="size-4 shrink-0"
                 :class="selectedProvider === provider ? 'text-emerald-200' : 'text-neutral-500'"
@@ -415,7 +475,16 @@ watch(
             <span v-if="store.processingPayment">
               <Icon icon="lucide:loader-circle" class="size-4 animate-spin" />
             </span>
-            <span v-else>{{ t('plans.pay') }}</span>
+            <span v-else>
+              {{ t('plans.pay') }}
+              <template v-if="selectedAmountLabel">
+                <template v-if="selectedProvider === 'stars'">
+                  · {{ selectedAmountLabel }}
+                  <Icon icon="mingcute:star-fill" class="-mt-0.5 ml-1 inline size-4 align-middle" />
+                </template>
+                <template v-else> · {{ selectedAmountLabel }}</template>
+              </template>
+            </span>
           </button>
         </div>
       </div>

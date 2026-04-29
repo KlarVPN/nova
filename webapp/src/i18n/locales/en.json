@@ -74,6 +74,7 @@
     "unlimitedDevices": "Unlimited",
     "backToPlans": "Back to plans",
     "selectedPlan": "Selected plan",
+    "activeUntil": "Active until",
     "paymentMethod": "Payment method",
     "pay": "Pay",
     "redirecting": "Redirecting to payment...",
@@ -84,7 +85,7 @@
     "stars": "Telegram Stars",
     "cryptopay": "Cryptocurrency",
     "freekassa": "FreeKassa",
-    "platega": "Platega",
+    "platega": "SBP Payment",
     "severpay": "SeverPay"
   },
   "referral": {
