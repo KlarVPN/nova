@@ -19,6 +19,8 @@ const step = ref<SetupStep>(0)
 const os = ref<SetupOS>('other')
 const animatedProgress = ref(0)
 const showInstallWarning = ref(false)
+const progressRingRef = ref<HTMLElement | null>(null)
+const pulseOrigin = ref({ x: '50%', y: '50%' })
 let progressFrame: number | null = null
 
 const connectUrl = computed(() => subStore.connectInfo?.connect_url ?? '')
@@ -88,6 +90,21 @@ function animateProgressTo(target: number) {
 const circleStyle = computed(() => ({
   background: `conic-gradient(#bdfe00 ${animatedProgress.value}%, #232323 ${animatedProgress.value}% 100%)`,
 }))
+
+const screenPulseStyle = computed(() => ({
+  '--pulse-x': pulseOrigin.value.x,
+  '--pulse-y': pulseOrigin.value.y,
+}))
+
+function syncPulseOrigin() {
+  const el = progressRingRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  pulseOrigin.value = {
+    x: `${rect.left + rect.width / 2}px`,
+    y: `${rect.top + rect.height / 2}px`,
+  }
+}
 
 const centerIcon = computed(() => {
   if (step.value === 0) return 'lucide:power'
@@ -172,6 +189,9 @@ onMounted(async () => {
   if (auth.hasSubscription && !subStore.connectInfo) {
     await subStore.fetchConnect()
   }
+  syncPulseOrigin()
+  window.addEventListener('resize', syncPulseOrigin)
+  window.addEventListener('scroll', syncPulseOrigin, true)
 })
 
 onBeforeUnmount(() => {
@@ -179,6 +199,8 @@ onBeforeUnmount(() => {
     window.cancelAnimationFrame(progressFrame)
     progressFrame = null
   }
+  window.removeEventListener('resize', syncPulseOrigin)
+  window.removeEventListener('scroll', syncPulseOrigin, true)
 })
 </script>
 
@@ -186,87 +208,95 @@ onBeforeUnmount(() => {
   <div
     class="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-12 py-4 md:min-h-[calc(100dvh-3rem)]"
   >
-    <div class="flex flex-col gap-3">
-      <h1
-        class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white md:text-3xl"
-      >
-        {{ pageTitle }}
-      </h1>
-      <p class="mx-auto max-w-[34ch] text-center text-base text-neutral-400">
-        {{ pageSubtitle }}
-      </p>
+    <div class="setup-screen-pulse" :style="screenPulseStyle" aria-hidden="true">
+      <span class="wave wave-1" />
+      <span class="wave wave-2" />
+      <span class="wave wave-3" />
     </div>
 
-    <div class="relative mx-auto mt-1">
-      <div class="setup-progress-ring" :style="circleStyle">
-        <div class="setup-progress-inner">
-          <Icon :icon="centerIcon" class="size-12 text-white" />
+    <div class="relative z-10 flex flex-col gap-12">
+      <div class="flex flex-col gap-3">
+        <h1
+          class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white md:text-3xl"
+        >
+          {{ pageTitle }}
+        </h1>
+        <p class="mx-auto max-w-[34ch] text-center text-base text-neutral-400">
+          {{ pageSubtitle }}
+        </p>
+      </div>
+
+      <div ref="progressRingRef" class="relative mx-auto mt-1">
+        <div class="setup-progress-ring" :style="circleStyle">
+          <div class="setup-progress-inner">
+            <Icon :icon="centerIcon" class="size-12 text-white" />
+          </div>
         </div>
       </div>
+
+      <template v-if="step === 0">
+        <div class="grid gap-3">
+          <Button class="pulse-cta h-12 bg-white text-black hover:bg-neutral-200" @click="nextStep">
+            Начать настройку
+          </Button>
+          <Button
+            class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
+            @click="router.push({ name: 'support-setup' })"
+          >
+            Установить на другом устройстве
+          </Button>
+        </div>
+      </template>
+
+      <template v-else-if="step === 1">
+        <div class="grid gap-3">
+          <Button
+            class="h-12 bg-white text-black hover:bg-neutral-200"
+            :disabled="!installUrl"
+            @click="openInstall"
+          >
+            <Icon icon="lucide:download" class="size-4" />
+            <span>Установить приложение</span>
+          </Button>
+          <Button
+            class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
+            @click="nextStep"
+          >
+            <span>Следующий шаг</span>
+            <Icon icon="lucide:arrow-right" class="size-4" />
+          </Button>
+        </div>
+      </template>
+
+      <template v-else-if="step === 2">
+        <div class="grid gap-3">
+          <Button
+            class="h-12 bg-white text-black hover:bg-neutral-200"
+            :disabled="!connectUrl"
+            @click="addSubscription"
+          >
+            <Icon icon="lucide:plus" class="size-4" />
+            <span>Добавить подписку</span>
+          </Button>
+          <Button
+            class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
+            @click="nextStep"
+          >
+            <span>Следующий шаг</span>
+            <Icon icon="lucide:arrow-right" class="size-4" />
+          </Button>
+        </div>
+      </template>
+
+      <template v-else>
+        <Button
+          class="h-12 bg-white text-black hover:bg-neutral-200"
+          @click="router.push({ name: 'home' })"
+        >
+          Завершить установку
+        </Button>
+      </template>
     </div>
-
-    <template v-if="step === 0">
-      <div class="grid gap-3">
-        <Button class="pulse-cta h-12 bg-white text-black hover:bg-neutral-200" @click="nextStep">
-          Начать настройку
-        </Button>
-        <Button
-          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
-          @click="router.push({ name: 'support-setup' })"
-        >
-          Установить на другом устройстве
-        </Button>
-      </div>
-    </template>
-
-    <template v-else-if="step === 1">
-      <div class="grid gap-3">
-        <Button
-          class="h-12 bg-white text-black hover:bg-neutral-200"
-          :disabled="!installUrl"
-          @click="openInstall"
-        >
-          <Icon icon="lucide:download" class="size-4" />
-          <span>Установить приложение</span>
-        </Button>
-        <Button
-          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
-          @click="nextStep"
-        >
-          <span>Следующий шаг</span>
-          <Icon icon="lucide:arrow-right" class="size-4" />
-        </Button>
-      </div>
-    </template>
-
-    <template v-else-if="step === 2">
-      <div class="grid gap-3">
-        <Button
-          class="h-12 bg-white text-black hover:bg-neutral-200"
-          :disabled="!connectUrl"
-          @click="addSubscription"
-        >
-          <Icon icon="lucide:plus" class="size-4" />
-          <span>Добавить подписку</span>
-        </Button>
-        <Button
-          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
-          @click="nextStep"
-        >
-          <span>Следующий шаг</span>
-          <Icon icon="lucide:arrow-right" class="size-4" />
-        </Button>
-      </div>
-    </template>
-
-    <template v-else>
-      <Button
-        class="h-12 bg-white text-black hover:bg-neutral-200"
-        @click="router.push({ name: 'home' })"
-      >
-        Завершить установку
-      </Button>
-    </template>
 
     <Teleport to="body">
       <Transition name="sheet">
@@ -304,12 +334,66 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .setup-progress-ring {
+  position: relative;
   display: grid;
   place-items: center;
   width: 164px;
   height: 164px;
   border-radius: 9999px;
   transition: background 260ms ease;
+  animation: progress-pulse 2.1s ease-in-out infinite;
+}
+
+.setup-screen-pulse {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wave {
+  position: absolute;
+  left: var(--pulse-x, 50%);
+  top: var(--pulse-y, 50%);
+  width: 110%;
+  padding-top: 110%;
+  margin-left: -55%;
+  margin-top: -55%;
+  border: 2px solid rgba(182, 255, 231, 0.2);
+  border-radius: 50%;
+  opacity: 0;
+  animation: 8s cubic-bezier(0, 0.35, 0.03, 0.17) infinite pulse;
+}
+
+.wave-1 {
+  animation-delay: 0s;
+}
+
+.wave-2 {
+  animation-delay: 1.67s;
+}
+
+.wave-3 {
+  animation-delay: 3.34s;
+}
+
+.setup-progress-ring::before,
+.setup-progress-ring::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  border: 0.3px solid #232323;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.setup-progress-ring::before {
+  animation: progress-ripple 2.1s ease-out infinite;
+}
+
+.setup-progress-ring::after {
+  animation: progress-ripple 2.1s ease-out 1.05s infinite;
 }
 
 .setup-progress-inner {
@@ -337,6 +421,44 @@ onBeforeUnmount(() => {
   50% {
     transform: scale(1.02);
     box-shadow: 0 0 0 14px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes progress-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes progress-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  10% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
   }
 }
 
