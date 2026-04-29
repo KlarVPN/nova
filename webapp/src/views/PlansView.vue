@@ -2,6 +2,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import { TextMorph } from 'torph/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { useAuthStore } from '@/stores/auth'
 import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
@@ -109,6 +110,9 @@ const paySubscriptionPrice = computed(() => {
 
   return { oldPrice: null, finalPrice: null }
 })
+
+const paySubscriptionFinalPriceText = computed(() => paySubscriptionPrice.value.finalPrice ?? '')
+const paySubscriptionOldPriceText = computed(() => paySubscriptionPrice.value.oldPrice ?? '')
 
 onMounted(() => {
   if (store.plansData) {
@@ -439,10 +443,10 @@ watch(
               v-if="paySubscriptionPrice.finalPrice"
               class="flex items-center gap-1 text-right text-xs tracking-normal normal-case"
             >
-              <span class="text-sm font-semibold">{{ paySubscriptionPrice.finalPrice }}</span>
-              <span v-if="paySubscriptionPrice.oldPrice" class="text-black/40 line-through">{{
-                paySubscriptionPrice.oldPrice
-              }}</span>
+              <TextMorph :text="paySubscriptionFinalPriceText" class="text-sm font-semibold" />
+              <span v-if="paySubscriptionPrice.oldPrice" class="old-price-strike text-black/40">
+                <TextMorph :text="paySubscriptionOldPriceText" />
+              </span>
             </span>
           </Button>
         </div>
@@ -606,6 +610,24 @@ watch(
 .content-fade-enter-from,
 .content-fade-leave-to {
   opacity: 0;
+}
+
+.old-price-strike {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.old-price-strike::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.75;
+  pointer-events: none;
 }
 
 .sheet-enter-active,
