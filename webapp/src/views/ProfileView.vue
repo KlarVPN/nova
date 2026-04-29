@@ -129,7 +129,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-6 pt-4 pb-24">
+  <div class="flex w-full flex-col gap-4 pt-4 pb-24">
     <!-- User info -->
     <div
       v-if="auth.profile"
