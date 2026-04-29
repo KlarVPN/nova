@@ -28,12 +28,6 @@ const router = createRouter({
       meta: { title: 'Profile' },
     },
     {
-      name: 'configs',
-      path: '/configs',
-      component: () => import('@/views/ConfigsView.vue'),
-      meta: { title: 'Configs' },
-    },
-    {
       name: 'setup',
       path: '/setup',
       component: () => import('@/views/SetupView.vue'),
@@ -69,6 +63,7 @@ const router = createRouter({
       component: () => import('@/views/ProxiesView.vue'),
       meta: { title: 'Proxies' },
     },
+    { path: '/configs', redirect: '/setup' },
     { path: '/promo', redirect: '/plans' },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

@@ -334,7 +334,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
             <div class="flex w-full items-center gap-2">
               <Button
                 :disabled="subStore.loadingConnect || !subStore.connectInfo"
-                @click="router.push({ name: 'configs' })"
+                @click="router.push({ name: 'setup' })"
               >
                 {{ t('home.connect') }}
                 <Icon icon="lucide:chevron-right" class="size-4" />
