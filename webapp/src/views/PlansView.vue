@@ -172,7 +172,11 @@ function planSavings(months: number): number | null {
   return save > 0 ? Math.round(save) : null
 }
 
-function pricePerMonth(months: number, priceRub: number | null, priceStars: number | null): string | null {
+function pricePerMonth(
+  months: number,
+  priceRub: number | null,
+  priceStars: number | null,
+): string | null {
   if (months <= 0) return null
   if (priceRub != null) {
     const monthly = Math.round(discountedPrice(priceRub) / months)
@@ -253,22 +257,15 @@ watch(
 </script>
 
 <template>
-  <div class="plans-page relative mx-auto flex w-full max-w-5xl flex-col items-center gap-5 pt-2 pb-6">
-    <div class="plans-glow" aria-hidden="true" />
-    <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('plans.title') }}
-    </h1>
-    <p class="-mt-2 max-w-[34ch] text-center text-sm text-neutral-400">
-      {{ t('plans.description') }}
-    </p>
-
-    <div
-      v-if="!store.isTrafficMode && cheapestMonthlyPlan"
-      class="w-full rounded-[18px] border border-emerald-300/20 bg-emerald-400/10 px-4 py-3"
-    >
-      <p class="text-[11px] font-semibold tracking-[0.18em] text-emerald-200/70 uppercase">Best Start</p>
-      <p class="mt-1 text-sm text-emerald-100">
-        {{ formatPrice(cheapestMonthlyPlan) }} / {{ t('common.month', 1) }}
+  <div
+    class="plans-page relative mx-auto flex w-full max-w-5xl flex-col items-center gap-5 pt-2 pb-6"
+  >
+    <div class="bg-wh flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-25">
+      <h1 class="mt-1 text-2xl leading-[0.9] font-medium tracking-tight text-balance text-white">
+        {{ t('plans.title') }}
+      </h1>
+      <p class="text-sm text-balance opacity-60">
+        {{ t('plans.description') }}
       </p>
     </div>
 
@@ -323,7 +320,7 @@ watch(
               <button
                 v-for="plan in sortedPlans"
                 :key="plan.months"
-                class="plan-card flex cursor-pointer flex-col gap-2 rounded-[18px] border p-4 text-left transition-all"
+                class="flex cursor-pointer flex-col gap-2 rounded-[18px] border p-4 text-left transition-all"
                 :class="
                   selectedMonths === plan.months
                     ? 'plan-card-active border-emerald-300/70'
@@ -332,7 +329,7 @@ watch(
                 @click="selectPlan(plan.months)"
               >
                 <div class="flex items-start justify-between gap-3">
-                  <span class="text-xl font-semibold tracking-tight text-white">
+                  <span class="text-lg text-white">
                     {{ monthsLabel(plan.months) }}
                   </span>
                   <span
@@ -405,7 +402,8 @@ watch(
                 {{ selectedMonths ? monthsLabel(selectedMonths) : `${selectedGb} GB` }}
               </p>
               <p class="mt-1 text-xs text-neutral-400">
-                {{ t('plans.activeUntil') }}: <span class="text-neutral-200">{{ selectedUntilText }}</span>
+                {{ t('plans.activeUntil') }}:
+                <span class="text-neutral-200">{{ selectedUntilText }}</span>
               </p>
               <p class="mt-1 text-xs text-neutral-400">
                 {{ t('plans.devices') }}: <span class="text-neutral-200">{{ devicesLabel() }}</span>
@@ -433,19 +431,14 @@ watch(
               v-for="provider in availableProvidersForSelection"
               :key="provider"
               class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border bg-neutral-950/80 px-4 py-3 transition-all"
-                :class="
-                  selectedProvider === provider
-                    ? 'border-emerald-300/70 bg-emerald-300/10'
-                    : 'border-white/10 hover:border-white/20'
-                "
-                @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
-              >
-              <img
-                v-if="provider === 'platega'"
-                src="/SBP.svg"
-                alt="SBP"
-                class="size-4 shrink-0"
-              />
+              :class="
+                selectedProvider === provider
+                  ? 'border-emerald-300/70 bg-emerald-300/10'
+                  : 'border-white/10 hover:border-white/20'
+              "
+              @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
+            >
+              <img v-if="provider === 'platega'" src="/SBP.svg" alt="SBP" class="size-4 shrink-0" />
               <Icon
                 v-else
                 :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
@@ -458,13 +451,13 @@ watch(
               >
                 {{ providerLabel(provider) }}
               </span>
-                <Icon
-                  v-if="selectedProvider === provider"
-                  icon="lucide:check"
-                  class="size-4 text-emerald-200"
-                />
-              </button>
-            </div>
+              <Icon
+                v-if="selectedProvider === provider"
+                icon="lucide:check"
+                class="size-4 text-emerald-200"
+              />
+            </button>
+          </div>
 
           <!-- Pay button -->
           <button
@@ -493,48 +486,6 @@ watch(
 </template>
 
 <style scoped>
-.plans-page {
-  --plan-highlight: 148 163 121;
-}
-
-.plans-glow {
-  position: absolute;
-  inset: -12px -10px auto -10px;
-  height: 250px;
-  z-index: -1;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(var(--plan-highlight), 0.23), transparent 48%),
-    radial-gradient(circle at 80% 0%, rgba(166, 196, 124, 0.12), transparent 54%);
-  filter: blur(4px);
-}
-
-.plan-card {
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(8px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 30px rgba(0, 0, 0, 0.22);
-}
-
-.plan-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(128deg, rgba(255, 255, 255, 0.08), transparent 42%);
-}
-
-.plan-card-active {
-  background:
-    linear-gradient(145deg, rgba(146, 175, 114, 0.28), rgba(52, 66, 44, 0.32)),
-    rgba(10, 12, 9, 0.8);
-  box-shadow:
-    inset 0 0 0 1px rgba(213, 239, 178, 0.15),
-    0 18px 36px rgba(78, 105, 58, 0.26);
-}
-
 .content-fade-enter-active,
 .content-fade-leave-active {
   transition: opacity 280ms ease;
