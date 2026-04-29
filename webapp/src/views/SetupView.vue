@@ -41,7 +41,8 @@ const pageTitle = computed(() => {
 
 const pageSubtitle = computed(() => {
   if (step.value === 0) return 'Настройка VPN происходит в 3 шага и занимает пару минут'
-  if (step.value === 1) return `Установите приложение для ${osLabel.value} и вернитесь к этому экрану.`
+  if (step.value === 1)
+    return `Установите приложение для ${osLabel.value} и вернитесь к этому экрану.`
   if (step.value === 2) return 'Добавьте подписку в приложение с помощью кнопки ниже.'
   return 'Нажмите на круглую кнопку в приложении для включения VPN.'
 })
@@ -203,7 +204,7 @@ onBeforeUnmount(() => {
           Начать настройку
         </Button>
         <Button
-          class="h-12 border border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900"
+          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
           @click="router.push({ name: 'support-setup' })"
         >
           Установить на другом устройстве
@@ -213,11 +214,15 @@ onBeforeUnmount(() => {
 
     <template v-else-if="step === 1">
       <div class="grid gap-3">
-        <Button class="h-12 bg-white text-black hover:bg-neutral-200" :disabled="!installUrl" @click="openInstall">
+        <Button
+          class="h-12 bg-white text-black hover:bg-neutral-200"
+          :disabled="!installUrl"
+          @click="openInstall"
+        >
           Установить приложение
         </Button>
         <Button
-          class="h-12 border border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900"
+          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
           @click="nextStep"
         >
           <span>Следующий шаг</span>
@@ -236,7 +241,7 @@ onBeforeUnmount(() => {
           Добавить подписку
         </Button>
         <Button
-          class="h-12 border border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900"
+          class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
           @click="nextStep"
         >
           <span>Следующий шаг</span>
@@ -246,7 +251,10 @@ onBeforeUnmount(() => {
     </template>
 
     <template v-else>
-      <Button class="h-12 bg-white text-black hover:bg-neutral-200" @click="router.push({ name: 'home' })">
+      <Button
+        class="h-12 bg-white text-black hover:bg-neutral-200"
+        @click="router.push({ name: 'home' })"
+      >
         Завершить установку
       </Button>
     </template>
@@ -254,18 +262,23 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <Transition name="sheet">
         <div v-if="showInstallWarning" class="fixed inset-0 z-50 flex flex-col justify-end">
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="showInstallWarning = false" />
-          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6">
+          <div
+            class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            @click="showInstallWarning = false"
+          />
+          <div class="relative bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)]">
             <div class="mb-4 flex justify-center">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
             <h2 class="mb-3 text-base font-semibold text-white">Важная информация</h2>
             <p class="text-sm text-neutral-300">
-              После установки приложения, обязательно вернитесь на этот экран и нажмите
-              "следующий шаг", чтобы добавить конфигурацию в приложение, без этого VPN работать
-              не будет.
+              После установки приложения, обязательно вернитесь на этот экран и нажмите "следующий
+              шаг", чтобы добавить конфигурацию в приложение, без этого VPN работать не будет.
             </p>
-            <Button class="mt-4 h-11 bg-white text-black hover:bg-neutral-200" @click="confirmInstall">
+            <Button
+              class="mt-4 h-11 bg-white text-black hover:bg-neutral-200"
+              @click="confirmInstall"
+            >
               Хорошо, перейти к установке
             </Button>
           </div>
@@ -291,8 +304,10 @@ onBeforeUnmount(() => {
   width: 128px;
   height: 128px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #0a0a0a;
+  background: black;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .pulse-cta {
@@ -325,5 +340,4 @@ onBeforeUnmount(() => {
 .sheet-leave-to > div:last-child {
   transform: translateY(100%);
 }
-
 </style>

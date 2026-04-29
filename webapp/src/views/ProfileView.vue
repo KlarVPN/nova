@@ -233,7 +233,7 @@ const router = useRouter()
     <div class="flex flex-col items-center gap-2">
       <span>{{ t('profile.questions') }}</span>
       <Button
-        class="w-fit border border-neutral-700 bg-transparent p-2 px-4 text-sm text-white hover:bg-white/10"
+        class="w-fit bg-neutral-800 p-2 px-4 text-sm font-semibold text-white hover:bg-neutral-700"
         @click="router.push({ name: 'support' })"
       >
         {{ t('profile.support') }}
