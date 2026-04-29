@@ -60,6 +60,7 @@ class Settings(BaseSettings):
         description="Public Uptime Kuma status API URL returning monitors with status/ping fields",
     )
     TERMS_OF_SERVICE_URL: Optional[str] = Field(default=None)
+    PRIVACY_POLICY_URL: Optional[str] = Field(default=None)
     DOCS_URL: Optional[str] = Field(default=None)
 
     INSTRUCTION_ANDROID_URL: Optional[str] = Field(default=None)

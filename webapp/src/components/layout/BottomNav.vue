@@ -13,6 +13,7 @@ const { t } = useI18n()
 const tabs = computed(() => [
   { path: '/', label: t('nav.home'), isLogotype: true },
   { path: '/setup', icon: 'lucide:settings', label: t('nav.setup') },
+  { path: '/locations', icon: 'lucide:map-pin', label: t('nav.locations') },
   { path: '/profile', icon: 'lucide:user', label: t('nav.profile') },
   { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
 ])

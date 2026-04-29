@@ -33,6 +33,18 @@ export interface UserProfile {
   has_active_subscription: boolean
   subscription: ActiveSubscription | null
   trial_available: boolean
+  links: {
+    support: string
+    docs: string
+    reviews: string
+    terms: string
+    privacy: string
+    instruction_ios: string
+    instruction_android: string
+    instruction_macos: string
+    instruction_windows: string
+    instruction_linux: string
+  }
 }
 
 export interface SubscriptionPlan {

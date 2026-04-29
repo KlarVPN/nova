@@ -20,12 +20,10 @@ const store = useSubscriptionStore()
 const { t, te } = useI18n()
 const { success, error } = useToast()
 
-const botUsername = import.meta.env.VITE_BOT_USERNAME
-const channelUsername = import.meta.env.VITE_CHANNEL_USERNAME
-const docsUrl = import.meta.env.VITE_DOCS_URL
-const privacyUrl = import.meta.env.VITE_PRIVACY_POLICY_URL
-const termsUrl = import.meta.env.VITE_TERMS_OR_SERVICE_URL
-const statusUrl = import.meta.env.VITE_STATUS_URL
+const reviewsUrl = computed(() => auth.profile?.links.reviews || '')
+const docsUrl = computed(() => auth.profile?.links.docs || '')
+const termsUrl = computed(() => auth.profile?.links.terms || '')
+const privacyUrl = computed(() => auth.profile?.links.privacy || '')
 
 const displayName = computed(() => {
   const p = auth.profile
@@ -45,7 +43,9 @@ const currentLocaleLabel = computed(
     AVAILABLE_LOCALES.find((item) => item.code === locale.value)?.name ??
     locale.value.toUpperCase(),
 )
-const connectUrl = computed(() => store.connectInfo?.config_link || store.connectInfo?.connect_url || '')
+const connectUrl = computed(
+  () => store.connectInfo?.config_link || store.connectInfo?.connect_url || '',
+)
 
 onMounted(async () => {
   if (auth.hasSubscription && !store.connectInfo) {
@@ -120,6 +120,7 @@ function resetPromo() {
 }
 
 function openExternal(url: string) {
+  if (!url) return
   hapticImpact('light')
   openLink(url)
 }
@@ -128,7 +129,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-6 pt-4 pb-6">
+  <div class="flex w-full flex-col gap-6 pt-4 pb-24">
     <!-- User info -->
     <div
       v-if="auth.profile"
@@ -154,14 +155,6 @@ const router = useRouter()
       >
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="router.push({ name: 'configs' })"
-        >
-          <Icon icon="lucide:qr-code" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.config') }}</span>
-        </Button>
-
-        <Button
-          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'referral' })"
         >
           <Icon icon="lucide:users-round" class="size-4 shrink-0 text-neutral-500" />
@@ -180,9 +173,9 @@ const router = useRouter()
         class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
-          v-if="channelUsername"
+          v-if="reviewsUrl"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="openExternal(`https://t.me/${channelUsername}`)"
+          @click="openExternal(reviewsUrl)"
         >
           <Icon icon="lucide:newspaper" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.news') }}</span>
@@ -196,19 +189,11 @@ const router = useRouter()
           <Icon icon="lucide:book-text" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.docs') }}</span>
         </Button>
-        <Button
-          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="router.push({ name: 'locations' })"
-        >
-          <Icon icon="lucide:map-pin" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.status') }}</span>
-        </Button>
       </div>
       <div
         class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
-          v-if="termsUrl"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(termsUrl)"
         >
@@ -217,7 +202,6 @@ const router = useRouter()
         </Button>
 
         <Button
-          v-if="privacyUrl"
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="openExternal(privacyUrl)"
         >
@@ -348,5 +332,4 @@ const router = useRouter()
 .sheet-leave-to > div:last-child {
   transform: translateY(100%);
 }
-
 </style>

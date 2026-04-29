@@ -7,7 +7,8 @@
     "promo": "Promo Code",
     "configs": "Configs",
     "profile": "Profile",
-    "support": "Support"
+    "support": "Support",
+    "locations": "Locations"
   },
   "common": {
     "loading": "Loading...",
@@ -226,7 +227,7 @@
     "promo": "Promo code",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
-    "status": "Server status"
+    "status": "Locations"
   },
   "support": {
     "title": "Contact support",

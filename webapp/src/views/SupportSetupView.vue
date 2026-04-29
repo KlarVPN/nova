@@ -14,19 +14,24 @@ const router = useRouter()
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
 
-const docsUrl = import.meta.env.VITE_DOCS_URL || ''
-const platformLinks = {
-  ios: import.meta.env.VITE_INSTRUCTION_IOS_URL || docsUrl,
-  android: import.meta.env.VITE_INSTRUCTION_ANDROID_URL || docsUrl,
-  macos: import.meta.env.VITE_INSTRUCTION_MACOS_URL || docsUrl,
-  linux: import.meta.env.VITE_INSTRUCTION_LINUX_URL || docsUrl,
-}
+const docsUrl = computed(() => auth.profile?.links.docs || '')
+const platformLinks = computed(() => ({
+  ios: auth.profile?.links.instruction_ios || docsUrl.value,
+  android: auth.profile?.links.instruction_android || docsUrl.value,
+  macos: auth.profile?.links.instruction_macos || docsUrl.value,
+  linux: auth.profile?.links.instruction_linux || docsUrl.value,
+}))
 
 const tiles = computed(() => [
-  { key: 'ios', label: 'iOS', icon: 'lucide:smartphone', url: platformLinks.ios },
-  { key: 'android', label: 'Android', icon: 'lucide:smartphone-charging', url: platformLinks.android },
-  { key: 'macos', label: 'macOS', icon: 'lucide:laptop', url: platformLinks.macos },
-  { key: 'linux', label: 'Linux', icon: 'lucide:terminal', url: platformLinks.linux },
+  { key: 'ios', label: 'iOS', icon: 'lucide:smartphone', url: platformLinks.value.ios },
+  {
+    key: 'android',
+    label: 'Android',
+    icon: 'lucide:smartphone-charging',
+    url: platformLinks.value.android,
+  },
+  { key: 'macos', label: 'macOS', icon: 'lucide:laptop', url: platformLinks.value.macos },
+  { key: 'linux', label: 'Linux', icon: 'lucide:terminal', url: platformLinks.value.linux },
 ])
 const connectUrl = computed(() => subStore.connectInfo?.config_link || subStore.connectInfo?.connect_url || '')
 
@@ -48,9 +53,9 @@ function openPlatform(url: string) {
 }
 
 function openOtherPlatforms() {
-  if (!docsUrl) return
+  if (!docsUrl.value) return
   hapticImpact('light')
-  openLink(docsUrl)
+  openLink(docsUrl.value)
 }
 </script>
 

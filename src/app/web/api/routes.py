@@ -140,6 +140,18 @@ async def get_me(request: web.Request) -> web.Response:
             "has_active_subscription": sub is not None and sub.is_active,
             "subscription": _sub_to_dict(sub) if sub else None,
             "trial_available": trial_available,
+            "links": {
+                "support": settings.SUPPORT_LINK or "",
+                "docs": settings.DOCS_URL or "",
+                "reviews": settings.REVIEWS_URL or "",
+                "terms": settings.TERMS_OF_SERVICE_URL or "",
+                "privacy": settings.PRIVACY_POLICY_URL or "",
+                "instruction_ios": settings.INSTRUCTION_IOS_URL or "",
+                "instruction_android": settings.INSTRUCTION_ANDROID_URL or "",
+                "instruction_macos": settings.INSTRUCTION_MACOS_URL or "",
+                "instruction_windows": settings.INSTRUCTION_WINDOWS_URL or "",
+                "instruction_linux": settings.INSTRUCTION_LINUX_URL or "",
+            },
         })
 
 

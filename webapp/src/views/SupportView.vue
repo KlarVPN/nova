@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { Button } from '@/components/ui/button'
 import { hapticImpact, openLink } from '@/lib/telegram'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
+const auth = useAuthStore()
 
-const botUsername = import.meta.env.VITE_BOT_USERNAME
+const supportUrl = computed(() => auth.profile?.links.support || '')
 
 function openFaq() {
   hapticImpact('light')
@@ -21,9 +24,9 @@ function openOtherDeviceSetup() {
 }
 
 function openSupport() {
-  if (!botUsername) return
+  if (!supportUrl.value) return
   hapticImpact('light')
-  openLink(`https://t.me/${botUsername}`)
+  openLink(supportUrl.value)
 }
 </script>
 
@@ -54,7 +57,7 @@ function openSupport() {
       </Button>
 
       <Button
-        :disabled="!botUsername"
+        :disabled="!supportUrl"
         class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 text-left transition-colors hover:bg-neutral-900"
         @click="openSupport"
       >

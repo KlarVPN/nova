@@ -26,7 +26,6 @@ const isActive = computed(
 const connectUrl = computed(() => subStore.connectInfo?.connect_url ?? '')
 
 const copied = ref(false)
-const showInstructions = ref(false)
 
 onMounted(async () => {
   if (isActive.value && !subStore.connectInfo) {
@@ -63,6 +62,11 @@ function openInFlClash() {
 function goToPlans() {
   hapticImpact()
   router.push('/plans')
+}
+
+function goToSetup() {
+  hapticImpact('light')
+  router.push('/setup')
 }
 </script>
 
@@ -162,10 +166,10 @@ function goToPlans() {
         </div>
       </div>
 
-      <!-- Instructions toggle -->
+      <!-- Instructions button -->
       <Button
         class="flex h-12 w-full cursor-pointer items-center justify-between gap-3 border border-neutral-800 bg-neutral-950 px-4 py-2 hover:bg-neutral-900 active:opacity-70"
-        @click="showInstructions = !showInstructions"
+        @click="goToSetup"
       >
         <span class="flex items-center gap-2">
           <Icon icon="lucide:book-open" class="size-4 text-neutral-400" />
@@ -173,80 +177,8 @@ function goToPlans() {
             {{ t('configs.instructions') }}
           </span>
         </span>
-        <Icon
-          :icon="showInstructions ? 'lucide:chevron-up' : 'lucide:chevron-down'"
-          class="size-4 text-neutral-400"
-        />
+        <Icon icon="lucide:chevron-right" class="size-4 text-neutral-400" />
       </Button>
-
-      <!-- Instructions content -->
-      <div v-if="showInstructions" class="flex w-full flex-col gap-3">
-        <!-- Happ instructions -->
-        <div
-          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
-        >
-          <div class="flex items-center gap-2">
-            <Icon icon="lucide:smartphone" class="size-4 text-white" />
-            <h3 class="text-sm font-bold text-white">
-              {{ t('configs.happ.title') }}
-            </h3>
-          </div>
-          <ol class="flex flex-col gap-2">
-            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
-              <span
-                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
-              >
-                {{ n }}
-              </span>
-              {{ t(`configs.happ.step${n}`) }}
-            </li>
-          </ol>
-        </div>
-
-        <!-- FlClash instructions -->
-        <div
-          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
-        >
-          <div class="flex items-center gap-2">
-            <Icon icon="lucide:zap" class="size-4 text-white" />
-            <h3 class="text-sm font-bold text-white">
-              {{ t('configs.flclash.title') }}
-            </h3>
-          </div>
-          <ol class="flex flex-col gap-2">
-            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
-              <span
-                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
-              >
-                {{ n }}
-              </span>
-              {{ t(`configs.flclash.step${n}`) }}
-            </li>
-          </ol>
-        </div>
-
-        <!-- Manual instructions -->
-        <div
-          class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
-        >
-          <div class="flex items-center gap-2">
-            <Icon icon="lucide:settings" class="size-4 text-white" />
-            <h3 class="text-sm font-bold text-white">
-              {{ t('configs.manual.title') }}
-            </h3>
-          </div>
-          <ol class="flex flex-col gap-2">
-            <li v-for="n in 4" :key="n" class="flex items-start gap-2 text-sm text-neutral-300">
-              <span
-                class="flex size-5 shrink-0 items-center justify-center rounded-full border border-neutral-700 font-mono text-xs text-neutral-400"
-              >
-                {{ n }}
-              </span>
-              {{ t(`configs.manual.step${n}`) }}
-            </li>
-          </ol>
-        </div>
-      </div>
     </template>
   </div>
 </template>
