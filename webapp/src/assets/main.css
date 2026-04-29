@@ -163,10 +163,9 @@
   }
   body {
     /* Background and text color */
-    @apply bg-background text-foreground ;
+    @apply bg-background text-foreground;
   }
 }
-
 
 /* Font and rendering settings */
 :root {

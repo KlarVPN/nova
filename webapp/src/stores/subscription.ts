@@ -21,10 +21,14 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const processingTrial = ref(false)
 
   const activePlans = computed(() =>
-    (plansData.value?.plans ?? []).filter((p) => p.enabled && (p.price_rub !== null || p.price_stars !== null)),
+    (plansData.value?.plans ?? []).filter(
+      (p) => p.enabled && (p.price_rub !== null || p.price_stars !== null),
+    ),
   )
-  const activeTrafficPackages = computed(
-    () => (plansData.value?.traffic_packages ?? []).filter((p) => p.price_rub !== null || p.price_stars !== null),
+  const activeTrafficPackages = computed(() =>
+    (plansData.value?.traffic_packages ?? []).filter(
+      (p) => p.price_rub !== null || p.price_stars !== null,
+    ),
   )
   const isTrafficMode = computed(() => plansData.value?.traffic_sale_mode ?? false)
   const availableProviders = computed(() => plansData.value?.payment_methods ?? [])
@@ -64,7 +68,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     try {
       const result = await api.devices.disconnect(hwid)
       if (result.success && devicesData.value) {
-        devicesData.value.devices = devicesData.value.devices.filter(d => d.hwid !== hwid)
+        devicesData.value.devices = devicesData.value.devices.filter((d) => d.hwid !== hwid)
         devicesData.value.current_count = devicesData.value.devices.length
       }
       return result.success

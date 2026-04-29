@@ -226,7 +226,6 @@ const router = useRouter()
           <Icon icon="lucide:book-lock" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.privacy') }}</span>
         </Button>
-
       </div>
     </div>
 

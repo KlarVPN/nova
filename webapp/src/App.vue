@@ -43,9 +43,35 @@ onMounted(async () => {
 
   <template v-else>
     <AppLayout>
-      <RouterView />
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="page-transition" mode="out-in">
+          <div :key="route.fullPath" class="page-transition-view">
+            <component :is="Component" />
+          </div>
+        </Transition>
+      </RouterView>
     </AppLayout>
   </template>
 
   <Toaster />
 </template>
+
+<style scoped>
+.page-transition-enter-active,
+.page-transition-leave-active {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+  will-change: opacity, transform;
+}
+
+.page-transition-enter-from,
+.page-transition-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-transition-view {
+  min-height: 100%;
+}
+</style>

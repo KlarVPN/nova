@@ -19,15 +19,13 @@ const percentage = () => Math.min(100, Math.max(0, ((props.value ?? 0) / (props.
 
 <template>
   <div
-    :class="
-      cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', props.class)
-    "
+    :class="cn('bg-secondary relative h-2 w-full overflow-hidden rounded-full', props.class)"
     role="progressbar"
     :aria-valuenow="value"
     :aria-valuemax="max"
   >
     <div
-      :class="cn('h-full bg-accent transition-all duration-500 ease-out', indicatorClass)"
+      :class="cn('bg-accent h-full transition-all duration-500 ease-out', indicatorClass)"
       :style="{ width: `${percentage()}%` }"
     />
   </div>

@@ -50,7 +50,8 @@ const appOptions = computed(() => [
     title: t('setup.apps.happ.title'),
     desc: t('setup.apps.happ.desc'),
     recommended: true,
-    available: selectedOS.value === 'ios' || selectedOS.value === 'macos' || selectedOS.value === 'other',
+    available:
+      selectedOS.value === 'ios' || selectedOS.value === 'macos' || selectedOS.value === 'other',
   },
   {
     key: 'flclash' as const,
@@ -59,7 +60,10 @@ const appOptions = computed(() => [
     desc: t('setup.apps.flclash.desc'),
     recommended: false,
     available:
-      selectedOS.value === 'android' || selectedOS.value === 'windows' || selectedOS.value === 'linux' || selectedOS.value === 'other',
+      selectedOS.value === 'android' ||
+      selectedOS.value === 'windows' ||
+      selectedOS.value === 'linux' ||
+      selectedOS.value === 'other',
   },
   {
     key: 'manual' as const,
@@ -96,7 +100,8 @@ function goToScene(next: SetupScene) {
 function chooseDevice(next: SetupDevice) {
   device.value = next
   if (next === 'this') {
-    selectedApp.value = selectedOS.value === 'ios' || selectedOS.value === 'macos' ? 'happ' : 'flclash'
+    selectedApp.value =
+      selectedOS.value === 'ios' || selectedOS.value === 'macos' ? 'happ' : 'flclash'
   } else {
     selectedApp.value = 'happ'
   }
@@ -150,7 +155,10 @@ function goToPlans() {
       <div class="rounded-2xl border border-neutral-800 bg-neutral-950 p-5 text-center">
         <p class="text-base font-semibold text-white">{{ t('setup.noSubTitle') }}</p>
         <p class="mt-2 text-sm text-neutral-400">{{ t('setup.noSubDesc') }}</p>
-        <Button class="mt-4 h-11 w-full bg-white text-black hover:bg-neutral-200" @click="goToPlans">
+        <Button
+          class="mt-4 h-11 w-full bg-white text-black hover:bg-neutral-200"
+          @click="goToPlans"
+        >
           {{ t('home.subscribe') }}
         </Button>
       </div>

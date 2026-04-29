@@ -55,7 +55,10 @@ onBeforeUnmount(() => {
         class="faq-item group overflow-hidden rounded-[16px] border border-neutral-800 bg-neutral-950/85 backdrop-blur-sm"
         :open="openIndex === idx"
       >
-        <summary class="flex cursor-pointer list-none items-center gap-3 px-4 py-3" @click.prevent="openItem(idx)">
+        <summary
+          class="flex cursor-pointer list-none items-center gap-3 px-4 py-3"
+          @click.prevent="openItem(idx)"
+        >
           <span
             class="flex size-6 shrink-0 items-center justify-center rounded-[10px] border border-neutral-700 bg-neutral-900 text-xs font-semibold text-[#bdfe00]"
           >

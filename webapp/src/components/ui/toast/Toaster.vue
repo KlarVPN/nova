@@ -5,12 +5,14 @@ const { toasts } = useToast()
 
 <template>
   <Teleport to="body">
-    <div class="pointer-events-none fixed inset-x-0 top-4 z-50 flex flex-col items-center gap-2 px-4">
+    <div
+      class="pointer-events-none fixed inset-x-0 top-4 z-50 flex flex-col items-center gap-2 px-4"
+    >
       <TransitionGroup name="toast">
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          class="pointer-events-auto glass flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg"
+          class="glass pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg"
           :class="{
             'text-success': toast.type === 'success',
             'text-destructive': toast.type === 'error',

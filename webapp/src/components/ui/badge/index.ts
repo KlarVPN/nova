@@ -12,7 +12,8 @@ export const badgeVariants = cva(
         info: 'bg-info/15 text-info border border-info/25',
         outline: 'border border-border text-muted-foreground',
         popular: 'bg-accent text-accent-foreground font-semibold',
-        premium: 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/25',
+        premium:
+          'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/25',
       },
     },
     defaultVariants: {

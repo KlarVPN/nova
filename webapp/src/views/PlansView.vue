@@ -3,7 +3,6 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
 import { hapticImpact } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
@@ -17,6 +16,7 @@ const selectedMonths = ref<number | null>(null)
 const selectedGb = ref<number | null>(null)
 const selectedProvider = ref<PaymentProvider | null>(null)
 const step = ref<'plan' | 'payment'>('plan')
+const hasRequestedPlans = ref(false)
 
 const supportedProviders: PaymentProvider[] = [
   'yookassa',
@@ -34,7 +34,9 @@ const paymentProviders = computed(() =>
 )
 const displayPlans = computed(() => {
   if (store.activePlans.length) return store.activePlans
-  return (store.plansData?.plans ?? []).filter((p) => p.price_rub !== null || p.price_stars !== null)
+  return (store.plansData?.plans ?? []).filter(
+    (p) => p.price_rub !== null || p.price_stars !== null,
+  )
 })
 const displayTrafficPackages = computed(() => {
   if (store.activeTrafficPackages.length) return store.activeTrafficPackages
@@ -60,7 +62,19 @@ const availableProvidersForSelection = computed(() =>
   }),
 )
 
-onMounted(() => store.fetchPlans())
+onMounted(() => {
+  if (store.plansData) {
+    hasRequestedPlans.value = true
+    return
+  }
+
+  hasRequestedPlans.value = true
+  store.fetchPlans()
+})
+
+const showPlansSkeleton = computed(
+  () => store.loadingPlans || (!store.plansData && !hasRequestedPlans.value),
+)
 
 const discount = computed(() => store.activeDiscount)
 const includedTrafficGb = computed(() => store.plansData?.included_traffic_gb ?? null)
@@ -87,7 +101,10 @@ function planDisplayPrice(priceRub: number | null, priceStars: number | null) {
   return '—'
 }
 
-function planCostValue(plan: { price_rub: number | null; price_stars: number | null }): number | null {
+function planCostValue(plan: {
+  price_rub: number | null
+  price_stars: number | null
+}): number | null {
   if (plan.price_rub != null) return discountedPrice(plan.price_rub)
   if (plan.price_stars != null) return plan.price_stars
   return null
@@ -105,7 +122,8 @@ function planSavings(months: number): number | null {
 }
 
 function trafficLabel(): string {
-  if (includedTrafficGb.value == null || includedTrafficGb.value <= 0) return t('plans.unlimitedTraffic')
+  if (includedTrafficGb.value == null || includedTrafficGb.value <= 0)
+    return t('plans.unlimitedTraffic')
   return `${includedTrafficGb.value} GB`
 }
 
@@ -171,7 +189,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center gap-5 pt-2 pb-6">
+  <div class="relative flex w-full flex-col items-center gap-5 pt-2 pb-6">
     <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('plans.title') }}
     </h1>
@@ -179,184 +197,216 @@ watch(
       {{ t('plans.description') }}
     </p>
 
-    <!-- Loading -->
-    <div v-if="store.loadingPlans" class="flex items-center justify-center py-12">
-      <LoadingSpinner :text="t('plans.loading')" />
-    </div>
-
-    <template v-else>
-      <!-- Active Discount Banner -->
-      <div
-        v-if="discount"
-        class="flex items-center gap-3 border border-[#bdfe00]/30 bg-neutral-950 px-4 py-2"
-      >
-        <Icon icon="lucide:percent" class="size-4 shrink-0 text-[#bdfe00]" />
-        <div>
-          <p class="text-sm font-semibold text-[#bdfe00]">
-            {{ t('plans.discountActive', { n: discount.discount_percentage }) }}
-          </p>
-          <p class="font-mono text-xs text-neutral-500">{{ discount.promo_code }}</p>
-        </div>
+    <Transition name="content-fade">
+      <!-- Loading -->
+      <div v-if="showPlansSkeleton" key="loading" class="flex w-full flex-col gap-3 py-4">
+        <div
+          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
+        />
+        <div
+          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
+        />
+        <div
+          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
+        />
+        <div
+          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
+        />
       </div>
 
-      <!-- STEP: Plan Selection -->
-      <div v-if="step === 'plan'" class="flex flex-col gap-4">
+      <div v-else key="content" class="w-full">
+        <!-- Active Discount Banner -->
         <div
-          v-if="!displayPlans.length && !displayTrafficPackages.length"
-          class="flex flex-col items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 py-6 text-center"
+          v-if="discount"
+          class="flex items-center gap-3 border border-[#bdfe00]/30 bg-neutral-950 px-4 py-2"
         >
-          <p class="text-sm text-neutral-400">{{ t('plans.loading') }}</p>
-          <button
-            class="cursor-pointer border border-neutral-700 bg-neutral-900 px-4 py-2 text-xs font-semibold text-white uppercase"
-            @click="store.fetchPlans()"
-          >
-            {{ t('common.retry') }}
-          </button>
+          <Icon icon="lucide:percent" class="size-4 shrink-0 text-[#bdfe00]" />
+          <div>
+            <p class="text-sm font-semibold text-[#bdfe00]">
+              {{ t('plans.discountActive', { n: discount.discount_percentage }) }}
+            </p>
+            <p class="font-mono text-xs text-neutral-500">{{ discount.promo_code }}</p>
+          </div>
         </div>
-        <div class="flex flex-col gap-3">
-          <template v-if="!store.isTrafficMode">
+
+        <!-- STEP: Plan Selection -->
+        <div v-if="step === 'plan'" class="flex w-full flex-col gap-4">
+          <div
+            v-if="!displayPlans.length && !displayTrafficPackages.length"
+            class="flex flex-col items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 py-6 text-center"
+          >
+            <p class="text-sm text-neutral-400">{{ t('plans.loading') }}</p>
             <button
-              v-for="plan in sortedPlans"
-              :key="plan.months"
-              class="flex cursor-pointer flex-col gap-2 rounded-[14px] border p-4 text-left transition-colors"
-              :class="
-                selectedMonths === plan.months
-                  ? 'border-[#bdfe00] bg-neutral-900'
-                  : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
-              "
-              @click="selectPlan(plan.months)"
+              class="cursor-pointer border border-neutral-700 bg-neutral-900 px-4 py-2 text-xs font-semibold text-white uppercase"
+              @click="store.fetchPlans()"
             >
-              <div class="flex items-start justify-between gap-3">
-                <span class="text-2xl font-extrabold tracking-tighter text-white uppercase">{{
-                  monthsLabel(plan.months)
+              {{ t('common.retry') }}
+            </button>
+          </div>
+          <div class="flex w-full flex-col gap-3">
+            <template v-if="!store.isTrafficMode">
+              <button
+                v-for="plan in sortedPlans"
+                :key="plan.months"
+                class="flex cursor-pointer flex-col gap-2 rounded-[14px] border p-4 text-left transition-colors"
+                :class="
+                  selectedMonths === plan.months
+                    ? 'border-[#bdfe00] bg-neutral-900'
+                    : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+                "
+                @click="selectPlan(plan.months)"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <span class="text-2xl font-extrabold tracking-tighter text-white uppercase">{{
+                    monthsLabel(plan.months)
+                  }}</span>
+                  <span
+                    v-if="plan.months > 1 && planSavings(plan.months)"
+                    class="rounded-full border border-emerald-600/40 bg-emerald-950/40 px-2 py-0.5 text-xs font-semibold text-emerald-300"
+                  >
+                    {{ t('plans.saving', { amount: planSavings(plan.months) }) }}
+                  </span>
+                </div>
+                <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
+                  planDisplayPrice(plan.price_rub, plan.price_stars)
+                }}</span>
+                <div class="mt-1 grid grid-cols-2 gap-2 text-xs text-neutral-400">
+                  <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
+                    {{ t('plans.traffic') }}: <span class="text-white">{{ trafficLabel() }}</span>
+                  </div>
+                  <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
+                    {{ t('plans.devices') }}: <span class="text-white">{{ devicesLabel() }}</span>
+                  </div>
+                </div>
+              </button>
+            </template>
+
+            <template v-else>
+              <button
+                v-for="pkg in displayTrafficPackages"
+                :key="pkg.gb"
+                class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
+                :class="
+                  selectedGb === pkg.gb
+                    ? 'border-[#bdfe00] bg-neutral-900'
+                    : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
+                "
+                @click="selectTraffic(pkg.gb)"
+              >
+                <span class="text-2xl font-extrabold tracking-tighter text-white uppercase"
+                  >{{ pkg.gb }} GB</span
+                >
+                <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
+                  planDisplayPrice(pkg.price_rub, pkg.price_stars)
                 }}</span>
                 <span
-                  v-if="plan.months > 1 && planSavings(plan.months)"
-                  class="rounded-full border border-emerald-600/40 bg-emerald-950/40 px-2 py-0.5 text-xs font-semibold text-emerald-300"
+                  v-if="discount && pkg.price_rub !== null"
+                  class="font-mono text-xs text-neutral-500 line-through"
+                  >{{ formatPrice(pkg.price_rub) }}</span
                 >
-                  {{ t('plans.saving', { amount: planSavings(plan.months) }) }}
-                </span>
-              </div>
-              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
-                planDisplayPrice(plan.price_rub, plan.price_stars)
-              }}</span>
-              <div class="mt-1 grid grid-cols-2 gap-2 text-xs text-neutral-400">
-                <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
-                  {{ t('plans.traffic') }}: <span class="text-white">{{ trafficLabel() }}</span>
-                </div>
-                <div class="rounded-md border border-neutral-800 bg-black/20 px-2 py-1">
-                  {{ t('plans.devices') }}: <span class="text-white">{{ devicesLabel() }}</span>
-                </div>
-              </div>
-            </button>
-          </template>
-
-          <template v-else>
-            <button
-              v-for="pkg in displayTrafficPackages"
-              :key="pkg.gb"
-              class="flex cursor-pointer flex-col gap-1 border p-4 text-left transition-colors"
-              :class="
-                selectedGb === pkg.gb
-                  ? 'border-[#bdfe00] bg-neutral-900'
-                  : 'border-neutral-800 bg-neutral-950 hover:border-neutral-700'
-              "
-              @click="selectTraffic(pkg.gb)"
-            >
-              <span class="text-2xl font-extrabold tracking-tighter text-white uppercase"
-                >{{ pkg.gb }} GB</span
-              >
-              <span class="font-mono text-xl font-bold text-[#bdfe00]">{{
-                planDisplayPrice(pkg.price_rub, pkg.price_stars)
-              }}</span>
-              <span
-                v-if="discount && pkg.price_rub !== null"
-                class="font-mono text-xs text-neutral-500 line-through"
-                >{{ formatPrice(pkg.price_rub) }}</span
-              >
-            </button>
-          </template>
-        </div>
-      </div>
-
-      <!-- STEP: Payment Method -->
-      <div v-else class="flex flex-col gap-4">
-        <button
-          class="flex cursor-pointer items-center gap-2 text-sm text-neutral-400"
-          @click="backToPlan"
-        >
-          <Icon icon="lucide:chevron-left" class="size-4" />
-          {{ t('plans.backToPlans') }}
-        </button>
-
-        <!-- Selected plan summary -->
-        <div
-          class="flex items-center justify-between border border-neutral-800 bg-neutral-950 px-4 py-2"
-        >
-          <div>
-            <p class="text-xs text-neutral-500 uppercase">{{ t('plans.selectedPlan') }}</p>
-            <p class="font-mono font-medium text-white">
-              {{ selectedMonths ? monthsLabel(selectedMonths) : `${selectedGb} GB` }}
-            </p>
+              </button>
+            </template>
           </div>
-          <Icon icon="lucide:clock" class="size-5 text-neutral-500" />
         </div>
 
-        <p class="text-sm font-semibold tracking-wide text-neutral-400 uppercase">
-          {{ t('plans.paymentMethod') }}
-        </p>
-
-        <!-- Provider list -->
-        <div class="flex flex-col gap-2">
-          <div
-            v-if="!availableProvidersForSelection.length"
-            class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
-          >
-            {{ t('plans.paymentError') }}
-          </div>
-
+        <!-- STEP: Payment Method -->
+        <div v-else class="flex flex-col gap-4">
           <button
-            v-for="provider in availableProvidersForSelection"
-            :key="provider"
-            class="flex w-full cursor-pointer items-center gap-3 border bg-neutral-950 px-4 py-2 transition-colors"
-            :class="
-              selectedProvider === provider
-                ? 'border-[#bdfe00]'
-                : 'border-neutral-800 hover:border-neutral-700'
-            "
-            @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
+            class="flex cursor-pointer items-center gap-2 text-sm text-neutral-400"
+            @click="backToPlan"
           >
-            <Icon
-              :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
-              class="size-4 shrink-0"
-              :class="selectedProvider === provider ? 'text-[#bdfe00]' : 'text-neutral-500'"
-            />
-            <span
-              class="flex-1 text-left font-medium"
-              :class="selectedProvider === provider ? 'text-white' : 'text-neutral-400'"
+            <Icon icon="lucide:chevron-left" class="size-4" />
+            {{ t('plans.backToPlans') }}
+          </button>
+
+          <!-- Selected plan summary -->
+          <div
+            class="flex items-center justify-between border border-neutral-800 bg-neutral-950 px-4 py-2"
+          >
+            <div>
+              <p class="text-xs text-neutral-500 uppercase">{{ t('plans.selectedPlan') }}</p>
+              <p class="font-mono font-medium text-white">
+                {{ selectedMonths ? monthsLabel(selectedMonths) : `${selectedGb} GB` }}
+              </p>
+            </div>
+            <Icon icon="lucide:clock" class="size-5 text-neutral-500" />
+          </div>
+
+          <p class="text-sm font-semibold tracking-wide text-neutral-400 uppercase">
+            {{ t('plans.paymentMethod') }}
+          </p>
+
+          <!-- Provider list -->
+          <div class="flex flex-col gap-2">
+            <div
+              v-if="!availableProvidersForSelection.length"
+              class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
             >
-              {{ providerLabel(provider) }}
+              {{ t('plans.paymentError') }}
+            </div>
+
+            <button
+              v-for="provider in availableProvidersForSelection"
+              :key="provider"
+              class="flex w-full cursor-pointer items-center gap-3 border bg-neutral-950 px-4 py-2 transition-colors"
+              :class="
+                selectedProvider === provider
+                  ? 'border-[#bdfe00]'
+                  : 'border-neutral-800 hover:border-neutral-700'
+              "
+              @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
+            >
+              <Icon
+                :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
+                class="size-4 shrink-0"
+                :class="selectedProvider === provider ? 'text-[#bdfe00]' : 'text-neutral-500'"
+              />
+              <span
+                class="flex-1 text-left font-medium"
+                :class="selectedProvider === provider ? 'text-white' : 'text-neutral-400'"
+              >
+                {{ providerLabel(provider) }}
+              </span>
+              <Icon
+                v-if="selectedProvider === provider"
+                icon="lucide:check"
+                class="size-4 text-[#bdfe00]"
+              />
+            </button>
+          </div>
+
+          <!-- Pay button -->
+          <button
+            class="flex h-12 w-full cursor-pointer items-center justify-center bg-white text-sm font-extrabold tracking-tight text-black uppercase transition-opacity disabled:opacity-40"
+            :disabled="!selectedProvider || store.processingPayment"
+            @click="pay"
+          >
+            <span v-if="store.processingPayment">
+              <Icon icon="lucide:loader-circle" class="size-4 animate-spin" />
             </span>
-            <Icon
-              v-if="selectedProvider === provider"
-              icon="lucide:check"
-              class="size-4 text-[#bdfe00]"
-            />
+            <span v-else>{{ t('plans.pay') }}</span>
           </button>
         </div>
-
-        <!-- Pay button -->
-        <button
-          class="flex h-12 w-full cursor-pointer items-center justify-center bg-white text-sm font-extrabold tracking-tight text-black uppercase transition-opacity disabled:opacity-40"
-          :disabled="!selectedProvider || store.processingPayment"
-          @click="pay"
-        >
-          <span v-if="store.processingPayment">
-            <Icon icon="lucide:loader-circle" class="size-4 animate-spin" />
-          </span>
-          <span v-else>{{ t('plans.pay') }}</span>
-        </button>
       </div>
-    </template>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.content-fade-enter-active,
+.content-fade-leave-active {
+  transition: opacity 280ms ease;
+}
+
+.content-fade-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.content-fade-enter-from,
+.content-fade-leave-to {
+  opacity: 0;
+}
+</style>

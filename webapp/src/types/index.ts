@@ -112,7 +112,13 @@ export interface PaymentResult {
   provider: string
 }
 
-export type PaymentProvider = 'yookassa' | 'stars' | 'cryptopay' | 'freekassa' | 'platega' | 'severpay'
+export type PaymentProvider =
+  | 'yookassa'
+  | 'stars'
+  | 'cryptopay'
+  | 'freekassa'
+  | 'platega'
+  | 'severpay'
 
 export interface Device {
   hwid: string

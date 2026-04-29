@@ -65,14 +65,20 @@ interface TelegramWebApp {
   sendData(data: string): void
   openLink(url: string, options?: { try_instant_view?: boolean }): void
   openTelegramLink(url: string): void
-  openInvoice(url: string, callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void): void
+  openInvoice(
+    url: string,
+    callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void,
+  ): void
   showAlert(message: string, callback?: () => void): void
   showConfirm(message: string, callback: (confirmed: boolean) => void): void
-  showPopup(params: {
-    title?: string
-    message: string
-    buttons?: Array<{ id?: string; type?: string; text?: string }>
-  }, callback?: (buttonId: string) => void): void
+  showPopup(
+    params: {
+      title?: string
+      message: string
+      buttons?: Array<{ id?: string; type?: string; text?: string }>
+    },
+    callback?: (buttonId: string) => void,
+  ): void
   setHeaderColor(color: string): void
   setBackgroundColor(color: string): void
   enableClosingConfirmation(): void
@@ -136,5 +142,7 @@ export function openInvoice(
 
 export function shareUrl(url: string, text?: string) {
   const shareText = text ? `${text}\n${url}` : url
-  twa?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text ?? '')}`)
+  twa?.openTelegramLink(
+    `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text ?? '')}`,
+  )
 }

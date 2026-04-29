@@ -136,206 +136,217 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-col items-center justify-center gap-5 pt-2 text-center">
-    <!-- LOADING SKELETON -->
-    <template v-if="statusKey === 'loading'">
-      <div class="flex flex-col items-center gap-5 pt-6">
-        <span class="flex animate-pulse rounded-full bg-neutral-900 p-3">
-          <span class="block size-12" />
-        </span>
-        <div class="flex w-full flex-col items-center gap-2">
-          <div class="h-7 w-32 animate-pulse bg-neutral-900" />
-          <div class="h-4 w-24 animate-pulse bg-neutral-900" />
-        </div>
-      </div>
-      <div class="flex w-full flex-col gap-3">
-        <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
-        <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
-      </div>
-    </template>
-
-    <!-- ERROR -->
-    <template v-else-if="statusKey === 'error'">
-      <div class="flex flex-col items-center gap-5 pt-6">
-        <span class="flex rounded-full bg-neutral-900 p-3">
-          <Icon icon="lucide:wifi-off" class="size-12 text-neutral-400" />
-        </span>
-        <div>
-          <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
-            {{ t('common.error') }}
-          </span>
-          <p class="mt-2 text-sm text-neutral-400">{{ auth.error }}</p>
-        </div>
-      </div>
-      <button
-        class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
-        @click="auth.init()"
-      >
-        <Icon icon="lucide:refresh-cw" class="size-5 text-neutral-400" />
-        <span class="font-sans text-sm font-extrabold text-white uppercase">{{
-          t('common.retry')
-        }}</span>
-      </button>
-    </template>
-
-    <!-- NO SUBSCRIPTION -->
-    <template v-else-if="statusKey === 'none'">
-      <SubscriptionBadge :type="statusKey" />
-      <div class="flex w-full flex-col gap-3">
-        <button
-          v-if="auth.trialAvailable"
-          class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
-          :disabled="subStore.processingTrial"
-          @click="activateTrial"
-        >
-          <Icon icon="lucide:gift" class="size-5 text-neutral-400" />
-          <span class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase">{{
-            t('home.trialBtn')
-          }}</span>
-        </button>
-        <button
-          class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
-          @click="goToPlans"
-        >
-          <span class="flex bg-black p-2">
-            <Icon icon="lucide:shield" class="size-5 text-white" />
-          </span>
-          <span class="flex flex-col items-start">
-            <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
-              t('home.subscribe')
-            }}</span>
-          </span>
-        </button>
-      </div>
-    </template>
-
-    <!-- EXPIRED -->
-    <template v-else-if="statusKey === 'expired'">
-      <SubscriptionBadge :type="statusKey" />
-      <button
-        class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
-        @click="goToPlans"
-      >
-        <span class="flex bg-black p-2">
-          <Icon icon="lucide:shield" class="size-5 text-white" />
-        </span>
-        <span class="flex flex-col items-start">
-          <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
-            t('home.renewSub')
-          }}</span>
-        </span>
-      </button>
-    </template>
-
-    <!-- DISABLED -->
-    <template v-else-if="statusKey === 'disabled'">
-      <SubscriptionBadge :type="statusKey" />
-
-      <a
-        :href="supportLink"
-        target="_blank"
-        class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black no-underline"
-      >
-        <span class="flex bg-black p-2">
-          <Icon icon="lucide:message-circle" class="size-5 text-white" />
-        </span>
-        <span class="flex flex-col items-start">
-          <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
-            t('profile.support')
-          }}</span>
-        </span>
-      </a>
-    </template>
-
-    <!-- ACTIVE -->
-    <template v-else-if="statusKey === 'active' && sub">
-      <SubscriptionBadge :type="statusKey" :sub="sub" />
-
-      <!-- Data Cards -->
-      <div class="flex w-full flex-col gap-3">
-        <div class="flex items-center gap-3">
-          <!-- Expires / Days remaining -->
-          <Card class="h-18">
-            <span class="flex items-center gap-2 text-sm">
-              <Icon icon="lucide:calendar" class="size-4" />
-              {{ t('home.expires') }}
+  <div
+    class="flex min-h-[calc(100dvh-4.75rem)] w-full flex-col items-center justify-center gap-5 text-center"
+  >
+    <Transition name="content-fade" mode="out-in">
+      <div :key="statusKey" class="flex w-full flex-col items-center justify-center gap-5">
+        <!-- LOADING SKELETON -->
+        <template v-if="statusKey === 'loading'">
+          <div class="flex flex-col items-center gap-5 pt-6">
+            <span class="flex animate-pulse rounded-full bg-neutral-900 p-3">
+              <span class="block size-12" />
             </span>
-            <span class="text-left font-medium text-white">
-              {{ formatDaysRemaining(sub.days_remaining) }}
-            </span>
-          </Card>
+            <div class="flex w-full flex-col items-center gap-2">
+              <div class="h-7 w-32 animate-pulse bg-neutral-900" />
+              <div class="h-4 w-24 animate-pulse bg-neutral-900" />
+            </div>
+          </div>
+          <div class="flex w-full flex-col gap-3">
+            <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
+            <div class="h-14 w-full animate-pulse border border-neutral-800 bg-neutral-900" />
+          </div>
+        </template>
 
-          <!-- Devices -->
-          <Card @click="openDevicesModal" class="h-18 cursor-pointer">
-            <span class="flex items-center gap-2 text-sm">
-              <Icon icon="lucide:monitor-smartphone" class="size-4" />
-              {{ t('devices.title') }}
-              <Icon icon="lucide:chevron-right" class="size-3" />
+        <!-- ERROR -->
+        <template v-else-if="statusKey === 'error'">
+          <div class="flex flex-col items-center gap-5 pt-6">
+            <span class="flex rounded-full bg-neutral-900 p-3">
+              <Icon icon="lucide:wifi-off" class="size-12 text-neutral-400" />
             </span>
-            <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
-              <Icon icon="lucide:loader-circle" class="size-4 animate-spin text-neutral-400" />
-            </div>
-            <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
-              <span class="font-medium text-white">
-                {{ subStore.devicesData.current_count }}
-                <span class="text-white/50"> / {{ subStore.devicesData.max_devices ?? '∞' }} </span>
+            <div>
+              <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
+                {{ t('common.error') }}
               </span>
+              <p class="mt-2 text-sm text-neutral-400">{{ auth.error }}</p>
             </div>
-            <div v-else class="text-sm text-neutral-500">—</div>
-          </Card>
-        </div>
-        <!-- Traffic -->
-        <Card>
-          <span class="flex items-center gap-2 text-sm">
-            <Icon icon="lucide:activity" class="size-4" />
-            {{ t('home.traffic') }}
-          </span>
-          <template v-if="isUnlimitedTraffic">
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-white">{{ t('plans.unlimitedTraffic') }}</span>
-              <span class="text-xs text-neutral-500">∞</span>
-            </div>
-            <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-              <div class="h-full w-full rounded-full bg-green-500 transition-all duration-500" />
-            </div>
-          </template>
-          <template v-else>
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-white">
-                {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
-                {{ sub.traffic_limit_gb?.toFixed(0) ?? '0' }} GB
-              </span>
-              <span class="text-xs text-neutral-500">
-                {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
-              </span>
-            </div>
-            <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-              <div
-                class="h-full rounded-full transition-all duration-500"
-                :class="trafficBarColor"
-                :style="{ width: trafficUsedPct + '%' }"
-              />
-            </div>
-          </template>
-        </Card>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex w-full flex-col gap-3">
-        <div class="flex w-full items-center gap-2">
-          <Button
-            :disabled="subStore.loadingConnect || !subStore.connectInfo"
-            @click="router.push({ name: 'configs' })"
+          </div>
+          <button
+            class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+            @click="auth.init()"
           >
-            {{ t('home.connect') }}
-            <Icon icon="lucide:chevron-right" class="size-4" />
-          </Button>
-        </div>
-        <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
-          {{ t('home.renewSub') }}
-        </Button>
+            <Icon icon="lucide:refresh-cw" class="size-5 text-neutral-400" />
+            <span class="font-sans text-sm font-extrabold text-white uppercase">{{
+              t('common.retry')
+            }}</span>
+          </button>
+        </template>
+
+        <!-- NO SUBSCRIPTION -->
+        <template v-else-if="statusKey === 'none'">
+          <SubscriptionBadge :type="statusKey" />
+          <div class="flex w-full flex-col gap-3">
+            <button
+              v-if="auth.trialAvailable"
+              class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
+              :disabled="subStore.processingTrial"
+              @click="activateTrial"
+            >
+              <Icon icon="lucide:gift" class="size-5 text-neutral-400" />
+              <span
+                class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase"
+                >{{ t('home.trialBtn') }}</span
+              >
+            </button>
+            <button
+              class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
+              @click="goToPlans"
+            >
+              <span class="flex bg-black p-2">
+                <Icon icon="lucide:shield" class="size-5 text-white" />
+              </span>
+              <span class="flex flex-col items-start">
+                <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
+                  t('home.subscribe')
+                }}</span>
+              </span>
+            </button>
+          </div>
+        </template>
+
+        <!-- EXPIRED -->
+        <template v-else-if="statusKey === 'expired'">
+          <SubscriptionBadge :type="statusKey" />
+          <button
+            class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
+            @click="goToPlans"
+          >
+            <span class="flex bg-black p-2">
+              <Icon icon="lucide:shield" class="size-5 text-white" />
+            </span>
+            <span class="flex flex-col items-start">
+              <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
+                t('home.renewSub')
+              }}</span>
+            </span>
+          </button>
+        </template>
+
+        <!-- DISABLED -->
+        <template v-else-if="statusKey === 'disabled'">
+          <SubscriptionBadge :type="statusKey" />
+
+          <a
+            :href="supportLink"
+            target="_blank"
+            class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black no-underline"
+          >
+            <span class="flex bg-black p-2">
+              <Icon icon="lucide:message-circle" class="size-5 text-white" />
+            </span>
+            <span class="flex flex-col items-start">
+              <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
+                t('profile.support')
+              }}</span>
+            </span>
+          </a>
+        </template>
+
+        <!-- ACTIVE -->
+        <template v-else-if="statusKey === 'active' && sub">
+          <SubscriptionBadge :type="statusKey" :sub="sub" />
+
+          <!-- Data Cards -->
+          <div class="flex w-full flex-col gap-3">
+            <div class="flex items-center gap-3">
+              <!-- Expires / Days remaining -->
+              <Card class="h-18">
+                <span class="flex items-center gap-2 text-sm">
+                  <Icon icon="lucide:calendar" class="size-4" />
+                  {{ t('home.expires') }}
+                </span>
+                <span class="text-left font-medium text-white">
+                  {{ formatDaysRemaining(sub.days_remaining) }}
+                </span>
+              </Card>
+
+              <!-- Devices -->
+              <Card @click="openDevicesModal" class="h-18 cursor-pointer">
+                <span class="flex items-center gap-2 text-sm">
+                  <Icon icon="lucide:monitor-smartphone" class="size-4" />
+                  {{ t('devices.title') }}
+                  <Icon icon="lucide:chevron-right" class="size-3" />
+                </span>
+                <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
+                  <Icon icon="lucide:loader-circle" class="size-4 animate-spin text-neutral-400" />
+                </div>
+                <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
+                  <span class="font-medium text-white">
+                    {{ subStore.devicesData.current_count }}
+                    <span class="text-white/50">
+                      / {{ subStore.devicesData.max_devices ?? '∞' }}
+                    </span>
+                  </span>
+                </div>
+                <div v-else class="text-sm text-neutral-500">—</div>
+              </Card>
+            </div>
+            <!-- Traffic -->
+            <Card>
+              <span class="flex items-center gap-2 text-sm">
+                <Icon icon="lucide:activity" class="size-4" />
+                {{ t('home.traffic') }}
+              </span>
+              <template v-if="isUnlimitedTraffic">
+                <div class="flex items-center justify-between">
+                  <span class="font-medium text-white">{{ t('plans.unlimitedTraffic') }}</span>
+                  <span class="text-xs text-neutral-500">∞</span>
+                </div>
+                <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+                  <div
+                    class="h-full w-full rounded-full bg-green-500 transition-all duration-500"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <div class="flex items-center justify-between">
+                  <span class="font-medium text-white">
+                    {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
+                    {{ sub.traffic_limit_gb?.toFixed(0) ?? '0' }} GB
+                  </span>
+                  <span class="text-xs text-neutral-500">
+                    {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
+                  </span>
+                </div>
+                <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+                  <div
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="trafficBarColor"
+                    :style="{ width: trafficUsedPct + '%' }"
+                  />
+                </div>
+              </template>
+            </Card>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex w-full flex-col gap-3">
+            <div class="flex w-full items-center gap-2">
+              <Button
+                :disabled="subStore.loadingConnect || !subStore.connectInfo"
+                @click="router.push({ name: 'configs' })"
+              >
+                {{ t('home.connect') }}
+                <Icon icon="lucide:chevron-right" class="size-4" />
+              </Button>
+            </div>
+            <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
+              {{ t('home.renewSub') }}
+            </Button>
+          </div>
+        </template>
       </div>
-    </template>
+    </Transition>
   </div>
 
   <!-- Device Management Bottom Sheet -->
@@ -423,6 +434,16 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 </template>
 
 <style scoped>
+.content-fade-enter-active,
+.content-fade-leave-active {
+  transition: opacity 220ms ease;
+}
+
+.content-fade-enter-from,
+.content-fade-leave-to {
+  opacity: 0;
+}
+
 .sheet-enter-active,
 .sheet-leave-active {
   transition: opacity 0.25s ease;
