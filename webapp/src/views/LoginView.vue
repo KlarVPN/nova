@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
@@ -14,10 +14,17 @@ const auth = useAuthStore()
 const { error: toastError } = useToast()
 
 const submitting = ref(false)
+const telegramWidgetHost = ref<HTMLDivElement | null>(null)
 
-const TELEGRAM_BOT_ID = import.meta.env.VITE_TELEGRAM_BOT_ID as string | undefined
+const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME as string | undefined
 
 type TelegramAuthUser = Record<string, unknown>
+
+declare global {
+  interface Window {
+    TelegramOnAuthCb?: (user: TelegramAuthUser) => void
+  }
+}
 
 async function loginWithTelegram(user: TelegramAuthUser) {
   submitting.value = true
@@ -34,7 +41,59 @@ async function loginWithTelegram(user: TelegramAuthUser) {
 
 
 onMounted(() => {
+  if (TELEGRAM_BOT_USERNAME && telegramWidgetHost.value) {
+    window.TelegramOnAuthCb = (user: TelegramAuthUser) => {
+      void loginWithTelegram(user)
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://telegram.org/js/telegram-widget.js?22'
+    script.async = true
+    script.setAttribute('data-telegram-login', TELEGRAM_BOT_USERNAME)
+    script.setAttribute('data-size', 'large')
+    script.setAttribute('data-radius', '12')
+    script.setAttribute('data-request-access', 'write')
+    script.setAttribute('data-onauth', 'TelegramOnAuthCb(user)')
+    script.setAttribute('data-userpic', 'false')
+
+    telegramWidgetHost.value.innerHTML = ''
+    telegramWidgetHost.value.appendChild(script)
+  }
+
   const params = new URLSearchParams(window.location.search)
+  if (!params.get('hash') && window.location.hash.includes('?')) {
+    const hashQuery = window.location.hash.split('?')[1] ?? ''
+    const hashParams = new URLSearchParams(hashQuery)
+    hashParams.forEach((value, key) => params.set(key, value))
+  }
+
+  if (!params.get('hash')) {
+    const tgAuthRaw = window.location.hash.match(/tgAuthResult=([^&]+)/)?.[1]
+    if (tgAuthRaw) {
+      try {
+        const decoded = decodeURIComponent(tgAuthRaw)
+
+        // Variant 1: query-like payload (k=v&k2=v2)
+        const tgParams = new URLSearchParams(decoded)
+        if (tgParams.get('hash')) {
+          tgParams.forEach((value, key) => params.set(key, value))
+        } else {
+          // Variant 2: base64/base64url JSON payload
+          const normalized = decoded.replace(/-/g, '+').replace(/_/g, '/')
+          const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4)
+          const jsonText = atob(padded)
+          const data = JSON.parse(jsonText) as Record<string, unknown>
+          Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              params.set(key, String(value))
+            }
+          })
+        }
+      } catch {
+        // leave params as-is; normal validation below will stop auth flow
+      }
+    }
+  }
   if (!params.get('hash') || !params.get('id') || !params.get('auth_date')) return
 
   const authPayload: TelegramAuthUser = {}
@@ -46,16 +105,22 @@ onMounted(() => {
 
   void loginWithTelegram(authPayload)
 })
-function startTelegramOauth() {
-  if (!TELEGRAM_BOT_ID) {
-    toastError('VITE_TELEGRAM_BOT_ID is not configured')
+
+onBeforeUnmount(() => {
+  delete window.TelegramOnAuthCb
+})
+
+function startTelegramOauthFallback() {
+  const botId = import.meta.env.VITE_TELEGRAM_BOT_ID as string | undefined
+  if (!botId) {
+    toastError('VITE_BOT_USERNAME or VITE_TELEGRAM_BOT_ID is not configured')
     return
   }
 
   const origin = window.location.origin
-  const returnTo = `${origin}${window.location.pathname}#/login`
+  const returnTo = `${origin}/app/login`
   const url = new URL('https://oauth.telegram.org/auth')
-  url.searchParams.set('bot_id', TELEGRAM_BOT_ID)
+  url.searchParams.set('bot_id', botId)
   url.searchParams.set('origin', origin)
   url.searchParams.set('return_to', returnTo)
   url.searchParams.set('request_access', 'write')
@@ -79,8 +144,9 @@ function startTelegramOauth() {
     </div>
 
     <!-- Telegram OAuth 2.0 -->
-    <div class="flex w-full max-w-sm flex-col items-center gap-3">
-      <Button type="button" class="w-full" :disabled="submitting" @click="startTelegramOauth">
+    <div class="relative flex w-full max-w-sm flex-col items-center gap-3">
+      <div ref="telegramWidgetHost" class="telegram-widget-hitbox" />
+      <Button type="button" class="w-full" :disabled="submitting" @click="startTelegramOauthFallback">
         <Icon icon="lucide:send" class="mr-2 h-4 w-4" />
         {{ t('login.telegramBtn') }}
       </Button>
@@ -91,3 +157,21 @@ function startTelegramOauth() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.telegram-widget-hitbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  opacity: 0.001;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.telegram-widget-hitbox :deep(iframe) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+</style>
