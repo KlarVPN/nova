@@ -37,10 +37,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative flex h-full w-full flex-col items-center justify-center gap-4 pt-2 pb-6">
-    <div
-      class="pointer-events-none absolute -top-4 right-0 left-0 h-28 bg-radial-[at_50%_0%] from-[#bdfe0030] to-transparent blur-2xl"
-    />
-
     <h1 class="relative text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
       {{ t('faq.title') }}
     </h1>
@@ -82,7 +78,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .faq-item {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: border-color 0.2s ease;
 }
 

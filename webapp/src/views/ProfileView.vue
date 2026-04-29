@@ -151,7 +151,7 @@ const router = useRouter()
     <!-- Links -->
     <div class="flex flex-col gap-3">
       <div
-        class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
+        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
@@ -177,7 +177,7 @@ const router = useRouter()
       </div>
 
       <div
-        class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
+        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
           v-if="reviewsUrl"
@@ -198,7 +198,7 @@ const router = useRouter()
         </Button>
       </div>
       <div
-        class="flex flex-col divide-y divide-neutral-800 overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
+        class="profile-links-group flex flex-col overflow-hidden rounded-[14px] border border-neutral-800 bg-neutral-950"
       >
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
@@ -325,6 +325,14 @@ const router = useRouter()
 </template>
 
 <style scoped>
+.profile-links-group > :deep(button + button) {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:global(:root[data-theme='light']) .profile-links-group > :deep(button + button) {
+  box-shadow: inset 0 1px 0 #d2d2d7;
+}
+
 .sheet-enter-active,
 .sheet-leave-active {
   transition: opacity 0.25s ease;
