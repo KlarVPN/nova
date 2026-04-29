@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -8,7 +9,6 @@ from aiohttp import ClientSession, ClientTimeout, web
 from sqlalchemy import select, and_
 
 from .auth import validate_init_data, validate_login_widget_data
-from .key_auth import generate_key, hash_key, verify_key
 from .jwt_utils import create_jwt, verify_jwt
 from src.database.dal import user_dal, subscription_dal, payment_dal
 from src.database.dal.active_discount_dal import get_active_discount
@@ -71,6 +71,7 @@ async def _get_user(request: web.Request) -> tuple[dict | None, web.Response | N
     if init_data:
         tg_user = validate_init_data(init_data, settings.BOT_TOKEN)
         if tg_user:
+            tg_user["_auth_source"] = "telegram_init"
             return tg_user, None
 
     # Method 2: JWT Bearer token (standalone web mode)
@@ -78,7 +79,7 @@ async def _get_user(request: web.Request) -> tuple[dict | None, web.Response | N
     if auth_header.startswith("Bearer "):
         user_id = verify_jwt(auth_header[7:], settings.WEB_SECRET_KEY)
         if user_id:
-            return {"id": user_id}, None
+            return {"id": user_id, "_auth_source": "jwt"}, None
 
     return None, _error("Unauthorized", 401)
 
@@ -119,41 +120,11 @@ def _sub_to_dict(sub) -> dict:
     }
 
 
+def _is_telegram_linked_user(user: User) -> bool:
+    return bool(user.first_name or user.last_name or user.username)
+
+
 # ─── Auth ────────────────────────────────────────────────────────────────────
-
-@router.post("/api/auth/key")
-async def auth_by_key(request: web.Request) -> web.Response:
-    """Login with a 6-word passphrase. Returns JWT token."""
-    try:
-        body = await request.json()
-    except Exception:
-        return _error("Invalid JSON", 400)
-
-    key = body.get("key", "").strip()
-    if not key:
-        return _error("key is required", 400)
-
-    settings = request.app["settings"]
-    session_factory = request.app["async_session_factory"]
-
-    async with session_factory() as session:
-        from sqlalchemy import select as sa_select
-        stmt = sa_select(User).where(User.access_key_hash.isnot(None))
-        result = await session.execute(stmt)
-        users = result.scalars().all()
-
-        matched_user = None
-        for u in users:
-            if verify_key(key, u.access_key_hash):
-                matched_user = u
-                break
-
-        if not matched_user:
-            return _error("Неверный ключ-код", 401)
-
-        token = create_jwt(matched_user.user_id, settings.WEB_SECRET_KEY)
-        return _json({"token": token, "user_id": matched_user.user_id})
-
 
 @router.post("/api/auth/telegram")
 async def auth_by_telegram(request: web.Request) -> web.Response:
@@ -193,11 +164,8 @@ async def auth_by_telegram(request: web.Request) -> web.Response:
         return _json({"token": token, "user_id": user_id})
 
 
-@router.post("/api/auth/key-generate")
-async def generate_access_key(request: web.Request) -> web.Response:
-    """Generate and store a new access key for the authenticated user.
-    Returns the plain key ONCE — store it safely.
-    """
+@router.get("/api/auth/access-link")
+async def get_access_link(request: web.Request) -> web.Response:
     tg_user, err = await _get_user(request)
     if err:
         return err
@@ -210,14 +178,44 @@ async def generate_access_key(request: web.Request) -> web.Response:
         if not user:
             return _error("User not found", 404)
 
-        if user.access_key_hash:
-            return _error("Access key already generated", 409)
+        if not user.access_link_uuid:
+            user.access_link_uuid = str(uuid.uuid4())
+            await session.commit()
 
-        plain_key = generate_key()
-        user.access_key_hash = hash_key(plain_key)
-        await session.commit()
+    settings = request.app["settings"]
+    app_base = (settings.MINI_APP_URL or "").strip().rstrip("/")
+    if not app_base:
+        origin = f"{request.scheme}://{request.host}"
+        app_base = f"{origin}/app"
 
-    return _json({"key": plain_key})
+    return _json({
+        "uuid": user.access_link_uuid,
+        "url": f"{app_base}/th/{user.access_link_uuid}",
+    })
+
+
+@router.post("/api/auth/access-link-login")
+async def login_by_access_link(request: web.Request) -> web.Response:
+    try:
+        body = await request.json()
+    except Exception:
+        return _error("Invalid JSON", 400)
+
+    access_uuid = str(body.get("uuid") or "").strip()
+    if not access_uuid:
+        return _error("uuid is required", 400)
+
+    settings = request.app["settings"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        result = await session.execute(select(User).where(User.access_link_uuid == access_uuid))
+        user = result.scalar_one_or_none()
+        if not user:
+            return _error("Invalid access link", 401)
+
+    token = create_jwt(user.user_id, settings.WEB_SECRET_KEY)
+    return _json({"token": token, "user_id": user.user_id})
 
 
 @router.post("/api/auth/link-telegram")
@@ -285,6 +283,7 @@ async def get_me(request: web.Request) -> web.Response:
             settings.TRIAL_ENABLED
             and not has_any
             and not user.is_banned
+            and _is_telegram_linked_user(user)
         )
 
         return _json({
@@ -294,7 +293,6 @@ async def get_me(request: web.Request) -> web.Response:
             "username": user.username,
             "language_code": user.language_code or "ru",
             "referral_code": user.referral_code or "",
-            "has_access_key": user.access_key_hash is not None,
             "is_banned": user.is_banned,
             "has_active_subscription": sub is not None and sub.is_active,
             "subscription": _sub_to_dict(sub) if sub else None,
@@ -1183,6 +1181,7 @@ async def activate_trial(request: web.Request) -> web.Response:
         return err
 
     user_id: int = tg_user["id"]
+    auth_source = tg_user.get("_auth_source")
     settings = request.app["settings"]
 
     if not settings.TRIAL_ENABLED:
@@ -1203,6 +1202,9 @@ async def activate_trial(request: web.Request) -> web.Response:
             user = await user_dal.get_user_by_id(session, user_id)
             if not user:
                 return _error("User not found", 404)
+
+            if auth_source != "telegram_init" and not _is_telegram_linked_user(user):
+                return _error("Trial is available only for Telegram-linked accounts", 403)
 
             result = await sub_service.activate_trial_subscription(session, user_id)
             if not result:

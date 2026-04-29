@@ -112,15 +112,24 @@ async def build_and_start_web_app(
     app.router.add_routes(api_router)
     logging.info("Mini App API routes registered at /api/*")
 
+    async def auth_by_link(request: web.Request) -> web.Response:
+        access_uuid = request.match_info.get("access_uuid", "")
+        raise web.HTTPFound(f"/app/th/{access_uuid}")
+
+    app.router.add_get("/th/{access_uuid}", auth_by_link)
+    logging.info("Access-link auth route configured at: [GET] /th/{access_uuid}")
+
     # Serve Mini App static files if dist exists
     miniapp_dist = Path(__file__).parent.parent.parent.parent / "webapp" / "dist"
     if miniapp_dist.exists():
+        app.router.add_static("/app/assets", miniapp_dist / "assets", name="miniapp_assets", show_index=False)
         app.router.add_static("/app", miniapp_dist, name="miniapp_static", show_index=True)
 
         async def miniapp_index(_: web.Request) -> web.FileResponse:
             return web.FileResponse(miniapp_dist / "index.html")
 
         app.router.add_get("/app", miniapp_index)
+        app.router.add_get("/app/{tail:.*}", miniapp_index)
         logging.info("Mini App static files served from %s", miniapp_dist)
 
     web_app_runner = web.AppRunner(app)

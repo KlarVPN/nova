@@ -51,7 +51,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['nlpfv-77-239-126-205.run.pinggy-free.link'],
+    allowedHosts: ['qy806beu8rip.share.zrok.io'],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

@@ -34,37 +34,6 @@ const displayName = computed(() => {
 const userInitial = computed(() => displayName.value.charAt(0).toUpperCase() || '?')
 const showLanguageModal = ref(false)
 const showPromoModal = ref(false)
-const generatedKey = ref('')
-const keyGenerating = ref(false)
-const hasAccessKey = computed(() => Boolean(auth.profile?.has_access_key) || Boolean(generatedKey.value))
-
-async function handleGenerateKey() {
-  if (keyGenerating.value || hasAccessKey.value) return
-  keyGenerating.value = true
-  const result = await auth.generateKey()
-  keyGenerating.value = false
-  if (result.ok && result.key) {
-    generatedKey.value = result.key
-    await auth.fetchProfile()
-    return
-  }
-
-  if (result.status === 409) {
-    error(t('login.profile.alreadyHas'))
-    await auth.fetchProfile()
-  } else {
-    error(t('common.error'))
-  }
-}
-
-async function copyKey() {
-  try {
-    await navigator.clipboard.writeText(generatedKey.value)
-    success(t('login.profile.copySuccess'))
-  } catch {
-    error(t('common.error'))
-  }
-}
 const promoCode = ref('')
 const promoLoading = ref(false)
 const promoApplied = ref(false)
@@ -218,6 +187,13 @@ const router = useRouter()
           <Icon icon="lucide:shield" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.freeTelegramProxies') }}</span>
         </Button>
+        <Button
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'access-save' })"
+        >
+          <Icon icon="lucide:link-2" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.accessSave') }}</span>
+        </Button>
       </div>
 
       <div
@@ -260,37 +236,6 @@ const router = useRouter()
           <span class="font-medium text-white">{{ t('profile.privacy') }}</span>
         </Button>
       </div>
-    </div>
-
-    <!-- Access key (Telegram users only) -->
-    <div v-if="auth.isTelegram" class="flex flex-col gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 p-4">
-      <div class="flex items-center gap-2">
-        <Icon icon="lucide:key-round" class="size-4 shrink-0 text-neutral-500" />
-        <span class="font-medium text-white">{{ t('login.profile.title') }}</span>
-      </div>
-      <p class="text-sm text-neutral-400">{{ t('login.profile.subtitle') }}</p>
-
-      <div v-if="generatedKey" class="flex flex-col gap-2">
-        <p class="text-destructive text-xs">{{ t('login.profile.warning') }}</p>
-        <div
-          class="flex cursor-pointer items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2"
-          @click="copyKey"
-        >
-          <code class="flex-1 break-all font-mono text-xs text-green-400">{{ generatedKey }}</code>
-          <Icon icon="lucide:copy" class="size-3.5 shrink-0 text-neutral-500" />
-        </div>
-      </div>
-
-      <Button
-        v-if="!hasAccessKey"
-        class="w-full bg-neutral-800 text-sm font-medium text-white hover:bg-neutral-700"
-        :disabled="keyGenerating"
-        @click="handleGenerateKey"
-      >
-        <Icon v-if="keyGenerating" icon="lucide:loader-circle" class="mr-2 h-4 w-4 animate-spin" />
-        {{ keyGenerating ? t('login.profile.generating') : t('login.profile.generate') }}
-      </Button>
-      <p v-else class="text-xs text-neutral-500">{{ t('login.profile.alreadyHas') }}</p>
     </div>
 
     <!-- Language -->

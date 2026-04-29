@@ -4,13 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { locale, initLocale } from '@/i18n/i18n.ts'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import AuthLayout from '@/components/layout/AuthLayout.vue'
 import Toaster from '@/components/ui/toast/Toaster.vue'
 import { i18n } from '@/i18n/i18n.ts'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 watch(
   () => locale.value,
@@ -22,6 +24,17 @@ watch(
 
 onMounted(async () => {
   initLocale()
+
+  const params = new URLSearchParams(window.location.search)
+  const incomingToken = params.get('auth_token')
+  if (incomingToken) {
+    localStorage.setItem('auth_token', incomingToken)
+    window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
+  }
+
+  if (route.name === 'th-auth') {
+    return
+  }
 
   if (auth.isTelegram || import.meta.env.DEV) {
     await auth.init()
@@ -50,15 +63,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AppLayout>
-    <RouterView v-slot="{ Component, route }">
+  <RouterView v-slot="{ Component, route }">
+    <component :is="route.meta.public ? AuthLayout : AppLayout">
       <Transition name="page-transition" mode="out-in">
         <div :key="route.fullPath" class="page-transition-view">
           <component :is="Component" />
         </div>
       </Transition>
-    </RouterView>
-  </AppLayout>
+    </component>
+  </RouterView>
 
   <Toaster />
 </template>

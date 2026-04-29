@@ -59,18 +59,18 @@ export const api = {
   },
 
   auth: {
-    loginByKey: (key: string) =>
-      request<{ token: string; user_id: number }>('/auth/key', {
-        method: 'POST',
-        body: JSON.stringify({ key }),
-      }),
     loginByTelegram: (telegramUser: Record<string, unknown>) =>
       request<{ token: string; user_id: number }>('/auth/telegram', {
         method: 'POST',
         body: JSON.stringify({ telegram_user: telegramUser }),
       }),
-    generateKey: () =>
-      request<{ key: string }>('/auth/key-generate', { method: 'POST' }),
+    loginByAccessLink: (uuid: string) =>
+      request<{ token: string; user_id: number }>('/auth/access-link-login', {
+        method: 'POST',
+        body: JSON.stringify({ uuid }),
+      }),
+    accessLink: () =>
+      request<{ uuid: string; url: string }>('/auth/access-link'),
   },
 
   plans: {

@@ -1,14 +1,20 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { isTelegramWebApp } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory('/app/'),
   routes: [
     {
       name: 'login',
       path: '/login',
       component: () => import('@/views/LoginView.vue'),
+      meta: { public: true },
+    },
+    {
+      name: 'th-auth',
+      path: '/th/:uuid',
+      component: () => import('@/views/AccessLinkAuthView.vue'),
       meta: { public: true },
     },
     {
@@ -34,6 +40,12 @@ const router = createRouter({
       path: '/profile',
       component: () => import('@/views/ProfileView.vue'),
       meta: { title: 'Profile' },
+    },
+    {
+      name: 'access-save',
+      path: '/access-save',
+      component: () => import('@/views/AccessSaveView.vue'),
+      meta: { title: 'Access Save' },
     },
     {
       name: 'setup',
