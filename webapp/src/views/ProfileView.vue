@@ -169,6 +169,13 @@ const router = useRouter()
         </Button>
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+          @click="router.push({ name: 'operations' })"
+        >
+          <Icon icon="lucide:history" class="size-4 shrink-0 text-neutral-500" />
+          <span class="font-medium text-white">{{ t('profile.operations') }}</span>
+        </Button>
+        <Button
+          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'proxies' })"
         >
           <Icon icon="lucide:shield" class="size-4 shrink-0 text-neutral-500" />
@@ -283,11 +290,14 @@ const router = useRouter()
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
             <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
+            <p class="mb-3 text-sm text-neutral-400">
+              Введите промокод, чтобы получить скидку на оплату или дополнительные дни подписки.
+            </p>
             <div class="flex flex-col gap-3">
               <input
                 v-model="promoCode"
                 :placeholder="t('promo.placeholder')"
-                class="min-w-0 rounded-[14px] border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-600 focus:border-neutral-600 disabled:opacity-40"
+                class="promo-input min-w-0 rounded-[14px] border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-500 focus:border-neutral-500 disabled:opacity-40"
                 autocomplete="off"
                 :disabled="promoLoading || promoApplied"
                 @keydown.enter="applyPromo"
@@ -325,6 +335,21 @@ const router = useRouter()
 </template>
 
 <style scoped>
+.promo-input {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:global(:root[data-theme='light']) .promo-input {
+  background-color: #f2f2f7;
+  border-color: #c7c7cc;
+  color: #1d1d1f;
+  box-shadow: none;
+}
+
+:global(:root[data-theme='light']) .promo-input::placeholder {
+  color: #8e8e93;
+}
+
 .profile-links-group > :deep(button + button) {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }

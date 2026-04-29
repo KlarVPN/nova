@@ -8,6 +8,7 @@ import type {
   DevicesData,
   LocationStatus,
   ProxyItem,
+  OperationsHistoryData,
 } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
@@ -99,6 +100,10 @@ export const api = {
 
   proxies: {
     list: () => request<{ proxies: ProxyItem[] }>('/proxies'),
+  },
+
+  operations: {
+    list: () => request<OperationsHistoryData>('/operations'),
   },
 }
 

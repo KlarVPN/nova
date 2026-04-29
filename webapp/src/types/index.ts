@@ -153,6 +153,24 @@ export interface ProxyItem {
   link: string
 }
 
+export type OperationType = 'trial_activated' | 'plan_payment'
+
+export interface OperationHistoryItem {
+  type: OperationType
+  created_at: string | null
+  end_date?: string | null
+  duration_days?: number | null
+  amount?: number
+  currency?: string
+  provider?: string
+  months?: number | null
+  description?: string
+}
+
+export interface OperationsHistoryData {
+  operations: OperationHistoryItem[]
+}
+
 export interface ApiError {
   detail: string
   code?: string

@@ -11,11 +11,13 @@ import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
 import type { Device } from '@/types'
 import { Button } from '@/components/ui/button'
 import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
+import { useToast } from '@/components/ui/toast'
 
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
 const router = useRouter()
 const { t } = useI18n()
+const { loading } = useToast()
 
 const sub = computed(() => auth.subscription)
 
@@ -114,7 +116,9 @@ function goToPlans() {
 
 async function activateTrial() {
   hapticImpact()
+  const dismiss = loading(t('common.loading'))
   await subStore.activateTrial()
+  dismiss()
 }
 
 const botUsername = import.meta.env.VITE_BOT_USERNAME
@@ -171,7 +175,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
               <p class="mt-2 text-sm text-neutral-400">{{ auth.error }}</p>
             </div>
           </div>
-          <button
+          <Button
             class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
             @click="auth.init()"
           >
@@ -179,14 +183,14 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
             <span class="font-sans text-sm font-extrabold text-white uppercase">{{
               t('common.retry')
             }}</span>
-          </button>
+          </Button>
         </template>
 
         <!-- NO SUBSCRIPTION -->
         <template v-else-if="statusKey === 'none'">
           <SubscriptionBadge :type="statusKey" />
           <div class="flex w-full flex-col gap-3">
-            <button
+            <Button
               v-if="auth.trialAvailable"
               class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 border border-neutral-800 bg-neutral-900 p-2"
               :disabled="subStore.processingTrial"
@@ -197,8 +201,8 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                 class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase"
                 >{{ t('home.trialBtn') }}</span
               >
-            </button>
-            <button
+            </Button>
+            <Button
               class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
               @click="goToPlans"
             >
@@ -210,14 +214,14 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                   t('home.subscribe')
                 }}</span>
               </span>
-            </button>
+            </Button>
           </div>
         </template>
 
         <!-- EXPIRED -->
         <template v-else-if="statusKey === 'expired'">
           <SubscriptionBadge :type="statusKey" />
-          <button
+          <Button
             class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
             @click="goToPlans"
           >
@@ -229,7 +233,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                 t('home.renewSub')
               }}</span>
             </span>
-          </button>
+          </Button>
         </template>
 
         <!-- DISABLED -->

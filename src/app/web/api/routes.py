@@ -5,11 +5,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from aiohttp import ClientSession, ClientTimeout, web
+from sqlalchemy import select, and_
 
 from .auth import validate_init_data
 from src.database.dal import user_dal, subscription_dal, payment_dal
 from src.database.dal.active_discount_dal import get_active_discount
 from src.cache.redis_client import get_redis_client
+from src.database.models import Payment, Subscription
 
 log = logging.getLogger(__name__)
 
@@ -303,6 +305,76 @@ async def get_referral(request: web.Request) -> web.Response:
         "purchased_count": purchased_count,
         "bonus_structure": bonus_structure,
     })
+
+
+# ─── Operations History ───────────────────────────────────────────────────────
+
+@router.get("/api/operations")
+async def get_operations_history(request: web.Request) -> web.Response:
+    tg_user, err = await _get_user(request)
+    if err:
+        return err
+
+    user_id: int = tg_user["id"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        payments_result = await session.execute(
+            select(Payment)
+            .where(
+                Payment.user_id == user_id,
+                Payment.status == "succeeded",
+                Payment.subscription_duration_months.is_not(None),
+                Payment.subscription_duration_months > 0,
+            )
+            .order_by(Payment.created_at.desc())
+        )
+        payments = payments_result.scalars().all()
+
+        trials_result = await session.execute(
+            select(Subscription)
+            .where(
+                Subscription.user_id == user_id,
+                and_(
+                    Subscription.status_from_panel == "TRIAL",
+                    Subscription.duration_months == 0,
+                ),
+            )
+            .order_by(Subscription.start_date.desc())
+        )
+        trials = trials_result.scalars().all()
+
+    operations: list[dict[str, Any]] = []
+
+    for trial in trials:
+        operations.append(
+            {
+                "type": "trial_activated",
+                "created_at": trial.start_date.isoformat() if trial.start_date else None,
+                "end_date": trial.end_date.isoformat() if trial.end_date else None,
+                "duration_days": (
+                    max(1, (trial.end_date - trial.start_date).days)
+                    if trial.start_date and trial.end_date
+                    else None
+                ),
+            }
+        )
+
+    for payment in payments:
+        operations.append(
+            {
+                "type": "plan_payment",
+                "created_at": payment.created_at.isoformat() if payment.created_at else None,
+                "amount": payment.amount,
+                "currency": payment.currency,
+                "provider": payment.provider,
+                "months": payment.subscription_duration_months,
+                "description": payment.description or "",
+            }
+        )
+
+    operations.sort(key=lambda item: item.get("created_at") or "", reverse=True)
+    return _json({"operations": operations})
 
 
 # ─── Locations ────────────────────────────────────────────────────────────────

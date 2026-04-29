@@ -226,10 +226,22 @@
     "faq": "FAQ",
     "locations": "Locations",
     "promo": "Promo code",
+    "operations": "Operations history",
     "freeTelegramProxies": "Free Telegram proxies",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "status": "Locations"
+  },
+  "operations": {
+    "title": "Operations history",
+    "subtitle": "Track your spending with a complete list of transactions",
+    "empty": "No operations yet",
+    "trialActivated": "Trial period activated",
+    "planPaid": "Plan paid",
+    "trialDuration": "Trial duration: {n} days",
+    "trialUntil": "Active until",
+    "amount": "Amount",
+    "months": "Duration"
   },
   "proxies": {
     "title": "Free Telegram proxies",

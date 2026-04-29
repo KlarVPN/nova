@@ -63,6 +63,12 @@ const router = createRouter({
       component: () => import('@/views/ProxiesView.vue'),
       meta: { title: 'Proxies' },
     },
+    {
+      name: 'operations',
+      path: '/operations',
+      component: () => import('@/views/OperationsView.vue'),
+      meta: { title: 'Operations' },
+    },
     { path: '/configs', redirect: '/setup' },
     { path: '/promo', redirect: '/plans' },
     { path: '/:pathMatch(.*)*', redirect: '/' },
