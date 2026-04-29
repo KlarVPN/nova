@@ -29,6 +29,7 @@ export interface UserProfile {
   username: string | null
   language_code: string
   referral_code: string
+  has_access_key: boolean
   is_banned: boolean
   has_active_subscription: boolean
   subscription: ActiveSubscription | null

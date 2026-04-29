@@ -1,8 +1,16 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { isTelegramWebApp } from '@/lib/telegram'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
+    {
+      name: 'login',
+      path: '/login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { public: true },
+    },
     {
       name: 'home',
       path: '/',
@@ -74,6 +82,28 @@ const router = createRouter({
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),
+})
+
+router.beforeEach(async (to) => {
+  if (to.meta.public) return true
+
+  const auth = useAuthStore()
+  if (auth.isAuthenticated) return true
+
+  if (isTelegramWebApp() || import.meta.env.DEV) {
+    await auth.fetchProfile()
+    if (auth.isAuthenticated) return true
+    return { name: 'login' }
+  }
+
+  const token = localStorage.getItem('auth_token')
+  if (!token) return { name: 'login' }
+
+  await auth.fetchProfile()
+  if (auth.isAuthenticated) return true
+
+  auth.logout()
+  return { name: 'login' }
 })
 
 export default router

@@ -1,4 +1,4 @@
-import { getInitData } from './telegram'
+import { getInitData, isTelegramWebApp } from './telegram'
 import type {
   UserProfile,
   PlansData,
@@ -23,14 +23,20 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const initData = getInitData()
+function getAuthHeaders(): Record<string, string> {
+  if (isTelegramWebApp()) {
+    return { 'X-Telegram-Init-Data': getInitData() }
+  }
+  const token = localStorage.getItem('auth_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'X-Telegram-Init-Data': initData,
+      ...getAuthHeaders(),
       ...options.headers,
     },
   })
@@ -50,6 +56,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   user: {
     me: () => request<UserProfile>('/user/me'),
+  },
+
+  auth: {
+    loginByKey: (key: string) =>
+      request<{ token: string; user_id: number }>('/auth/key', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+      }),
+    loginByTelegram: (telegramUser: Record<string, unknown>) =>
+      request<{ token: string; user_id: number }>('/auth/telegram', {
+        method: 'POST',
+        body: JSON.stringify({ telegram_user: telegramUser }),
+      }),
+    generateKey: () =>
+      request<{ key: string }>('/auth/key-generate', { method: 'POST' }),
   },
 
   plans: {

@@ -225,7 +225,8 @@
     "promo": "Promosyon kodu",
     "terms": "Hizmet koşulları",
     "privacy": "Gizlilik politikası",
-    "status": "Sunucu durumu"
+    "status": "Sunucu durumu",
+    "logout": "Çıkış yap"
   },
   "faq": {
     "title": "Sık Sorulan Sorular",

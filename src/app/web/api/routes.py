@@ -7,11 +7,13 @@ from typing import Any
 from aiohttp import ClientSession, ClientTimeout, web
 from sqlalchemy import select, and_
 
-from .auth import validate_init_data
+from .auth import validate_init_data, validate_login_widget_data
+from .key_auth import generate_key, hash_key, verify_key
+from .jwt_utils import create_jwt, verify_jwt
 from src.database.dal import user_dal, subscription_dal, payment_dal
 from src.database.dal.active_discount_dal import get_active_discount
 from src.cache.redis_client import get_redis_client
-from src.database.models import Payment, Subscription
+from src.database.models import Payment, Subscription, User
 
 log = logging.getLogger(__name__)
 
@@ -62,13 +64,23 @@ async def _fetch_json(url: str) -> dict[str, Any] | list[Any] | None:
 
 
 async def _get_user(request: web.Request) -> tuple[dict | None, web.Response | None]:
-    init_data = request.headers.get("X-Telegram-Init-Data", "")
     settings = request.app["settings"]
 
-    tg_user = validate_init_data(init_data, settings.BOT_TOKEN)
-    if not tg_user:
-        return None, _error("Unauthorized", 401)
-    return tg_user, None
+    # Method 1: Telegram initData
+    init_data = request.headers.get("X-Telegram-Init-Data", "")
+    if init_data:
+        tg_user = validate_init_data(init_data, settings.BOT_TOKEN)
+        if tg_user:
+            return tg_user, None
+
+    # Method 2: JWT Bearer token (standalone web mode)
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        user_id = verify_jwt(auth_header[7:], settings.WEB_SECRET_KEY)
+        if user_id:
+            return {"id": user_id}, None
+
+    return None, _error("Unauthorized", 401)
 
 
 def _sub_to_dict(sub) -> dict:
@@ -107,6 +119,148 @@ def _sub_to_dict(sub) -> dict:
     }
 
 
+# ─── Auth ────────────────────────────────────────────────────────────────────
+
+@router.post("/api/auth/key")
+async def auth_by_key(request: web.Request) -> web.Response:
+    """Login with a 6-word passphrase. Returns JWT token."""
+    try:
+        body = await request.json()
+    except Exception:
+        return _error("Invalid JSON", 400)
+
+    key = body.get("key", "").strip()
+    if not key:
+        return _error("key is required", 400)
+
+    settings = request.app["settings"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        from sqlalchemy import select as sa_select
+        stmt = sa_select(User).where(User.access_key_hash.isnot(None))
+        result = await session.execute(stmt)
+        users = result.scalars().all()
+
+        matched_user = None
+        for u in users:
+            if verify_key(key, u.access_key_hash):
+                matched_user = u
+                break
+
+        if not matched_user:
+            return _error("Неверный ключ-код", 401)
+
+        token = create_jwt(matched_user.user_id, settings.WEB_SECRET_KEY)
+        return _json({"token": token, "user_id": matched_user.user_id})
+
+
+@router.post("/api/auth/telegram")
+async def auth_by_telegram(request: web.Request) -> web.Response:
+    """Login with Telegram Login Widget payload. Returns JWT token."""
+    try:
+        body = await request.json()
+    except Exception:
+        return _error("Invalid JSON", 400)
+
+    payload = body.get("telegram_user")
+    settings = request.app["settings"]
+    tg_user = validate_login_widget_data(payload, settings.BOT_TOKEN)
+    if not tg_user:
+        return _error("Invalid Telegram auth data", 401)
+
+    user_id: int = tg_user["id"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        user = await user_dal.get_user_by_id(session, user_id)
+        if not user:
+            user, _ = await user_dal.create_user(session, {
+                "user_id": user_id,
+                "username": tg_user.get("username"),
+                "first_name": tg_user.get("first_name"),
+                "last_name": tg_user.get("last_name"),
+                "language_code": "ru",
+            })
+            await session.commit()
+        else:
+            user.username = tg_user.get("username")
+            user.first_name = tg_user.get("first_name")
+            user.last_name = tg_user.get("last_name")
+            await session.commit()
+
+        token = create_jwt(user_id, settings.WEB_SECRET_KEY)
+        return _json({"token": token, "user_id": user_id})
+
+
+@router.post("/api/auth/key-generate")
+async def generate_access_key(request: web.Request) -> web.Response:
+    """Generate and store a new access key for the authenticated user.
+    Returns the plain key ONCE — store it safely.
+    """
+    tg_user, err = await _get_user(request)
+    if err:
+        return err
+
+    user_id: int = tg_user["id"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        user = await user_dal.get_user_by_id(session, user_id)
+        if not user:
+            return _error("User not found", 404)
+
+        if user.access_key_hash:
+            return _error("Access key already generated", 409)
+
+        plain_key = generate_key()
+        user.access_key_hash = hash_key(plain_key)
+        await session.commit()
+
+    return _json({"key": plain_key})
+
+
+@router.post("/api/auth/link-telegram")
+async def link_telegram(request: web.Request) -> web.Response:
+    """Link a Telegram account to a key-authenticated session.
+    Expects JWT Bearer token + X-Telegram-Init-Data header.
+    """
+    settings = request.app["settings"]
+
+    # Must have valid JWT
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return _error("JWT token required", 401)
+    user_id = verify_jwt(auth_header[7:], settings.WEB_SECRET_KEY)
+    if not user_id:
+        return _error("Invalid token", 401)
+
+    # Must have valid Telegram initData
+    init_data = request.headers.get("X-Telegram-Init-Data", "")
+    tg_user = validate_init_data(init_data, settings.BOT_TOKEN)
+    if not tg_user:
+        return _error("Invalid Telegram initData", 401)
+
+    tg_id: int = tg_user["id"]
+    session_factory = request.app["async_session_factory"]
+
+    async with session_factory() as session:
+        # Check that tg_id is not already taken by another account
+        existing = await user_dal.get_user_by_id(session, tg_id)
+        if existing and existing.user_id != user_id:
+            return _error("This Telegram account is already linked to another profile", 409)
+
+        user = await user_dal.get_user_by_id(session, user_id)
+        if not user:
+            return _error("User not found", 404)
+
+        # user_id IS the telegram_id in the current schema, so just confirm match
+        if user.user_id != tg_id:
+            return _error("Cannot relink: user_id mismatch", 400)
+
+    return _json({"ok": True})
+
+
 # ─── User ────────────────────────────────────────────────────────────────────
 
 @router.get("/api/user/me")
@@ -140,6 +294,7 @@ async def get_me(request: web.Request) -> web.Response:
             "username": user.username,
             "language_code": user.language_code or "ru",
             "referral_code": user.referral_code or "",
+            "has_access_key": user.access_key_hash is not None,
             "is_banned": user.is_banned,
             "has_active_subscription": sub is not None and sub.is_active,
             "subscription": _sub_to_dict(sub) if sub else None,

@@ -53,6 +53,7 @@ class Settings(BaseSettings):
 
     WEB_URL: Optional[str] = Field(default=None)
     WEB_PROXY_URL: Optional[str] = Field(default=None)
+    WEB_SECRET_KEY: str = Field(default="change-me-in-production-use-long-random-string")
     REVIEWS_URL: Optional[str] = Field(default=None)
     SUPPORT_LINK: Optional[str] = Field(default=None)
     SERVER_STATUS_URL: Optional[str] = Field(default=None)

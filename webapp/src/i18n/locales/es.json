@@ -225,7 +225,8 @@
     "promo": "Código promo",
     "terms": "Términos de servicio",
     "privacy": "Política de privacidad",
-    "status": "Estado de servidores"
+    "status": "Estado de servidores",
+    "logout": "Cerrar sesión"
   },
   "faq": {
     "title": "Preguntas Frecuentes",

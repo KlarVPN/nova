@@ -37,6 +37,29 @@
     "desc": "This app only works inside Telegram. Open it through the bot.",
     "button": "Open Telegram"
   },
+  "login": {
+    "title": "Sign in to Nova",
+    "subtitle": "Use your passphrase to access your account",
+    "keyLabel": "Passphrase",
+    "keyPlaceholder": "xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx",
+    "keyHint": "",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "error": "Invalid passphrase. Please check and try again.",
+    "orTelegram": "or",
+    "telegramBtn": "Sign in with Telegram",
+    "noKey": "",
+    "profile": {
+      "title": "Passphrase",
+      "subtitle": "After Telegram sign-in, generate and save a passphrase for website login",
+      "generate": "Generate passphrase",
+      "regenerate": "Generate new",
+      "generating": "Generating...",
+      "warning": "Save your passphrase — it is shown only once and cannot be recovered.",
+      "copySuccess": "Passphrase copied",
+      "alreadyHas": "A passphrase already exists. Generating a new one will invalidate the old one."
+    }
+  },
   "home": {
     "until": "until {date}",
     "greeting": "Welcome",
@@ -230,7 +253,8 @@
     "freeTelegramProxies": "Free Telegram proxies",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
-    "status": "Locations"
+    "status": "Locations",
+    "logout": "Sign out"
   },
   "operations": {
     "title": "Operations history",

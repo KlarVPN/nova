@@ -225,7 +225,8 @@
     "promo": "优惠码",
     "terms": "服务条款",
     "privacy": "隐私政策",
-    "status": "服务器状态"
+    "status": "服务器状态",
+    "logout": "退出登录"
   },
   "faq": {
     "title": "常见问题",

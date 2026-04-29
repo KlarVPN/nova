@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import BottomNav from './BottomNav.vue'
 
 const route = useRoute()
-const showBottomNav = computed(() => route.name !== 'plans')
+const auth = useAuthStore()
+const showBottomNav = computed(() => route.name !== 'plans' && auth.isAuthenticated)
 </script>
 
 <template>

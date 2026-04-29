@@ -2,10 +2,8 @@
 import { onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { isTelegramWebApp } from '@/lib/telegram'
 import { locale, initLocale } from '@/i18n/i18n.ts'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import AuthErrorView from '@/views/AuthErrorView.vue'
 import Toaster from '@/components/ui/toast/Toaster.vue'
 import { i18n } from '@/i18n/i18n.ts'
 import { useRouter } from 'vue-router'
@@ -13,8 +11,6 @@ import { useRouter } from 'vue-router'
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
-
-const isTelegram = isTelegramWebApp() || import.meta.env.DEV
 
 watch(
   () => locale.value,
@@ -26,32 +22,43 @@ watch(
 
 onMounted(async () => {
   initLocale()
-  if (!isTelegram) return
 
-  try {
+  if (auth.isTelegram || import.meta.env.DEV) {
     await auth.init()
-  } finally {
-    await router.replace({ name: 'home' })
+    if (auth.isAuthenticated) {
+      await router.replace({ name: 'home' })
+    } else {
+      await router.replace({ name: 'login' })
+    }
+    return
   }
+
+  // Standalone mode: try to restore session from localStorage token
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    await auth.fetchProfile()
+    if (auth.isAuthenticated) {
+      await router.replace({ name: 'home' })
+      return
+    }
+    // Token expired or invalid — clear it
+    auth.logout()
+  }
+
+  await router.replace({ name: 'login' })
 })
 </script>
 
 <template>
-  <template v-if="!isTelegram">
-    <AuthErrorView />
-  </template>
-
-  <template v-else>
-    <AppLayout>
-      <RouterView v-slot="{ Component, route }">
-        <Transition name="page-transition" mode="out-in">
-          <div :key="route.fullPath" class="page-transition-view">
-            <component :is="Component" />
-          </div>
-        </Transition>
-      </RouterView>
-    </AppLayout>
-  </template>
+  <AppLayout>
+    <RouterView v-slot="{ Component, route }">
+      <Transition name="page-transition" mode="out-in">
+        <div :key="route.fullPath" class="page-transition-view">
+          <component :is="Component" />
+        </div>
+      </Transition>
+    </RouterView>
+  </AppLayout>
 
   <Toaster />
 </template>
