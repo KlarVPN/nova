@@ -69,7 +69,7 @@ function openOtherPlatforms() {
       <span class="flex w-fit items-center justify-center rounded-[7px] bg-white/10 p-4">
         <Icon icon="lucide:settings" class="size-8 opacity-60" />
       </span>
-      <h1 class="mt-1 text-xl leading-[0.9] font-medium tracking-tight text-balance text-white">
+      <h1 class="mt-1 text-2xl leading-[0.9] font-medium tracking-tight text-balance text-white">
         {{ t('support.setupOtherDevice') }}
       </h1>
       <p class="text-sm text-balance opacity-60">
