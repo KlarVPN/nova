@@ -538,6 +538,13 @@ async def get_connect(request: web.Request) -> web.Response:
 
     try:
         panel_user = await panel_service.get_user_by_uuid(user.panel_user_uuid)
+        if not isinstance(panel_user, dict):
+            log.warning(
+                "Panel user data unavailable for user %s (panel_user_uuid=%s)",
+                user_id,
+                user.panel_user_uuid,
+            )
+            return _error("Failed to retrieve connection info", 502)
         sub_url = panel_user.get("subscriptionUrl", "")
         return _json({
             "connect_url": sub_url,

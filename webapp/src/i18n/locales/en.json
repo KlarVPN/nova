@@ -6,7 +6,8 @@
     "referral": "Referrals",
     "promo": "Promo Code",
     "configs": "Configs",
-    "profile": "Profile"
+    "profile": "Profile",
+    "support": "Support"
   },
   "common": {
     "loading": "Loading...",
@@ -226,6 +227,14 @@
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "status": "Server status"
+  },
+  "support": {
+    "title": "Contact support",
+    "description": "Get answers to common questions or contact us for help.",
+    "faq": "Frequently asked questions",
+    "setupOtherDevice": "Setup on another device",
+    "contact": "Support",
+    "otherPlatforms": "Other platforms"
   },
   "faq": {
     "title": "Frequently Asked Questions",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
-import { pluralDays } from '@/lib/utils'
+import { copyToClipboard, pluralDays } from '@/lib/utils'
 import type { PromoResult } from '@/types'
+import type { Locale } from '@/i18n/i18n.ts'
 
 const auth = useAuthStore()
 const store = useSubscriptionStore()
@@ -43,8 +44,15 @@ const currentLocaleLabel = computed(
     AVAILABLE_LOCALES.find((item) => item.code === locale.value)?.name ??
     locale.value.toUpperCase(),
 )
+const connectUrl = computed(() => store.connectInfo?.config_link || store.connectInfo?.connect_url || '')
 
-function switchTo(lang: 'ru' | 'en') {
+onMounted(async () => {
+  if (auth.hasSubscription && !store.connectInfo) {
+    await store.fetchConnect()
+  }
+})
+
+function switchTo(lang: Locale) {
   if (locale.value === lang) return
   hapticImpact('light')
   setLocale(lang)
@@ -59,7 +67,7 @@ function closeLanguageModal() {
   showLanguageModal.value = false
 }
 
-function selectLanguage(lang: 'ru' | 'en') {
+function selectLanguage(lang: Locale) {
   switchTo(lang)
   closeLanguageModal()
 }
@@ -114,15 +122,23 @@ function openExternal(url: string) {
   hapticImpact('light')
   openLink(url)
 }
+
+async function copySubscriptionLink() {
+  if (!connectUrl.value) return
+  try {
+    await copyToClipboard(connectUrl.value)
+    hapticSuccess()
+    success(t('common.copied'))
+  } catch {
+    hapticError()
+    error(t('common.error'))
+  }
+}
 const router = useRouter()
 </script>
 
 <template>
   <div class="flex w-full flex-col gap-6 pt-4 pb-6">
-    <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('nav.profile') }}
-    </h1>
-
     <!-- User info -->
     <div
       v-if="auth.profile"
@@ -190,14 +206,6 @@ const router = useRouter()
           <Icon icon="lucide:book-text" class="size-4 shrink-0 text-neutral-500" />
           <span class="font-medium text-white">{{ t('profile.docs') }}</span>
         </Button>
-
-        <Button
-          class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-          @click="router.push({ name: 'faq' })"
-        >
-          <Icon icon="lucide:circle-help" class="size-4 shrink-0 text-neutral-500" />
-          <span class="font-medium text-white">{{ t('profile.faq') }}</span>
-        </Button>
         <Button
           class="flex h-12 w-full cursor-pointer items-center justify-start gap-3 rounded-none bg-transparent p-4 text-left transition-colors hover:border-neutral-700 hover:bg-neutral-900"
           @click="router.push({ name: 'locations' })"
@@ -244,9 +252,8 @@ const router = useRouter()
     <div class="flex flex-col items-center gap-2">
       <span>{{ t('profile.questions') }}</span>
       <Button
-        v-if="botUsername"
         class="w-fit border border-neutral-700 bg-transparent p-2 px-4 text-sm text-white hover:bg-white/10"
-        @click="openExternal(`https://t.me/${botUsername}`)"
+        @click="router.push({ name: 'support' })"
       >
         {{ t('profile.support') }}
       </Button>
@@ -331,6 +338,25 @@ const router = useRouter()
         </div>
       </Transition>
     </Teleport>
+
+    <Transition name="floating-link">
+      <div
+        v-if="connectUrl"
+        class="pointer-events-none fixed inset-x-0 z-40 px-4"
+        style="bottom: calc(env(safe-area-inset-bottom) + 80px)"
+      >
+        <button
+          class="pointer-events-auto mx-auto flex w-full max-w-md cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-700 bg-neutral-950/95 px-4 py-3 text-left backdrop-blur"
+          @click="copySubscriptionLink"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="text-xs text-neutral-500">{{ t('home.subLink') }}</p>
+            <p class="truncate text-sm text-white">{{ connectUrl }}</p>
+          </div>
+          <Icon icon="lucide:copy" class="size-4 shrink-0 text-neutral-300" />
+        </button>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -348,5 +374,16 @@ const router = useRouter()
 .sheet-enter-from > div:last-child,
 .sheet-leave-to > div:last-child {
   transform: translateY(100%);
+}
+
+.floating-link-enter-active,
+.floating-link-leave-active {
+  transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.floating-link-enter-from,
+.floating-link-leave-to {
+  opacity: 0;
+  transform: translateY(18px);
 }
 </style>

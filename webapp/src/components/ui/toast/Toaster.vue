@@ -12,7 +12,7 @@ const { toasts } = useToast()
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          class="glass pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg"
+          class="pointer-events-auto flex items-center gap-3 rounded-full border border-white/10 bg-black px-4 py-2.5 text-sm font-medium shadow-lg"
           :class="{
             'text-success': toast.type === 'success',
             'text-destructive': toast.type === 'error',

@@ -13,8 +13,8 @@ const { t } = useI18n()
 const tabs = computed(() => [
   { path: '/', label: t('nav.home'), isLogotype: true },
   { path: '/setup', icon: 'lucide:settings', label: t('nav.setup') },
-  { path: '/plans', icon: 'lucide:wallet', label: t('nav.plans') },
   { path: '/profile', icon: 'lucide:user', label: t('nav.profile') },
+  { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
 ])
 
 const active = computed(() => route.path)

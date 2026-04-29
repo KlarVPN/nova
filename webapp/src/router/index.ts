@@ -46,6 +46,18 @@ const router = createRouter({
       meta: { title: 'FAQ' },
     },
     {
+      name: 'support',
+      path: '/support',
+      component: () => import('@/views/SupportView.vue'),
+      meta: { title: 'Support' },
+    },
+    {
+      name: 'support-setup',
+      path: '/support/setup',
+      component: () => import('@/views/SupportSetupView.vue'),
+      meta: { title: 'Support Setup' },
+    },
+    {
       name: 'locations',
       path: '/locations',
       component: () => import('@/views/LocationsView.vue'),
