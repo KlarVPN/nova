@@ -86,6 +86,8 @@
     "selectedPlan": "Выбранный тариф",
     "activeUntil": "Действует до",
     "paymentMethod": "Способ оплаты",
+    "paySubscription": "Оплатить подписку",
+    "selectPlanFirst": "Сначала выберите тариф",
     "pay": "Оплатить",
     "redirecting": "Перенаправляем на оплату...",
     "paymentError": "Ошибка при создании платежа"

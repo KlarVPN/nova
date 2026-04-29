@@ -86,6 +86,8 @@
     "selectedPlan": "Selected plan",
     "activeUntil": "Active until",
     "paymentMethod": "Payment method",
+    "paySubscription": "Pay subscription",
+    "selectPlanFirst": "Select a plan first",
     "pay": "Pay",
     "redirecting": "Redirecting to payment...",
     "paymentError": "Payment creation failed"

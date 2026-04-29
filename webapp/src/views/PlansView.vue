@@ -77,6 +77,37 @@ const selectedAmountLabel = computed(() => {
   return formatPrice(discountedPrice(selected.price_rub))
 })
 
+const oneMonthPlan = computed(() => sortedPlans.value.find((p) => p.months === 1) ?? null)
+
+const paySubscriptionPrice = computed(() => {
+  if (selectedMonths.value) {
+    const plan = sortedPlans.value.find((p) => p.months === selectedMonths.value)
+    if (!plan) return { oldPrice: null as string | null, finalPrice: null as string | null }
+
+    if (plan.price_rub != null) {
+      const finalPrice = formatPrice(discountedPrice(plan.price_rub))
+      if (selectedMonths.value >= 3 && oneMonthPlan.value?.price_rub != null) {
+        const oldTotal = formatPrice(oneMonthPlan.value.price_rub * selectedMonths.value)
+        return { oldPrice: oldTotal, finalPrice }
+      }
+      return { oldPrice: null, finalPrice }
+    }
+
+    if (plan.price_stars != null) {
+      return { oldPrice: null, finalPrice: `${plan.price_stars} ⭐` }
+    }
+  }
+
+  if (selectedGb.value) {
+    const pkg = displayTrafficPackages.value.find((p) => p.gb === selectedGb.value)
+    if (pkg?.price_rub != null)
+      return { oldPrice: null, finalPrice: formatPrice(discountedPrice(pkg.price_rub)) }
+    if (pkg?.price_stars != null) return { oldPrice: null, finalPrice: `${pkg.price_stars} ⭐` }
+  }
+
+  return { oldPrice: null, finalPrice: null }
+})
+
 onMounted(() => {
   if (store.plansData) {
     hasRequestedPlans.value = true
@@ -204,13 +235,20 @@ function selectPlan(months: number) {
   hapticImpact()
   selectedMonths.value = months
   selectedGb.value = null
-  step.value = 'payment'
 }
 
 function selectTraffic(gb: number) {
   hapticImpact()
   selectedGb.value = gb
   selectedMonths.value = null
+}
+
+function goToPaymentStep() {
+  if (!selectedMonths.value && !selectedGb.value) {
+    error(t('plans.selectPlanFirst'))
+    return
+  }
+  hapticImpact('light')
   step.value = 'payment'
 }
 
@@ -317,57 +355,56 @@ watch(
           </div>
           <div class="flex w-full flex-col gap-3">
             <template v-if="!store.isTrafficMode">
-              <button
-                v-for="plan in sortedPlans"
-                :key="plan.months"
-                class="flex cursor-pointer flex-col gap-2 rounded-[18px] border p-4 text-left transition-all"
-                :class="
-                  selectedMonths === plan.months
-                    ? 'plan-card-active border-emerald-300/70'
-                    : 'border-white/10 bg-neutral-950/60 hover:border-white/20'
-                "
-                @click="selectPlan(plan.months)"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <span class="text-lg text-white">
-                    {{ monthsLabel(plan.months) }}
-                  </span>
-                  <span
-                    v-if="plan.months > 1 && planSavings(plan.months)"
-                    class="rounded-full border border-emerald-300/35 bg-emerald-300/10 px-2 py-0.5 text-xs font-semibold text-emerald-200"
-                  >
-                    {{ t('plans.saving', { amount: planSavings(plan.months) }) }}
-                  </span>
-                </div>
-                <span class="text-3xl leading-none font-semibold tracking-tight text-emerald-200">{{
-                  planDisplayPrice(plan.price_rub, plan.price_stars)
-                }}</span>
-                <span class="text-xs text-emerald-100/65">{{
-                  pricePerMonth(plan.months, plan.price_rub, plan.price_stars)
-                }}</span>
-                <div class="mt-1 grid grid-cols-2 gap-2 text-xs text-neutral-400">
-                  <div class="rounded-md border border-white/10 bg-black/20 px-2 py-1">
-                    {{ t('plans.traffic') }}: <span class="text-white">{{ trafficLabel() }}</span>
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  v-for="plan in sortedPlans"
+                  :key="plan.months"
+                  class="relative flex aspect-square cursor-pointer flex-col justify-between gap-2 overflow-hidden rounded-[18px] border p-4 text-left transition-all"
+                  :class="
+                    selectedMonths === plan.months
+                      ? 'border-emerald-300/80 bg-neutral-900/90 shadow-[0_20px_45px_rgba(16,185,129,0.12)]'
+                      : 'border-white/10 bg-neutral-950/70 hover:border-white/20 hover:bg-neutral-900/70'
+                  "
+                  @click="selectPlan(plan.months)"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <span class="text-base text-white">
+                      {{ monthsLabel(plan.months) }}
+                    </span>
+                    <Icon
+                      v-if="plan.months === 6"
+                      icon="mingcute:star-fill"
+                      class="size-4 shrink-0 text-amber-300"
+                    />
                   </div>
-                  <div class="rounded-md border border-white/10 bg-black/20 px-2 py-1">
-                    {{ t('plans.devices') }}: <span class="text-white">{{ devicesLabel() }}</span>
+                  <div class="flex flex-col gap-2">
+                    <span class="text-2xl leading-none font-semibold tracking-tight">{{
+                      planDisplayPrice(plan.price_rub, plan.price_stars)
+                    }}</span>
+                    <span class="text-sm text-white/65">{{
+                      pricePerMonth(plan.months, plan.price_rub, plan.price_stars)
+                    }}</span>
                   </div>
-                </div>
-              </button>
+                </button>
+              </div>
             </template>
 
             <template v-else>
               <button
                 v-for="pkg in displayTrafficPackages"
                 :key="pkg.gb"
-                class="plan-card flex cursor-pointer flex-col gap-1 rounded-[18px] border p-4 text-left transition-all"
+                class="plan-card-modern relative flex cursor-pointer flex-col gap-1 overflow-hidden rounded-[18px] border p-4 text-left transition-all"
                 :class="
                   selectedGb === pkg.gb
-                    ? 'plan-card-active border-emerald-300/70'
-                    : 'border-white/10 bg-neutral-950/60 hover:border-white/20'
+                    ? 'plan-card-active border-emerald-300/70 bg-neutral-900/90 shadow-[0_20px_45px_rgba(16,185,129,0.12)]'
+                    : 'border-white/10 bg-neutral-950/70 hover:border-white/20 hover:bg-neutral-900/70'
                 "
                 @click="selectTraffic(pkg.gb)"
               >
+                <div
+                  class="plan-card-glow"
+                  :class="selectedGb === pkg.gb ? 'opacity-100' : 'opacity-0'"
+                />
                 <span class="text-2xl font-extrabold tracking-tighter text-white uppercase"
                   >{{ pkg.gb }} GB</span
                 >
@@ -382,6 +419,25 @@ watch(
               </button>
             </template>
           </div>
+
+          <button
+            class="mt-2 flex h-12 w-full cursor-pointer items-center justify-between rounded-[14px] bg-emerald-200 px-4 text-sm font-bold tracking-[0.08em] text-emerald-950 uppercase transition-all hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedMonths && !selectedGb"
+            @click="goToPaymentStep"
+          >
+            <span>{{ t('plans.paySubscription') }}</span>
+            <span
+              v-if="paySubscriptionPrice.finalPrice"
+              class="flex items-center gap-1 text-right text-xs tracking-normal normal-case"
+            >
+              <span v-if="paySubscriptionPrice.oldPrice" class="text-emerald-900/60 line-through">{{
+                paySubscriptionPrice.oldPrice
+              }}</span>
+              <span class="text-sm font-semibold text-emerald-950">{{
+                paySubscriptionPrice.finalPrice
+              }}</span>
+            </span>
+          </button>
         </div>
 
         <!-- STEP: Payment Method -->
