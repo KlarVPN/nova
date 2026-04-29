@@ -7,14 +7,19 @@ import type en from './locales/en.json'
 export const AVAILABLE_LOCALES = [
   { code: 'en', name: 'English' },
   { code: 'ru', name: 'Русский' },
+  { code: 'uk', name: 'Українська' },
+  { code: 'es', name: 'Español' },
+  { code: 'tr', name: 'Türkçe' },
+  { code: 'zh', name: '中文' },
+  { code: 'ko', name: '한국어' },
 ] as const
 
 type ValidLocale = (typeof AVAILABLE_LOCALES)[number]['code']
 type Lang = typeof en
 
-export type Locale = 'ru' | 'en'
+export type Locale = 'ru' | 'en' | 'uk' | 'es' | 'tr' | 'zh' | 'ko'
 
-export const SUPPORTED_LOCALES: Locale[] = ['ru', 'en']
+export const SUPPORTED_LOCALES: Locale[] = ['ru', 'en', 'uk', 'es', 'tr', 'zh', 'ko']
 
 declare module 'vue-i18n' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -52,7 +57,7 @@ export const i18n = createI18n({
   locale: locale.value,
   fallbackLocale: 'en',
   messages,
-  pluralRules: { ru: ruPlural },
+  pluralRules: { ru: ruPlural, uk: ruPlural },
 })
 
 watch(locale, (newLocale) => {

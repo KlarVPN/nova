@@ -1,0 +1,264 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "setup": "Configurar",
+    "plans": "Planes",
+    "referral": "Referidos",
+    "promo": "Código promo",
+    "configs": "Configuraciones",
+    "profile": "Perfil"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "share": "Compartir",
+    "apply": "Aplicar",
+    "back": "Volver",
+    "left": "restante",
+    "until": "hasta",
+    "or": "o",
+    "error": "Error de conexión",
+    "retry": "Reintentar",
+    "day": "{n} día | {n} días",
+    "month": "{n} mes | {n} meses"
+  },
+  "status": {
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "expired": "Expirada",
+    "trial": "Prueba",
+    "disabled": "Desactivada"
+  },
+  "auth": {
+    "title": "Se requiere Telegram",
+    "desc": "Esta aplicación solo funciona dentro de Telegram. Ábrela desde el bot.",
+    "button": "Abrir Telegram"
+  },
+  "home": {
+    "until": "hasta {date}",
+    "greeting": "Bienvenido",
+    "subscription": "Suscripción",
+    "traffic": "Tráfico",
+    "autorenew": "Renovación automática",
+    "connect": "Conectar",
+    "noSub": "No tienes una suscripción activa. Elige un plan y conéctate a VPN.",
+    "noSubTitle": "Sin suscripción activa",
+    "expires": "Expira",
+    "currentLocation": "Ubicación actual",
+    "subLink": "Enlace de suscripción",
+    "subscribe": "Suscribirse",
+    "changePlan": "Cambiar plan",
+    "trialBtn": "Activar período de prueba",
+    "choosePlan": "Elegir plan",
+    "expiringSoon": "Próximo a expirar",
+    "renewDesc": "Renueva tu suscripción con anticipación",
+    "renewSub": "Renovar suscripción",
+    "expiredDesc": "Tu suscripción ha expirado. Renuévala para seguir usando VPN.",
+    "disabledDesc": "Tu suscripción está desactivada. Contacta con soporte."
+  },
+  "plans": {
+    "title": "Planes",
+    "subtitle": "Elige un plan adecuado",
+    "description": "Elige el período de suscripción, compara ahorros y conéctate en minutos.",
+    "loading": "Cargando planes...",
+    "discountActive": "Descuento del {n}% activo",
+    "popular": "Popular",
+    "bestValue": "Mejor valor",
+    "traffic": "Tráfico",
+    "devices": "Dispositivos",
+    "saving": "Ahorra {amount}",
+    "unlimitedTraffic": "Ilimitado",
+    "unlimitedDevices": "Ilimitado",
+    "backToPlans": "Volver a planes",
+    "selectedPlan": "Plan seleccionado",
+    "paymentMethod": "Método de pago",
+    "pay": "Pagar",
+    "redirecting": "Redirigiendo al pago...",
+    "paymentError": "Error al crear el pago"
+  },
+  "providers": {
+    "yookassa": "Tarjeta bancaria",
+    "stars": "Telegram Stars",
+    "cryptopay": "Criptomoneda",
+    "freekassa": "FreeKassa",
+    "platega": "Platega",
+    "severpay": "SeverPay"
+  },
+  "referral": {
+    "title": "Referidos",
+    "subtitle": "Invita amigos y gana bonificaciones",
+    "invited": "Invitados",
+    "purchased": "Compraron",
+    "link": "Enlace",
+    "linkLabel": "Tu enlace de referido",
+    "shareText": "¡Prueba Nova VPN — servicio VPN rápido y confiable!",
+    "bonusTitle": "Bonificaciones por referido",
+    "plan": "Plan",
+    "you": "Tú",
+    "friend": "Amigo",
+    "howTitle": "Cómo funciona",
+    "step1": "Comparte el enlace con un amigo",
+    "step2": "El amigo se registra y se suscribe",
+    "step3": "Ambos reciben días adicionales en su suscripción"
+  },
+  "promo": {
+    "title": "Código Promo",
+    "subtitle": "Ingresa un código para obtener descuento o días adicionales",
+    "activeDiscount": "Descuento activo",
+    "expiresIn": "Expira en {n} min",
+    "useHint": "Suscríbete para usar el descuento",
+    "inputLabel": "Código promo",
+    "placeholder": "NOVA2025",
+    "applied": "¡Código aplicado!",
+    "addedDays": "+{days} agregados a tu suscripción.",
+    "newExpiry": "Nueva fecha de expiración: {date}",
+    "discountActivated": "¡Descuento activado!",
+    "discountApplied": "Se aplicará un {n}% de descuento al pagar.",
+    "failed": "No se pudo aplicar",
+    "types": "Tipos de códigos promo",
+    "bonus": "Bono",
+    "bonusDesc": "Agrega días a tu suscripción activa",
+    "discount": "Descuento",
+    "discountDesc": "Reduce el costo del próximo pago",
+    "errors": {
+      "not_found": "Código promo no encontrado",
+      "expired": "El código promo ha expirado",
+      "already_used": "Ya usaste este código promo",
+      "limit_reached": "Límite de activaciones alcanzado",
+      "no_subscription": "Se requiere una suscripción"
+    }
+  },
+  "devices": {
+    "title": "Dispositivos",
+    "countOf": "{current} de {max}",
+    "countFree": "{current} dispositivo conectado",
+    "manage": "Gestionar dispositivos",
+    "noDevices": "Sin dispositivos conectados",
+    "disconnect": "Desconectar",
+    "disconnecting": "Desconectando...",
+    "firstSeen": "Primera conexión",
+    "unknown": "Dispositivo desconocido",
+    "loading": "Cargando dispositivos..."
+  },
+  "configs": {
+    "title": "Configuraciones",
+    "noSub": "Sin suscripción activa",
+    "noSubDesc": "Suscríbete para obtener configuraciones de conexión",
+    "subLink": "Enlace de suscripción",
+    "copyLink": "Copiar enlace",
+    "copied": "¡Copiado!",
+    "quickSetup": "Conexión rápida",
+    "openInHapp": "Abrir en Happ",
+    "openInFlClash": "Abrir en FlClashX",
+    "instructions": "Instrucciones de conexión",
+    "happ": {
+      "title": "Happ (iOS / macOS)",
+      "step1": "Instala la app Happ desde App Store",
+      "step2": "Toca el botón «Abrir en Happ»",
+      "step3": "Confirma agregar la suscripción en la app",
+      "step4": "Activa VPN en la pantalla principal de Happ"
+    },
+    "flclash": {
+      "title": "FlClash (Android / Windows)",
+      "step1": "Instala FlClash desde Google Play o GitHub",
+      "step2": "Toca el botón «Abrir en FlClashX»",
+      "step3": "La suscripción se agregará automáticamente",
+      "step4": "Toca Start para conectar"
+    },
+    "manual": {
+      "title": "Otras aplicaciones",
+      "step1": "Toca «Copiar enlace»",
+      "step2": "Abre tu app VPN",
+      "step3": "Busca la sección «Suscripciones» o «Perfiles»",
+      "step4": "Pega el enlace copiado"
+    }
+  },
+  "setup": {
+    "noSubTitle": "Primero necesitas una suscripción",
+    "noSubDesc": "Compra un plan y completa la configuración en 1-2 minutos.",
+    "progress": "Paso de configuración",
+    "recommended": "recomendado",
+    "subLink": "Enlace de suscripción",
+    "scene1": {
+      "title": "1. ¿Dónde configurar VPN?",
+      "desc": "Elige tu escenario de configuración.",
+      "thisDevice": "En este dispositivo",
+      "thisDeviceDesc": "Configuración rápida ahora mismo",
+      "otherDevice": "En otro dispositivo",
+      "otherDeviceDesc": "Copia el enlace y ábrelo en otro dispositivo"
+    },
+    "scene2": {
+      "title": "2. Elige una aplicación",
+      "desc": "Para dispositivos Apple recomendamos Happ."
+    },
+    "scene3": {
+      "title": "3. Agrega la suscripción",
+      "desc": "Copia el enlace o ábrelo en la app, luego activa VPN."
+    },
+    "apps": {
+      "happ": {
+        "title": "Happ",
+        "desc": "La mejor opción para iOS y macOS"
+      },
+      "flclash": {
+        "title": "FlClashX",
+        "desc": "Ideal para Android, Windows, Linux"
+      },
+      "manual": {
+        "title": "Otra aplicación",
+        "desc": "Configuración manual mediante enlace"
+      }
+    }
+  },
+  "profile": {
+    "config": "Configuración",
+    "referral": "Programa de referidos",
+    "language": "Idioma",
+    "links": "Enlaces",
+    "questions": "¿Tienes preguntas?",
+    "support": "Contactar soporte",
+    "news": "Noticias",
+    "docs": "Base de conocimiento",
+    "faq": "Preguntas frecuentes",
+    "locations": "Ubicaciones",
+    "promo": "Código promo",
+    "terms": "Términos de servicio",
+    "privacy": "Política de privacidad",
+    "status": "Estado de servidores"
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "subtitle": "Lo más importante sobre suscripción y configuración",
+    "q1": "¿Cómo empiezo a usar VPN rápidamente?",
+    "a1": "Compra un plan en la sección Planes, luego abre Configuraciones y conecta tu app siguiendo las instrucciones. Normalmente tarda 1-2 minutos.",
+    "q2": "¿Dónde encuentro mi enlace de suscripción?",
+    "a2": "Abre la sección Configuraciones y toca Copiar enlace. Puedes pegar este enlace en cualquier app compatible.",
+    "q3": "¿Por qué no puedo conectarme?",
+    "a3": "Verifica que tu suscripción esté activa, no haya expirado y que tu app tenga el perfil más reciente. Si es necesario, actualiza la configuración y reinicia la app.",
+    "q4": "¿Puedo usarlo en varios dispositivos?",
+    "a4": "Sí. El número de conexiones disponibles depende de tu plan. Puedes gestionar los dispositivos conectados desde el bloque de dispositivos en la página de inicio.",
+    "q5": "¿Qué hago si el pago fue exitoso pero la suscripción no se activó?",
+    "a5": "Vuelve a abrir la app y espera unos segundos. Si el estado no cambia, contacta soporte indicando tu ID de perfil y la hora del pago.",
+    "q6": "¿Cómo cambio el idioma de la interfaz?",
+    "a6": "Ve a Perfil y toca Idioma. En la ventana emergente, elige el idioma que necesitas."
+  },
+  "locations": {
+    "title": "Ubicaciones",
+    "filters": {
+      "all": "Todas las ubicaciones",
+      "online": "En línea",
+      "offline": "Sin conexión"
+    },
+    "sortByPing": "Ordenar por ping",
+    "uptime": "disponibilidad",
+    "daysMonitored": "{n} días",
+    "now": "ahora",
+    "status": {
+      "online": "En línea",
+      "offline": "Sin conexión",
+      "pending": "Pendiente",
+      "unknown": "Desconocido"
+    }
+  }
+}

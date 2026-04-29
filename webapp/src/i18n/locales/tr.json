@@ -1,0 +1,264 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "setup": "Kurulum",
+    "plans": "Planlar",
+    "referral": "Referanslar",
+    "promo": "Promosyon Kodu",
+    "configs": "Yapılandırmalar",
+    "profile": "Profil"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı!",
+    "share": "Paylaş",
+    "apply": "Uygula",
+    "back": "Geri",
+    "left": "kaldı",
+    "until": "kadar",
+    "or": "veya",
+    "error": "Bağlantı hatası",
+    "retry": "Tekrar dene",
+    "day": "{n} gün | {n} gün",
+    "month": "{n} ay | {n} ay"
+  },
+  "status": {
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "expired": "Süresi doldu",
+    "trial": "Deneme",
+    "disabled": "Devre dışı"
+  },
+  "auth": {
+    "title": "Telegram Gerekli",
+    "desc": "Bu uygulama yalnızca Telegram içinde çalışır. Bot üzerinden açın.",
+    "button": "Telegram'ı Aç"
+  },
+  "home": {
+    "until": "{date} tarihine kadar",
+    "greeting": "Hoş geldiniz",
+    "subscription": "Abonelik",
+    "traffic": "Trafik",
+    "autorenew": "Otomatik yenileme",
+    "connect": "Bağlan",
+    "noSub": "Aktif aboneliğiniz yok. Bir plan seçin ve VPN'e bağlanın.",
+    "noSubTitle": "Aktif abonelik yok",
+    "expires": "Kalan",
+    "currentLocation": "Mevcut konum",
+    "subLink": "Abonelik bağlantısı",
+    "subscribe": "Abone ol",
+    "changePlan": "Planı değiştir",
+    "trialBtn": "Deneme süresini etkinleştir",
+    "choosePlan": "Plan seç",
+    "expiringSoon": "Yakında bitiyor",
+    "renewDesc": "Aboneliğinizi önceden yenileyin",
+    "renewSub": "Aboneliği yenile",
+    "expiredDesc": "Aboneliğinizin süresi doldu. VPN'i kullanmaya devam etmek için yenileyin.",
+    "disabledDesc": "Aboneliğiniz devre dışı. Destek ile iletişime geçin."
+  },
+  "plans": {
+    "title": "Planlar",
+    "subtitle": "Uygun bir plan seçin",
+    "description": "Abonelik süresini seçin, tasarrufları karşılaştırın ve dakikalar içinde bağlanın.",
+    "loading": "Planlar yükleniyor...",
+    "discountActive": "%{n} indirim aktif",
+    "popular": "Popüler",
+    "bestValue": "En iyi değer",
+    "traffic": "Trafik",
+    "devices": "Cihazlar",
+    "saving": "{amount} tasarruf",
+    "unlimitedTraffic": "Sınırsız",
+    "unlimitedDevices": "Sınırsız",
+    "backToPlans": "Planlara geri dön",
+    "selectedPlan": "Seçilen plan",
+    "paymentMethod": "Ödeme yöntemi",
+    "pay": "Öde",
+    "redirecting": "Ödemeye yönlendiriliyor...",
+    "paymentError": "Ödeme oluşturma başarısız"
+  },
+  "providers": {
+    "yookassa": "Banka kartı",
+    "stars": "Telegram Stars",
+    "cryptopay": "Kripto para",
+    "freekassa": "FreeKassa",
+    "platega": "Platega",
+    "severpay": "SeverPay"
+  },
+  "referral": {
+    "title": "Referanslar",
+    "subtitle": "Arkadaşlarınızı davet edin ve bonus kazanın",
+    "invited": "Davet edildi",
+    "purchased": "Satın aldı",
+    "link": "Bağlantı",
+    "linkLabel": "Referans bağlantınız",
+    "shareText": "Nova VPN'i deneyin — hızlı ve güvenilir VPN hizmeti!",
+    "bonusTitle": "Referans bonusları",
+    "plan": "Plan",
+    "you": "Siz",
+    "friend": "Arkadaş",
+    "howTitle": "Nasıl çalışır",
+    "step1": "Bağlantıyı bir arkadaşınızla paylaşın",
+    "step2": "Arkadaş kaydolur ve abone olur",
+    "step3": "İkisi de aboneliklerine bonus gün ekler"
+  },
+  "promo": {
+    "title": "Promosyon Kodu",
+    "subtitle": "İndirim veya bonus gün almak için kod girin",
+    "activeDiscount": "Aktif indirim",
+    "expiresIn": "{n} dk içinde sona eriyor",
+    "useHint": "İndirimi kullanmak için abone olun",
+    "inputLabel": "Promosyon kodu",
+    "placeholder": "NOVA2025",
+    "applied": "Kod uygulandı!",
+    "addedDays": "Aboneliğinize +{days} eklendi.",
+    "newExpiry": "Yeni bitiş tarihi: {date}",
+    "discountActivated": "İndirim etkinleştirildi!",
+    "discountApplied": "Ödeme sırasında %{n} indirim uygulanacak.",
+    "failed": "Uygulanamadı",
+    "types": "Promosyon kodu türleri",
+    "bonus": "Bonus",
+    "bonusDesc": "Aktif aboneliğinize gün ekler",
+    "discount": "İndirim",
+    "discountDesc": "Sonraki ödemenin maliyetini azaltır",
+    "errors": {
+      "not_found": "Promosyon kodu bulunamadı",
+      "expired": "Promosyon kodunun süresi doldu",
+      "already_used": "Bu promosyon kodunu zaten kullandınız",
+      "limit_reached": "Aktivasyon limiti doldu",
+      "no_subscription": "Abonelik gerekli"
+    }
+  },
+  "devices": {
+    "title": "Cihazlar",
+    "countOf": "{max} içinden {current}",
+    "countFree": "{current} cihaz bağlı",
+    "manage": "Cihazları yönet",
+    "noDevices": "Bağlı cihaz yok",
+    "disconnect": "Bağlantıyı kes",
+    "disconnecting": "Bağlantı kesiliyor...",
+    "firstSeen": "İlk görülme",
+    "unknown": "Bilinmeyen cihaz",
+    "loading": "Cihazlar yükleniyor..."
+  },
+  "configs": {
+    "title": "Yapılandırmalar",
+    "noSub": "Aktif abonelik yok",
+    "noSubDesc": "Bağlantı yapılandırmalarını almak için abone olun",
+    "subLink": "Abonelik bağlantısı",
+    "copyLink": "Bağlantıyı kopyala",
+    "copied": "Kopyalandı!",
+    "quickSetup": "Hızlı bağlantı",
+    "openInHapp": "Happ'ta aç",
+    "openInFlClash": "FlClashX'te aç",
+    "instructions": "Bağlantı talimatları",
+    "happ": {
+      "title": "Happ (iOS / macOS)",
+      "step1": "App Store'dan Happ uygulamasını yükleyin",
+      "step2": "«Happ'ta aç» düğmesine dokunun",
+      "step3": "Uygulamada abonelik eklemeyi onaylayın",
+      "step4": "Happ ana ekranında VPN'i etkinleştirin"
+    },
+    "flclash": {
+      "title": "FlClash (Android / Windows)",
+      "step1": "Google Play veya GitHub'dan FlClash'ı yükleyin",
+      "step2": "«FlClashX'te aç» düğmesine dokunun",
+      "step3": "Abonelik otomatik olarak eklenecek",
+      "step4": "Bağlanmak için Start'a dokunun"
+    },
+    "manual": {
+      "title": "Diğer uygulamalar",
+      "step1": "«Bağlantıyı kopyala»ya dokunun",
+      "step2": "VPN uygulamanızı açın",
+      "step3": "«Abonelikler» veya «Profiller» bölümünü bulun",
+      "step4": "Kopyalanan bağlantıyı yapıştırın"
+    }
+  },
+  "setup": {
+    "noSubTitle": "Önce abonelik gerekli",
+    "noSubDesc": "Bir plan satın alın, ardından 1-2 dakikada kurulumu tamamlayın.",
+    "progress": "Kurulum adımı",
+    "recommended": "önerilen",
+    "subLink": "Abonelik bağlantısı",
+    "scene1": {
+      "title": "1. VPN'i nerede kurmak istiyorsunuz?",
+      "desc": "Kurulum senaryonuzu seçin.",
+      "thisDevice": "Bu cihazda",
+      "thisDeviceDesc": "Hemen hızlı kurulum",
+      "otherDevice": "Başka bir cihazda",
+      "otherDeviceDesc": "Bağlantıyı kopyalayın ve başka bir cihazda açın"
+    },
+    "scene2": {
+      "title": "2. Uygulama seçin",
+      "desc": "Apple cihazlar için Happ'ı öneririz."
+    },
+    "scene3": {
+      "title": "3. Abonelik ekleyin",
+      "desc": "Bağlantıyı kopyalayın veya uygulamada açın, ardından VPN'i etkinleştirin."
+    },
+    "apps": {
+      "happ": {
+        "title": "Happ",
+        "desc": "iOS ve macOS için en iyi seçim"
+      },
+      "flclash": {
+        "title": "FlClashX",
+        "desc": "Android, Windows, Linux için uygun"
+      },
+      "manual": {
+        "title": "Diğer uygulama",
+        "desc": "Bağlantı ile manuel kurulum"
+      }
+    }
+  },
+  "profile": {
+    "config": "Yapılandırma",
+    "referral": "Referans programı",
+    "language": "Dil",
+    "links": "Bağlantılar",
+    "questions": "Sorunuz mu var?",
+    "support": "Destek ile iletişime geçin",
+    "news": "Haberler",
+    "docs": "Bilgi tabanı",
+    "faq": "Sık sorulan sorular",
+    "locations": "Konumlar",
+    "promo": "Promosyon kodu",
+    "terms": "Hizmet koşulları",
+    "privacy": "Gizlilik politikası",
+    "status": "Sunucu durumu"
+  },
+  "faq": {
+    "title": "Sık Sorulan Sorular",
+    "subtitle": "Abonelik ve kurulum hakkında en önemli bilgiler",
+    "q1": "VPN'i hızlıca nasıl kullanmaya başlarım?",
+    "a1": "Planlar bölümünden bir plan satın alın, ardından Yapılandırmalar'ı açın ve kurulum talimatlarını izleyerek uygulamanızı bağlayın. Genellikle 1-2 dakika sürer.",
+    "q2": "Abonelik bağlantımı nerede bulabilirim?",
+    "a2": "Yapılandırmalar bölümünü açın ve Bağlantıyı kopyala'ya dokunun. Bu bağlantıyı desteklenen herhangi bir uygulamaya yapıştırabilirsiniz.",
+    "q3": "Neden bağlanamıyorum?",
+    "a3": "Aboneliğinizin aktif olduğunu, süresinin dolmadığını ve uygulamanızda en son profili olduğunu kontrol edin. Gerekirse yapılandırmayı yenileyin ve uygulamayı yeniden başlatın.",
+    "q4": "Birden fazla cihazda kullanabilir miyim?",
+    "a4": "Evet. Kullanılabilir bağlantı sayısı planınıza bağlıdır. Bağlı cihazları Ana sayfa'daki cihazlar bloğundan yönetebilirsiniz.",
+    "q5": "Ödeme başarılı oldu ama abonelik etkinleşmediyse ne yapmalıyım?",
+    "a5": "Uygulamayı yeniden açın ve birkaç saniye bekleyin. Durum hâlâ değişmediyse destek ile iletişime geçin ve profil kimliğinizi ve ödeme zamanınızı belirtin.",
+    "q6": "Arayüz dilini nasıl değiştirebilirim?",
+    "a6": "Profil'e gidin ve Dil'e dokunun. Açılan pencerede ihtiyacınız olan dili seçin."
+  },
+  "locations": {
+    "title": "Konumlar",
+    "filters": {
+      "all": "Tüm konumlar",
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı"
+    },
+    "sortByPing": "Ping'e göre sırala",
+    "uptime": "çalışma süresi",
+    "daysMonitored": "{n} gün",
+    "now": "şimdi",
+    "status": {
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "pending": "Bekliyor",
+      "unknown": "Bilinmiyor"
+    }
+  }
+}

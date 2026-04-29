@@ -1,0 +1,264 @@
+{
+  "nav": {
+    "home": "主页",
+    "setup": "设置",
+    "plans": "套餐",
+    "referral": "推荐",
+    "promo": "优惠码",
+    "configs": "配置",
+    "profile": "个人资料"
+  },
+  "common": {
+    "loading": "加载中...",
+    "copy": "复制",
+    "copied": "已复制！",
+    "share": "分享",
+    "apply": "应用",
+    "back": "返回",
+    "left": "剩余",
+    "until": "至",
+    "or": "或",
+    "error": "连接错误",
+    "retry": "重试",
+    "day": "{n} 天 | {n} 天",
+    "month": "{n} 个月 | {n} 个月"
+  },
+  "status": {
+    "active": "有效",
+    "inactive": "无效",
+    "expired": "已过期",
+    "trial": "试用",
+    "disabled": "已禁用"
+  },
+  "auth": {
+    "title": "需要 Telegram",
+    "desc": "此应用仅在 Telegram 中使用。请通过机器人打开。",
+    "button": "打开 Telegram"
+  },
+  "home": {
+    "until": "至 {date}",
+    "greeting": "欢迎",
+    "subscription": "订阅",
+    "traffic": "流量",
+    "autorenew": "自动续费",
+    "connect": "连接",
+    "noSub": "您没有有效的订阅。选择套餐并连接 VPN。",
+    "noSubTitle": "无有效订阅",
+    "expires": "剩余",
+    "currentLocation": "当前位置",
+    "subLink": "订阅链接",
+    "subscribe": "立即订阅",
+    "changePlan": "更换套餐",
+    "trialBtn": "激活试用期",
+    "choosePlan": "选择套餐",
+    "expiringSoon": "即将到期",
+    "renewDesc": "提前续费订阅",
+    "renewSub": "续费订阅",
+    "expiredDesc": "您的订阅已过期。续费以继续使用 VPN。",
+    "disabledDesc": "您的订阅已禁用。请联系客服。"
+  },
+  "plans": {
+    "title": "套餐",
+    "subtitle": "选择合适的套餐",
+    "description": "选择订阅时长，比较优惠，几分钟内即可连接。",
+    "loading": "正在加载套餐...",
+    "discountActive": "{n}% 折扣已激活",
+    "popular": "热门",
+    "bestValue": "最超值",
+    "traffic": "流量",
+    "devices": "设备数",
+    "saving": "节省 {amount}",
+    "unlimitedTraffic": "无限",
+    "unlimitedDevices": "无限制",
+    "backToPlans": "返回套餐",
+    "selectedPlan": "已选套餐",
+    "paymentMethod": "支付方式",
+    "pay": "支付",
+    "redirecting": "正在跳转到支付页面...",
+    "paymentError": "创建支付失败"
+  },
+  "providers": {
+    "yookassa": "银行卡",
+    "stars": "Telegram Stars",
+    "cryptopay": "加密货币",
+    "freekassa": "FreeKassa",
+    "platega": "Platega",
+    "severpay": "SeverPay"
+  },
+  "referral": {
+    "title": "推荐",
+    "subtitle": "邀请好友并赚取奖励",
+    "invited": "已邀请",
+    "purchased": "已购买",
+    "link": "链接",
+    "linkLabel": "您的推荐链接",
+    "shareText": "试试 Nova VPN — 快速可靠的 VPN 服务！",
+    "bonusTitle": "推荐奖励",
+    "plan": "套餐",
+    "you": "您",
+    "friend": "好友",
+    "howTitle": "如何运作",
+    "step1": "将链接分享给好友",
+    "step2": "好友注册并订阅",
+    "step3": "双方都获得订阅奖励天数"
+  },
+  "promo": {
+    "title": "优惠码",
+    "subtitle": "输入代码获取折扣或奖励天数",
+    "activeDiscount": "有效折扣",
+    "expiresIn": "{n} 分钟后到期",
+    "useHint": "订阅后使用折扣",
+    "inputLabel": "优惠码",
+    "placeholder": "NOVA2025",
+    "applied": "代码已应用！",
+    "addedDays": "已为您的订阅添加 +{days} 天。",
+    "newExpiry": "新到期日：{date}",
+    "discountActivated": "折扣已激活！",
+    "discountApplied": "结账时将应用 {n}% 折扣。",
+    "failed": "应用失败",
+    "types": "优惠码类型",
+    "bonus": "奖励",
+    "bonusDesc": "为您的有效订阅添加天数",
+    "discount": "折扣",
+    "discountDesc": "减少下次支付金额",
+    "errors": {
+      "not_found": "未找到优惠码",
+      "expired": "优惠码已过期",
+      "already_used": "您已使用过此优惠码",
+      "limit_reached": "已达激活上限",
+      "no_subscription": "需要订阅"
+    }
+  },
+  "devices": {
+    "title": "设备",
+    "countOf": "{current}/{max}",
+    "countFree": "已连接 {current} 台设备",
+    "manage": "管理设备",
+    "noDevices": "无已连接设备",
+    "disconnect": "断开连接",
+    "disconnecting": "正在断开...",
+    "firstSeen": "首次连接",
+    "unknown": "未知设备",
+    "loading": "正在加载设备..."
+  },
+  "configs": {
+    "title": "配置",
+    "noSub": "无有效订阅",
+    "noSubDesc": "订阅后获取连接配置",
+    "subLink": "订阅链接",
+    "copyLink": "复制链接",
+    "copied": "已复制！",
+    "quickSetup": "快速连接",
+    "openInHapp": "在 Happ 中打开",
+    "openInFlClash": "在 FlClashX 中打开",
+    "instructions": "连接说明",
+    "happ": {
+      "title": "Happ（iOS / macOS）",
+      "step1": "从 App Store 安装 Happ 应用",
+      "step2": "点击「在 Happ 中打开」按钮",
+      "step3": "在应用中确认添加订阅",
+      "step4": "在 Happ 主界面启用 VPN"
+    },
+    "flclash": {
+      "title": "FlClash（Android / Windows）",
+      "step1": "从 Google Play 或 GitHub 安装 FlClash",
+      "step2": "点击「在 FlClashX 中打开」按钮",
+      "step3": "订阅将自动添加到应用",
+      "step4": "点击 Start 开始连接"
+    },
+    "manual": {
+      "title": "其他应用",
+      "step1": "点击「复制链接」",
+      "step2": "打开您的 VPN 应用",
+      "step3": "找到「订阅」或「配置文件」部分",
+      "step4": "粘贴复制的链接"
+    }
+  },
+  "setup": {
+    "noSubTitle": "首先需要订阅",
+    "noSubDesc": "购买套餐，然后在 1-2 分钟内完成设置。",
+    "progress": "设置步骤",
+    "recommended": "推荐",
+    "subLink": "订阅链接",
+    "scene1": {
+      "title": "1. 在哪里设置 VPN？",
+      "desc": "选择您的设置方案。",
+      "thisDevice": "在本设备上",
+      "thisDeviceDesc": "立即快速设置",
+      "otherDevice": "在其他设备上",
+      "otherDeviceDesc": "复制链接并在其他设备上打开"
+    },
+    "scene2": {
+      "title": "2. 选择应用",
+      "desc": "Apple 设备推荐使用 Happ。"
+    },
+    "scene3": {
+      "title": "3. 添加订阅",
+      "desc": "复制链接或在应用中打开，然后启用 VPN。"
+    },
+    "apps": {
+      "happ": {
+        "title": "Happ",
+        "desc": "iOS 和 macOS 的最佳选择"
+      },
+      "flclash": {
+        "title": "FlClashX",
+        "desc": "适用于 Android、Windows、Linux"
+      },
+      "manual": {
+        "title": "其他应用",
+        "desc": "通过链接手动设置"
+      }
+    }
+  },
+  "profile": {
+    "config": "配置",
+    "referral": "推荐计划",
+    "language": "语言",
+    "links": "链接",
+    "questions": "还有问题？",
+    "support": "联系客服",
+    "news": "新闻",
+    "docs": "知识库",
+    "faq": "常见问题",
+    "locations": "位置",
+    "promo": "优惠码",
+    "terms": "服务条款",
+    "privacy": "隐私政策",
+    "status": "服务器状态"
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "关于订阅和设置的最重要内容",
+    "q1": "如何快速开始使用 VPN？",
+    "a1": "在套餐页面购买套餐，然后打开配置，按照说明连接应用。通常需要 1-2 分钟。",
+    "q2": "在哪里找到订阅链接？",
+    "a2": "打开配置部分并点击复制链接。您可以将此链接粘贴到任何支持的应用中。",
+    "q3": "为什么无法连接？",
+    "a3": "检查您的订阅是否有效、未过期，且应用中有最新配置文件。如有需要，刷新配置并重启应用。",
+    "q4": "可以在多台设备上使用吗？",
+    "a4": "可以。可用连接数取决于您的套餐。您可以从主页的设备模块管理已连接的设备。",
+    "q5": "支付成功但订阅未激活怎么办？",
+    "a5": "重新打开应用并等待几秒钟。如果状态仍未变化，请联系客服并提供您的个人资料 ID 和支付时间。",
+    "q6": "如何更改界面语言？",
+    "a6": "前往个人资料，点击语言。在弹出窗口中选择所需语言。"
+  },
+  "locations": {
+    "title": "位置",
+    "filters": {
+      "all": "所有位置",
+      "online": "在线",
+      "offline": "离线"
+    },
+    "sortByPing": "按延迟排序",
+    "uptime": "在线率",
+    "daysMonitored": "{n} 天",
+    "now": "现在",
+    "status": {
+      "online": "在线",
+      "offline": "离线",
+      "pending": "等待中",
+      "unknown": "未知"
+    }
+  }
+}
