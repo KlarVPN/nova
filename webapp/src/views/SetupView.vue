@@ -40,7 +40,8 @@ const pageTitle = computed(() => {
 })
 
 const pageSubtitle = computed(() => {
-  if (step.value === 0) return 'Настройка VPN происходит в 3 шага и занимает пару минут'
+  if (step.value === 0)
+    return 'Настроить VPN можно всего за три шага — это займет всего несколько минут.'
   if (step.value === 1)
     return `Установите приложение для ${osLabel.value} и вернитесь к этому экрану.`
   if (step.value === 2) return 'Добавьте подписку в приложение с помощью кнопки ниже.'
@@ -182,18 +183,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-5 py-4 md:min-h-[calc(100dvh-3rem)]">
-    <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ pageTitle }}
-    </h1>
-    <p class="mx-auto max-w-[34ch] text-center text-sm text-neutral-400">
-      {{ pageSubtitle }}
-    </p>
+  <div
+    class="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-12 py-4 md:min-h-[calc(100dvh-3rem)]"
+  >
+    <div class="flex flex-col gap-3">
+      <h1
+        class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white md:text-3xl"
+      >
+        {{ pageTitle }}
+      </h1>
+      <p class="mx-auto max-w-[34ch] text-center text-base text-neutral-400">
+        {{ pageSubtitle }}
+      </p>
+    </div>
 
     <div class="relative mx-auto mt-1">
       <div class="setup-progress-ring" :style="circleStyle">
         <div class="setup-progress-inner">
-          <Icon :icon="centerIcon" class="size-8 text-white" />
+          <Icon :icon="centerIcon" class="size-12 text-white" />
         </div>
       </div>
     </div>
@@ -219,7 +226,8 @@ onBeforeUnmount(() => {
           :disabled="!installUrl"
           @click="openInstall"
         >
-          Установить приложение
+          <Icon icon="lucide:download" class="size-4" />
+          <span>Установить приложение</span>
         </Button>
         <Button
           class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
@@ -238,7 +246,8 @@ onBeforeUnmount(() => {
           :disabled="!connectUrl"
           @click="addSubscription"
         >
-          Добавить подписку
+          <Icon icon="lucide:plus" class="size-4" />
+          <span>Добавить подписку</span>
         </Button>
         <Button
           class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
@@ -261,17 +270,22 @@ onBeforeUnmount(() => {
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showInstallWarning" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
+        <div
+          v-if="showInstallWarning"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
+        >
           <div
             class="absolute inset-0 bg-black/70 backdrop-blur-sm"
             @click="showInstallWarning = false"
           />
-          <div class="relative bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)] md:w-full md:max-w-lg md:rounded-2xl md:pb-4">
+          <div
+            class="relative bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)] md:w-full md:max-w-lg md:rounded-2xl md:pb-4"
+          >
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
-            <h2 class="mb-3 text-base font-semibold text-white">Важная информация</h2>
-            <p class="text-sm text-neutral-300">
+            <h2 class="mb-3 text-2xl font-semibold text-white">Важная информация</h2>
+            <p class="text-base text-neutral-300">
               После установки приложения, обязательно вернитесь на этот экран и нажмите "следующий
               шаг", чтобы добавить конфигурацию в приложение, без этого VPN работать не будет.
             </p>
@@ -301,8 +315,8 @@ onBeforeUnmount(() => {
 .setup-progress-inner {
   display: grid;
   place-items: center;
-  width: 128px;
-  height: 128px;
+  width: 160px;
+  height: 160px;
   border-radius: 9999px;
   background: black;
   box-shadow:

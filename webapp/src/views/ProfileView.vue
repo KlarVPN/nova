@@ -131,6 +131,18 @@ async function handleLogout() {
   await router.replace({ name: 'login' })
 }
 
+async function copyTelegramId() {
+  if (!auth.profile) return
+  try {
+    await navigator.clipboard.writeText(String(auth.profile.user_id))
+    hapticSuccess()
+    success(t('common.copied'))
+  } catch {
+    hapticError()
+    error(t('common.error'))
+  }
+}
+
 const router = useRouter()
 </script>
 
@@ -139,19 +151,28 @@ const router = useRouter()
     <!-- User info -->
     <div
       v-if="auth.profile"
-      class="items-base flex gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3"
+      class="flex cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3 transition-colors hover:bg-neutral-900"
+      @click="copyTelegramId"
     >
       <img
         :src="`https://api.dicebear.com/9.x/notionists/svg?seed=${auth.profile.user_id}`"
         class="size-10 shrink-0 rounded-[14px] bg-neutral-700"
         alt="avatar"
       />
-      <div class="min-w-0">
+      <div class="min-w-0 flex-1">
         <p class="truncate font-semibold text-white">{{ displayName }}</p>
-        <p v-if="auth.profile.username" class="text-sm text-neutral-400">
-          @{{ auth.profile.username }} / ID: {{ auth.profile.user_id }}
+        <p class="text-sm text-neutral-400">
+          <template v-if="auth.profile.username">@{{ auth.profile.username }} / </template>
+          ID: {{ auth.profile.user_id }}
         </p>
       </div>
+      <button
+        type="button"
+        class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-400"
+        @click.stop="copyTelegramId"
+      >
+        <Icon icon="lucide:copy" class="size-4" />
+      </button>
     </div>
 
     <!-- Links -->
@@ -271,9 +292,14 @@ const router = useRouter()
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showLanguageModal" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
+        <div
+          v-if="showLanguageModal"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
+        >
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeLanguageModal" />
-          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4">
+          <div
+            class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+          >
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
@@ -305,9 +331,14 @@ const router = useRouter()
 
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showPromoModal" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
+        <div
+          v-if="showPromoModal"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
+        >
           <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closePromoModal" />
-          <div class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4">
+          <div
+            class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+          >
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
