@@ -9,6 +9,10 @@ import './assets/main.css'
 
 addCollection(lucide)
 
+window.addEventListener('contextmenu', (event) => {
+  event.preventDefault()
+})
+
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)

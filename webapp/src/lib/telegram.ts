@@ -109,19 +109,41 @@ export function getInitData(): string {
   return twa?.initData ?? ''
 }
 
+function isVersionAtLeast(current: string | undefined, min: string): boolean {
+  if (!current) return false
+  const currentParts = current.split('.').map((p) => Number.parseInt(p, 10) || 0)
+  const minParts = min.split('.').map((p) => Number.parseInt(p, 10) || 0)
+  const len = Math.max(currentParts.length, minParts.length)
+  for (let i = 0; i < len; i += 1) {
+    const a = currentParts[i] ?? 0
+    const b = minParts[i] ?? 0
+    if (a > b) return true
+    if (a < b) return false
+  }
+  return true
+}
+
+function canUseHaptics(): boolean {
+  return Boolean(twa?.HapticFeedback) && isVersionAtLeast(twa?.version, '6.1')
+}
+
 export function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'light') {
+  if (!canUseHaptics()) return
   twa?.HapticFeedback?.impactOccurred(style)
 }
 
 export function hapticSuccess() {
+  if (!canUseHaptics()) return
   twa?.HapticFeedback?.notificationOccurred('success')
 }
 
 export function hapticError() {
+  if (!canUseHaptics()) return
   twa?.HapticFeedback?.notificationOccurred('error')
 }
 
 export function hapticWarning() {
+  if (!canUseHaptics()) return
   twa?.HapticFeedback?.notificationOccurred('warning')
 }
 

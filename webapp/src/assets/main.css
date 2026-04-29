@@ -23,7 +23,7 @@
   /* Font families */
   --font-sans: Geist, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
   --font-mono: Geist Mono, monospace;
-  --font-logo: Montserrat, sans-serif;
+  --font-logo: Unbounded, sans-serif;
 
   /* Color palette */
   --color-foreground: var(--foreground);
