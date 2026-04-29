@@ -8,6 +8,7 @@ import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
 import { hapticImpact } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import type { PaymentProvider } from '@/types'
+import { Button } from '@/components/ui/button'
 
 const store = useSubscriptionStore()
 const auth = useAuthStore()
@@ -19,6 +20,7 @@ const selectedGb = ref<number | null>(null)
 const selectedProvider = ref<PaymentProvider | null>(null)
 const step = ref<'plan' | 'payment'>('plan')
 const hasRequestedPlans = ref(false)
+const showProviderModal = ref(false)
 
 const supportedProviders: PaymentProvider[] = [
   'yookassa',
@@ -209,13 +211,14 @@ function pricePerMonth(
   priceStars: number | null,
 ): string | null {
   if (months <= 0) return null
+  if (months === 1) return t('plans.perMonth')
   if (priceRub != null) {
     const monthly = Math.round(discountedPrice(priceRub) / months)
-    return `${formatPrice(monthly)}/${t('common.month', 1)}`
+    return `${formatPrice(monthly)} ${t('plans.perMonth')}`
   }
   if (priceStars != null) {
     const monthly = Math.round(priceStars / months)
-    return `${monthly} ⭐/${t('common.month', 1)}`
+    return `${monthly} ⭐ ${t('plans.perMonth')}`
   }
   return null
 }
@@ -256,6 +259,12 @@ function backToPlan() {
   hapticImpact('light')
   step.value = 'plan'
   selectedProvider.value = null
+}
+
+function chooseProvider(provider: PaymentProvider) {
+  selectedProvider.value = provider
+  hapticImpact('light')
+  showProviderModal.value = false
 }
 
 async function pay() {
@@ -339,8 +348,8 @@ watch(
           </div>
         </div>
 
-        <!-- STEP: Plan Selection -->
-        <div v-if="step === 'plan'" class="flex w-full flex-col gap-4">
+        <!-- Plan Selection -->
+        <div class="flex w-full flex-col gap-4">
           <div
             v-if="!displayPlans.length && !displayTrafficPackages.length"
             class="flex flex-col items-center gap-3 border border-neutral-800 bg-neutral-950 px-4 py-6 text-center"
@@ -362,7 +371,7 @@ watch(
                   class="relative flex aspect-square cursor-pointer flex-col justify-between gap-2 overflow-hidden rounded-[18px] border p-4 text-left transition-all"
                   :class="
                     selectedMonths === plan.months
-                      ? 'border-emerald-300/80 bg-neutral-900/90 shadow-[0_20px_45px_rgba(16,185,129,0.12)]'
+                      ? 'border-emerald-300/80 bg-neutral-900/90'
                       : 'border-white/10 bg-neutral-950/70 hover:border-white/20 hover:bg-neutral-900/70'
                   "
                   @click="selectPlan(plan.months)"
@@ -420,8 +429,8 @@ watch(
             </template>
           </div>
 
-          <button
-            class="mt-2 flex h-12 w-full cursor-pointer items-center justify-between rounded-[14px] bg-emerald-200 px-4 text-sm font-bold tracking-[0.08em] text-emerald-950 uppercase transition-all hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+          <Button
+            class="mt-2 flex h-12 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 text-base font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
             :disabled="!selectedMonths && !selectedGb"
             @click="goToPaymentStep"
           >
@@ -430,29 +439,27 @@ watch(
               v-if="paySubscriptionPrice.finalPrice"
               class="flex items-center gap-1 text-right text-xs tracking-normal normal-case"
             >
-              <span v-if="paySubscriptionPrice.oldPrice" class="text-emerald-900/60 line-through">{{
+              <span class="text-sm font-semibold">{{ paySubscriptionPrice.finalPrice }}</span>
+              <span v-if="paySubscriptionPrice.oldPrice" class="text-black/40 line-through">{{
                 paySubscriptionPrice.oldPrice
               }}</span>
-              <span class="text-sm font-semibold text-emerald-950">{{
-                paySubscriptionPrice.finalPrice
-              }}</span>
             </span>
-          </button>
+          </Button>
         </div>
+      </div>
+    </Transition>
 
-        <!-- STEP: Payment Method -->
-        <div v-else class="flex flex-col gap-4">
-          <button
-            class="flex cursor-pointer items-center gap-2 text-sm text-neutral-400"
-            @click="backToPlan"
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div
+          v-if="step === 'payment'"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-end md:p-4"
+        >
+          <div class="absolute inset-0 bg-black/70" @click="backToPlan" />
+          <div
+            class="relative mb-6 border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
           >
-            <Icon icon="lucide:chevron-left" class="size-4" />
-            {{ t('plans.backToPlans') }}
-          </button>
-
-          <!-- Selected plan summary -->
-          <div class="rounded-[16px] border border-white/10 bg-neutral-950/80 px-4 py-3">
-            <div>
+            <div class="rounded-[16px] border border-white/10 bg-neutral-950/80 px-4 py-3">
               <p class="text-xs text-neutral-500 uppercase">{{ t('plans.selectedPlan') }}</p>
               <p class="text-base font-semibold tracking-tight text-white">
                 {{ selectedMonths ? monthsLabel(selectedMonths) : `${selectedGb} GB` }}
@@ -468,76 +475,118 @@ watch(
                 {{ t('plans.traffic') }}: <span class="text-neutral-200">{{ trafficLabel() }}</span>
               </p>
             </div>
-          </div>
 
-          <p class="text-sm font-semibold tracking-wide text-neutral-400 uppercase">
-            {{ t('plans.paymentMethod') }}
-          </p>
+            <p class="mt-4 text-sm font-semibold tracking-wide text-neutral-400 uppercase">
+              {{ t('plans.paymentMethod') }}
+            </p>
 
-          <!-- Provider list -->
-          <div class="flex flex-col gap-2">
-            <div
-              v-if="!availableProvidersForSelection.length"
-              class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
-            >
-              {{ t('plans.paymentError') }}
+            <div class="mt-2 flex flex-col gap-2">
+              <div
+                v-if="!availableProvidersForSelection.length"
+                class="border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-300"
+              >
+                {{ t('plans.paymentError') }}
+              </div>
+
+              <button
+                class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border border-white/10 bg-neutral-950/80 px-4 py-3 transition-all hover:border-white/20"
+                :disabled="!availableProvidersForSelection.length"
+                @click="showProviderModal = true"
+              >
+                <img
+                  v-if="selectedProvider === 'platega'"
+                  src="/SBP.svg"
+                  alt="SBP"
+                  class="size-4 shrink-0"
+                />
+                <Icon
+                  v-else
+                  :icon="providerIconMap[selectedProvider || 'yookassa'] ?? 'lucide:credit-card'"
+                  class="size-4 shrink-0 text-neutral-400"
+                />
+                <span class="flex-1 text-left font-medium text-white">
+                  {{
+                    selectedProvider ? providerLabel(selectedProvider) : t('plans.paymentMethod')
+                  }}
+                </span>
+                <Icon icon="lucide:chevrons-up-down" class="size-4 text-neutral-400" />
+              </button>
             </div>
 
             <button
-              v-for="provider in availableProvidersForSelection"
-              :key="provider"
-              class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border bg-neutral-950/80 px-4 py-3 transition-all"
-              :class="
-                selectedProvider === provider
-                  ? 'border-emerald-300/70 bg-emerald-300/10'
-                  : 'border-white/10 hover:border-white/20'
-              "
-              @click="((selectedProvider = provider as PaymentProvider), hapticImpact('light'))"
+              class="mt-4 flex h-12 w-full cursor-pointer items-center justify-center rounded-[14px] bg-emerald-200 text-sm font-bold tracking-[0.1em] text-emerald-950 uppercase transition-all hover:bg-emerald-100 disabled:opacity-40"
+              :disabled="!selectedProvider || store.processingPayment"
+              @click="pay"
             >
-              <img v-if="provider === 'platega'" src="/SBP.svg" alt="SBP" class="size-4 shrink-0" />
-              <Icon
-                v-else
-                :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
-                class="size-4 shrink-0"
-                :class="selectedProvider === provider ? 'text-emerald-200' : 'text-neutral-500'"
-              />
-              <span
-                class="flex-1 text-left font-medium"
-                :class="selectedProvider === provider ? 'text-white' : 'text-neutral-400'"
-              >
-                {{ providerLabel(provider) }}
+              <span v-if="store.processingPayment">
+                <Icon icon="lucide:loader-circle" class="size-4 animate-spin" />
               </span>
-              <Icon
-                v-if="selectedProvider === provider"
-                icon="lucide:check"
-                class="size-4 text-emerald-200"
-              />
+              <span v-else>
+                {{ t('plans.pay') }}
+                <template v-if="selectedAmountLabel">
+                  <template v-if="selectedProvider === 'stars'">
+                    · {{ selectedAmountLabel }}
+                    <Icon
+                      icon="mingcute:star-fill"
+                      class="-mt-0.5 ml-1 inline size-4 align-middle"
+                    />
+                  </template>
+                  <template v-else> · {{ selectedAmountLabel }}</template>
+                </template>
+              </span>
             </button>
           </div>
-
-          <!-- Pay button -->
-          <button
-            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-[14px] bg-emerald-200 text-sm font-bold tracking-[0.1em] text-emerald-950 uppercase transition-all hover:bg-emerald-100 disabled:opacity-40"
-            :disabled="!selectedProvider || store.processingPayment"
-            @click="pay"
-          >
-            <span v-if="store.processingPayment">
-              <Icon icon="lucide:loader-circle" class="size-4 animate-spin" />
-            </span>
-            <span v-else>
-              {{ t('plans.pay') }}
-              <template v-if="selectedAmountLabel">
-                <template v-if="selectedProvider === 'stars'">
-                  · {{ selectedAmountLabel }}
-                  <Icon icon="mingcute:star-fill" class="-mt-0.5 ml-1 inline size-4 align-middle" />
-                </template>
-                <template v-else> · {{ selectedAmountLabel }}</template>
-              </template>
-            </span>
-          </button>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div
+          v-if="showProviderModal"
+          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-end md:p-4"
+        >
+          <div class="absolute inset-0 bg-black/70" @click="showProviderModal = false" />
+          <div
+            class="relative mb-6 border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:mb-10 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+          >
+            <h2 class="mb-3 text-base font-medium text-white">{{ t('plans.paymentMethod') }}</h2>
+            <div class="flex flex-col gap-2">
+              <button
+                v-for="provider in availableProvidersForSelection"
+                :key="provider"
+                class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border px-4 py-3 text-left transition-colors"
+                :class="
+                  selectedProvider === provider
+                    ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+                    : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
+                "
+                @click="chooseProvider(provider as PaymentProvider)"
+              >
+                <img
+                  v-if="provider === 'platega'"
+                  src="/SBP.svg"
+                  alt="SBP"
+                  class="size-4 shrink-0"
+                />
+                <Icon
+                  v-else
+                  :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
+                  class="size-4 shrink-0"
+                  :class="selectedProvider === provider ? 'text-[#bdfe00]' : 'text-neutral-500'"
+                />
+                <span class="font-medium">{{ providerLabel(provider) }}</span>
+                <Icon
+                  v-if="selectedProvider === provider"
+                  icon="lucide:check"
+                  class="ml-auto size-4 text-[#bdfe00]"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -557,5 +606,27 @@ watch(
 .content-fade-enter-from,
 .content-fade-leave-to {
   opacity: 0;
+}
+
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.sheet-enter-active > div:last-child,
+.sheet-leave-active > div:last-child {
+  transition: transform 0.25s ease;
+}
+
+.sheet-enter-from > div:last-child,
+.sheet-leave-to > div:last-child {
+  transform: translateY(100%);
+}
+
+@media (min-width: 768px) {
+  .sheet-enter-from > div:last-child,
+  .sheet-leave-to > div:last-child {
+    transform: translateY(0) scale(0.96);
+  }
 }
 </style>
