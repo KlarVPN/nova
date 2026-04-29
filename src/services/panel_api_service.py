@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import Settings
+from src.cache.redis_client import get_redis_client
 from src.database.dal import panel_sync_dal
 from src.database.models import PanelSyncStatus
 
@@ -536,10 +537,27 @@ class PanelApiService:
         return base_sub_url
 
     async def get_user_devices(self, user_uuid: str) -> Optional[List[Dict[str, Any]]]:
+        cache_key = f"panel:user_devices:{user_uuid}"
+        redis_client = get_redis_client()
+
+        if redis_client:
+            try:
+                cached = await redis_client.get(cache_key)
+                if cached:
+                    return json.loads(cached)
+            except Exception as e:
+                logging.warning("Failed to read devices cache for user %s: %s", user_uuid, e)
+
         endpoint = f"/hwid/devices/{user_uuid}"
         response_data = await self._request("GET", endpoint, log_full_response=False)
         if response_data and not response_data.get("error") and "response" in response_data:
-            return response_data.get("response")
+            devices = response_data.get("response")
+            if redis_client and devices is not None:
+                try:
+                    await redis_client.setex(cache_key, 60, json.dumps(devices, ensure_ascii=False))
+                except Exception as e:
+                    logging.warning("Failed to write devices cache for user %s: %s", user_uuid, e)
+            return devices
         logging.error(
             f"Failed to get user devices for user {user_uuid}. Response: {response_data}"
         )
@@ -553,6 +571,26 @@ class PanelApiService:
         }
         response_data = await self._request("POST", endpoint, json=payload, log_full_response=False)
         if response_data and not response_data.get("error") and "response" in response_data:
+            redis_client = get_redis_client()
+            if redis_client:
+                cache_key = f"panel:user_devices:{user_uuid}"
+                try:
+                    refresh_endpoint = f"/hwid/devices/{user_uuid}"
+                    refresh_response = await self._request("GET", refresh_endpoint, log_full_response=False)
+                    if (
+                        refresh_response
+                        and not refresh_response.get("error")
+                        and "response" in refresh_response
+                    ):
+                        await redis_client.setex(
+                            cache_key,
+                            60,
+                            json.dumps(refresh_response.get("response"), ensure_ascii=False),
+                        )
+                    else:
+                        await redis_client.delete(cache_key)
+                except Exception as e:
+                    logging.warning("Failed to refresh devices cache for user %s: %s", user_uuid, e)
             return True
         logging.error(
             f"Failed to disconnect device {hwid} for user {user_uuid}. Payload: {payload}, Response: {response_data}"
