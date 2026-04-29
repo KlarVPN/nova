@@ -1,12 +1,29 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import BottomNav from './BottomNav.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
-const showBottomNav = computed(() => route.name !== 'plans' && auth.isAuthenticated)
+const isDesktop = ref(false)
+
+function syncViewport() {
+  isDesktop.value = window.matchMedia('(min-width: 768px)').matches
+}
+
+onMounted(() => {
+  syncViewport()
+  window.addEventListener('resize', syncViewport)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncViewport)
+})
+
+const showBottomNav = computed(
+  () => auth.isAuthenticated && (route.name !== 'plans' || isDesktop.value),
+)
 </script>
 
 <template>

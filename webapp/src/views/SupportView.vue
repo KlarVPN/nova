@@ -31,13 +31,20 @@ function openSupport() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-3 pb-6">
-    <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('support.title') }}
-    </h1>
-    <p class="mx-auto max-w-[36ch] text-center text-sm text-neutral-400">
-      {{ t('support.description') }}
-    </p>
+  <div
+    class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-4 pt-3 pb-6"
+  >
+    <div class="bg-wh flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-25">
+      <span class="flex w-fit items-center justify-center rounded-[7px] bg-white/10 p-4">
+        <Icon icon="bx:support" class="size-8 opacity-60" />
+      </span>
+      <h1 class="mt-1 text-xl leading-[0.9] font-medium tracking-tight text-balance text-white">
+        {{ t('support.title') }}
+      </h1>
+      <p class="text-sm text-balance opacity-60">
+        {{ t('support.description') }}
+      </p>
+    </div>
 
     <div class="mt-2 flex flex-col gap-3">
       <Button
