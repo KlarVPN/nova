@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import confetti from 'canvas-confetti'
@@ -12,6 +13,7 @@ type SetupOS = 'ios' | 'android' | 'macos' | 'linux' | 'windows' | 'other'
 type SetupStep = 0 | 1 | 2 | 3
 
 const router = useRouter()
+const { t } = useI18n()
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
 
@@ -31,23 +33,21 @@ const osLabel = computed(() => {
   if (os.value === 'macos') return 'macOS'
   if (os.value === 'linux') return 'Linux'
   if (os.value === 'windows') return 'Windows'
-  return 'вашем устройстве'
+  return t('setup.wizard.os.currentDevice')
 })
 
 const pageTitle = computed(() => {
-  if (step.value === 0) return `Настройка на ${osLabel.value}`
-  if (step.value === 1) return 'Приложение'
-  if (step.value === 2) return 'Подписка'
-  return 'Готово'
+  if (step.value === 0) return t('setup.wizard.title.device', { os: osLabel.value })
+  if (step.value === 1) return t('setup.wizard.title.app')
+  if (step.value === 2) return t('setup.wizard.title.subscription')
+  return t('setup.wizard.title.done')
 })
 
 const pageSubtitle = computed(() => {
-  if (step.value === 0)
-    return 'Настроить VPN можно всего за три шага — это займет всего несколько минут.'
-  if (step.value === 1)
-    return `Установите приложение для ${osLabel.value} и вернитесь к этому экрану.`
-  if (step.value === 2) return 'Добавьте подписку в приложение с помощью кнопки ниже.'
-  return 'Нажмите на круглую кнопку в приложении для включения VPN.'
+  if (step.value === 0) return t('setup.wizard.subtitle.device')
+  if (step.value === 1) return t('setup.wizard.subtitle.app', { os: osLabel.value })
+  if (step.value === 2) return t('setup.wizard.subtitle.subscription')
+  return t('setup.wizard.subtitle.done')
 })
 
 const progressPercent = computed(() => {
@@ -237,13 +237,13 @@ onBeforeUnmount(() => {
       <template v-if="step === 0">
         <div class="grid gap-3">
           <Button class="pulse-cta h-12 bg-white text-black hover:bg-neutral-200" @click="nextStep">
-            Начать настройку
+            {{ t('setup.wizard.actions.start') }}
           </Button>
           <Button
             class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
             @click="router.push({ name: 'support-setup' })"
           >
-            Установить на другом устройстве
+            {{ t('setup.wizard.actions.otherDevice') }}
           </Button>
         </div>
       </template>
@@ -256,13 +256,13 @@ onBeforeUnmount(() => {
             @click="openInstall"
           >
             <Icon icon="lucide:download" class="size-4" />
-            <span>Установить приложение</span>
+            <span>{{ t('setup.wizard.actions.installApp') }}</span>
           </Button>
           <Button
             class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
             @click="nextStep"
           >
-            <span>Следующий шаг</span>
+            <span>{{ t('setup.wizard.actions.nextStep') }}</span>
             <Icon icon="lucide:arrow-right" class="size-4" />
           </Button>
         </div>
@@ -276,13 +276,13 @@ onBeforeUnmount(() => {
             @click="addSubscription"
           >
             <Icon icon="lucide:plus" class="size-4" />
-            <span>Добавить подписку</span>
+            <span>{{ t('setup.wizard.actions.addSubscription') }}</span>
           </Button>
           <Button
             class="h-12 bg-neutral-900/90 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:bg-neutral-800"
             @click="nextStep"
           >
-            <span>Следующий шаг</span>
+            <span>{{ t('setup.wizard.actions.nextStep') }}</span>
             <Icon icon="lucide:arrow-right" class="size-4" />
           </Button>
         </div>
@@ -293,7 +293,7 @@ onBeforeUnmount(() => {
           class="h-12 bg-white text-black hover:bg-neutral-200"
           @click="router.push({ name: 'home' })"
         >
-          Завершить установку
+          {{ t('setup.wizard.actions.finish') }}
         </Button>
       </template>
     </div>
@@ -314,16 +314,17 @@ onBeforeUnmount(() => {
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>
-            <h2 class="mb-3 text-2xl font-semibold text-white">Важная информация</h2>
+            <h2 class="mb-3 text-2xl font-semibold text-white">
+              {{ t('setup.wizard.warning.title') }}
+            </h2>
             <p class="text-base text-neutral-300">
-              После установки приложения, обязательно вернитесь на этот экран и нажмите "следующий
-              шаг", чтобы добавить конфигурацию в приложение, без этого VPN работать не будет.
+              {{ t('setup.wizard.warning.body') }}
             </p>
             <Button
               class="mt-4 h-11 bg-white text-black hover:bg-neutral-200"
               @click="confirmInstall"
             >
-              Хорошо, перейти к установке
+              {{ t('setup.wizard.warning.confirm') }}
             </Button>
           </div>
         </div>

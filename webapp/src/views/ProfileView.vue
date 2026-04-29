@@ -338,7 +338,7 @@ const router = useRouter()
             </div>
             <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
             <p class="mb-3 text-sm text-neutral-400">
-              Введите промокод, чтобы получить скидку на оплату или дополнительные дни подписки.
+              {{ t('promo.modalDesc') }}
             </p>
             <div class="flex flex-col gap-3">
               <input

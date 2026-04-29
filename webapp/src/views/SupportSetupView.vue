@@ -73,7 +73,7 @@ function openOtherPlatforms() {
         {{ t('support.setupOtherDevice') }}
       </h1>
       <p class="text-sm text-balance opacity-60">
-        Выберите платформу для подключения на другом устройстве
+        {{ t('support.setupOtherDeviceDesc') }}
       </p>
     </div>
 
@@ -90,7 +90,7 @@ function openOtherPlatforms() {
         /></span>
 
         <div class="flex flex-col items-start text-white/60">
-          Инструкция <span class="font-semibold text-white">для {{ tile.label }}</span>
+          {{ t('support.instructionFor', { platform: tile.label }) }}
         </div>
       </button>
     </div>

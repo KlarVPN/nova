@@ -121,6 +121,7 @@
   "promo": {
     "title": "Promo Code",
     "subtitle": "Enter a code to get a discount or bonus days",
+    "modalDesc": "Enter a promo code to get a payment discount or extra subscription days.",
     "activeDiscount": "Active discount",
     "expiresIn": "Expires in {n} min",
     "useHint": "Subscribe to use the discount",
@@ -225,6 +226,36 @@
         "title": "Other app",
         "desc": "Manual setup via link"
       }
+    },
+    "wizard": {
+      "os": {
+        "currentDevice": "your device"
+      },
+      "title": {
+        "device": "Setup on {os}",
+        "app": "App",
+        "subscription": "Subscription",
+        "done": "Done"
+      },
+      "subtitle": {
+        "device": "You can set up VPN in just three steps — it only takes a few minutes.",
+        "app": "Install the app for {os} and return to this screen.",
+        "subscription": "Add the subscription to the app using the button below.",
+        "done": "Press the round button in the app to enable VPN."
+      },
+      "actions": {
+        "start": "Start setup",
+        "otherDevice": "Set up on another device",
+        "installApp": "Install app",
+        "nextStep": "Next step",
+        "addSubscription": "Add subscription",
+        "finish": "Finish setup"
+      },
+      "warning": {
+        "title": "Important information",
+        "body": "After installing the app, return to this screen and tap \"next step\" to add the configuration to the app. Without this, VPN will not work.",
+        "confirm": "OK, continue to install"
+      }
     }
   },
   "profile": {
@@ -285,8 +316,14 @@
     "description": "Get answers to common questions or contact us for help.",
     "faq": "Frequently asked questions",
     "setupOtherDevice": "Setup on another device",
+    "setupOtherDeviceDesc": "Choose a platform to connect on another device",
+    "instructionFor": "Instruction for {platform}",
     "contact": "Support",
     "otherPlatforms": "Other platforms"
+  },
+  "accessLinkAuth": {
+    "invalid": "Invalid access link",
+    "loading": "Authorizing..."
   },
   "faq": {
     "title": "Frequently Asked Questions",
