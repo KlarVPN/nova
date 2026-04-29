@@ -37,7 +37,7 @@ function navigate(path: string) {
         v-for="tab in tabs"
         :key="tab.path"
         type="button"
-        class="flex min-w-16 cursor-pointer flex-col items-center gap-1 text-xs font-medium transition-all duration-200"
+        class="flex min-w-16 cursor-pointer flex-col items-center gap-1 text-[10px] font-medium transition-all duration-200"
         :class="active === tab.path ? 'scale-105 text-white' : 'text-neutral-400 active:scale-95'"
         @click="navigate(tab.path)"
       >

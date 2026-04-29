@@ -7,6 +7,7 @@ import type {
   PaymentResult,
   DevicesData,
   LocationStatus,
+  ProxyItem,
 } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
@@ -94,6 +95,10 @@ export const api = {
 
   locations: {
     list: () => request<{ locations: LocationStatus[] }>('/locations'),
+  },
+
+  proxies: {
+    list: () => request<{ proxies: ProxyItem[] }>('/proxies'),
   },
 }
 

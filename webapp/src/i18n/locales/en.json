@@ -225,9 +225,24 @@
     "faq": "FAQ",
     "locations": "Locations",
     "promo": "Promo code",
+    "freeTelegramProxies": "Free Telegram proxies",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
     "status": "Locations"
+  },
+  "proxies": {
+    "title": "Free Telegram proxies",
+    "empty": "No proxies available yet",
+    "unavailable": "Unavailable",
+    "helpTitle": "Telegram won't open?",
+    "helpIntro": "Tap a country button below to get a ready-to-use Telegram proxy.",
+    "benefit1": "Telegram works even without an extra VPN connection",
+    "benefit2": "No manual setup needed — just tap the button",
+    "benefit3": "Connection stays stable and protected",
+    "disableTitle": "Want to disable the proxy later?",
+    "disablePath": "Settings -> Data and Storage -> Proxy -> Disable",
+    "fallbackTitle": "If it didn't work right away:",
+    "fallbackText": "Telegram usually prompts you to enable the proxy automatically. If no popup appears, the link is still ready — copy it and paste it manually in Settings -> Data and Storage -> Proxy."
   },
   "support": {
     "title": "Contact support",

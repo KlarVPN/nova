@@ -16,6 +16,8 @@ log = logging.getLogger(__name__)
 router = web.RouteTableDef()
 
 
+
+
 def _json(data: Any, status: int = 200) -> web.Response:
     return web.Response(
         body=json.dumps(data, ensure_ascii=False, default=str),
@@ -301,6 +303,30 @@ async def get_referral(request: web.Request) -> web.Response:
         "purchased_count": purchased_count,
         "bonus_structure": bonus_structure,
     })
+
+
+# ─── Locations ────────────────────────────────────────────────────────────────
+
+@router.get("/api/proxies")
+async def get_proxies(request: web.Request) -> web.Response:
+    tg_user, err = await _get_user(request)
+    if err:
+        return err
+
+    _ = tg_user
+    settings = request.app["settings"]
+
+    proxies = [
+        {
+            "country": proxy.country,
+            "emoji": proxy.emoji,
+            "link": proxy.link,
+        }
+        for proxy in (settings.PROXIES or [])
+        if proxy.link
+    ]
+
+    return _json({"proxies": proxies})
 
 
 # ─── Locations ────────────────────────────────────────────────────────────────

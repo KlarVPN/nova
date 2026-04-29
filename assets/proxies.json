@@ -2,12 +2,20 @@
   "proxies": [
     {
       "country": "Швеция",
-      "link": "https://t.me/proxy?server=...&port=...",
+      "emoji": "🇸🇪",
+      "link": "https://t.me/proxy?server=suge.2pac.live&port=7777&secret=ee97c88e23d6902be6f5d2a85c2013539b7777772e7068696c6970732e636f6d",
       "emoji_id": "5388660123558253942"
     },
     {
-      "country": "Германия",
-      "link": "https://t.me/proxy?...",
+      "country": "Нидерланды",
+      "emoji": "🇳🇱",
+      "link": "https://t.me/proxy?server=dre.2pac.live&port=9999&secret=ee27efee0c0300e57132e3cf6b34ff34557777772e7068696c6970732e636f6d",
+      "emoji_id": "5388592499298177129"
+    },
+    {
+      "country": "Польша",
+      "emoji": "🇵🇱",
+      "link": "https://t.me/proxy?server=nate.2pac.live&port=4444&secret=ee0e29a0f2681467f790424bf0b726d2ff7777772e7068696c6970732e636f6d",
       "emoji_id": "5388592499298177129"
     }
   ]

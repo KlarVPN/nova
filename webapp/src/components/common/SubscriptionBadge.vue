@@ -56,11 +56,11 @@ const noSub = computed(() => {
     <span :class="cn('flex rounded-full p-3', props.type ? 'bg-lime-accent' : 'bg-white')">
       <Icon :icon="statusIcon" class="animate-pulse-glow size-12 text-black" />
     </span>
-    <div>
+    <div class="flex flex-col gap-1">
       <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
         {{ noSubTitle }}
       </span>
-      <p class="mt-2 text-sm text-neutral-400">{{ noSub }}</p>
+      <p class="text-sm text-neutral-400">{{ noSub }}</p>
     </div>
   </div>
 </template>

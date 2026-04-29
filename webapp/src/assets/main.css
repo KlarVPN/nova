@@ -21,7 +21,7 @@
   --color-lime-accent-dark: oklch(0.8561 0.234351 126.141);
 
   /* Font families */
-  --font-sans: Geist, sans-serif;
+  --font-sans: Geist, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
   --font-mono: Geist Mono, monospace;
   --font-logo: Montserrat, sans-serif;
 
@@ -173,6 +173,8 @@
     'Geist',
     -apple-system,
     BlinkMacSystemFont,
+    'SF Pro Text',
+    'SF Pro Display',
     Segoe UI,
     Roboto,
     Helvetica,
@@ -184,6 +186,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11' 1, 'ss01' 1, 'ss03' 1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Body background fallback */

@@ -147,6 +147,12 @@ export interface DevicesData {
   max_devices: number | null
 }
 
+export interface ProxyItem {
+  country: string
+  emoji: string | null
+  link: string
+}
+
 export interface ApiError {
   detail: string
   code?: string

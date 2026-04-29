@@ -18,6 +18,7 @@ class Proxy(BaseModel):
     country: str
     link: str
     emoji_id: str
+    emoji: Optional[str] = None
 
 
 class Location(BaseModel):
