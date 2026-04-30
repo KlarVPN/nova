@@ -1,4 +1,3 @@
-import asyncio
 from typing import Optional
 
 from aiogram import Router, F
@@ -9,7 +8,6 @@ from aiogram.types import Message
 from src.support_bot.bot.manager import Manager
 from src.support_bot.bot.types.album import Album
 from src.support_bot.bot.utils.redis import RedisStorage
-from src.support_bot.bot.utils.vpn_user_info import build_support_user_info_message
 
 router = Router()
 router.message.filter(
@@ -20,26 +18,13 @@ router.message.filter(
 
 
 @router.message(F.forum_topic_created)
-async def handler(message: Message, manager: Manager, redis: RedisStorage) -> None:
-    await asyncio.sleep(3)
+async def handler(message: Message, redis: RedisStorage) -> None:
     user_data = await redis.get_by_message_thread_id(message.message_thread_id)
-    if not user_data: return None  # noqa
-
-    user_info_text = await build_support_user_info_message(user_data.id)
-    commands_help_text = manager.text_message.get("user_information")
-    text = f"{user_info_text}\n\n{commands_help_text}"
-
-    message = await message.bot.send_message(
-        chat_id=manager.config.bot.GROUP_ID,
-        text=text,
-        message_thread_id=user_data.message_thread_id
-    )
-
-    # Pin the message
-    await message.pin()
+    if not user_data:
+        return
 
 
-@router.message(F.pinned_message | F.forum_topic_edited | F.forum_topic_closed | F.forum_topic_reopened)
+@router.message(F.pinned_message | F.forum_topic_created | F.forum_topic_edited | F.forum_topic_closed | F.forum_topic_reopened)
 async def handler(message: Message) -> None:
     """
     Delete service messages such as pinned, edited, closed, or reopened forum topics.

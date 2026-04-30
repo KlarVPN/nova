@@ -83,12 +83,12 @@ class TextMessage(Text):
                 "user_unblocked": "<b>User unblocked!</b> Messages from the user are being accepted again.",
                 "blocked_by_user": "<b>Message not sent!</b> The bot has been blocked by the user.",
                 "user_information": (
-                    "<b>Краткая справка по командам:</b>\n\n"
-                    "• <code>/ban</code> — блокировать или разблокировать пользователя.\n"
-                    "• <code>/silent</code> — включить или выключить тихий режим.\n"
-                    "• <code>/information</code> — показать эту краткую справку.\n"
-                    "• <code>/close</code> — закрыть тикет (🔴).\n"
-                    "• <code>/open</code> — открыть тикет (🟢)."
+                    "<b>Command quick help:</b>\n\n"
+                    "• /information — show user info and help.\n"
+                    "• /ban — block or unblock user messages.\n"
+                    "• /silent — enable or disable silent mode.\n"
+                    "• /close — close ticket (🔴).\n"
+                    "• /open — open ticket (🟢)."
                 ),
                 "message_not_sent": "<b>Message not sent!</b> An unexpected error occurred.",
                 "message_sent_to_user": "<b>Message sent to user!</b>",
@@ -127,9 +127,11 @@ class TextMessage(Text):
                 "blocked_by_user": "<b>Сообщение не отправлено!</b> Бот заблокирован пользователем.",
                 "user_information": (
                     "<b>Краткая справка по командам:</b>\n\n"
-                    "• <code>/ban</code> — блокировать или разблокировать пользователя.\n"
-                    "• <code>/silent</code> — включить или выключить тихий режим.\n"
-                    "• <code>/information</code> — показать эту краткую справку."
+                    "• /information — показать информацию о пользователе и справку.\n"
+                    "• /ban — блокировать или разблокировать пользователя.\n"
+                    "• /silent — включить или выключить тихий режим.\n"
+                    "• /close — закрыть тикет (🔴).\n"
+                    "• /open — открыть тикет (🟢)."
                 ),
                 "message_not_sent": "<b>Сообщение не отправлено!</b> Произошла непредвиденная ошибка.",
                 "message_sent_to_user": "<b>Сообщение отправлено пользователю!</b>",
