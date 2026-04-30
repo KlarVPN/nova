@@ -20,6 +20,12 @@ const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME as string | unde
 
 type TelegramAuthUser = Record<string, unknown>
 
+type TgAuthPayload = {
+  id?: string | number
+  auth_date?: string | number
+  hash?: string
+} & Record<string, unknown>
+
 declare global {
   interface Window {
     TelegramOnAuthCb?: (user: TelegramAuthUser) => void
@@ -37,6 +43,67 @@ async function loginWithTelegram(user: TelegramAuthUser) {
     const msg = result.error ?? t('login.error')
     toastError(msg)
   }
+}
+
+function decodeBase64Url(value: string): string {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4)
+  const binary = atob(padded)
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
+function parseTelegramAuthFromLocation(): TgAuthPayload | null {
+  const params = new URLSearchParams(window.location.search)
+  const hashRaw = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash
+
+  const hashParams = new URLSearchParams(hashRaw)
+  hashParams.forEach((value, key) => {
+    if (!params.has(key)) {
+      params.set(key, value)
+    }
+  })
+
+  if (!params.get('hash') && window.location.hash.includes('?')) {
+    const hashQuery = window.location.hash.split('?')[1] ?? ''
+    const queryParams = new URLSearchParams(hashQuery)
+    queryParams.forEach((value, key) => params.set(key, value))
+  }
+
+  if (!params.get('hash')) {
+    const tgAuthRaw = params.get('tgAuthResult')
+    if (tgAuthRaw) {
+      try {
+        const decoded = decodeURIComponent(tgAuthRaw)
+
+        const tgParams = new URLSearchParams(decoded)
+        if (tgParams.get('hash')) {
+          tgParams.forEach((value, key) => params.set(key, value))
+        } else {
+          const jsonText = decodeBase64Url(decoded)
+          const data = JSON.parse(jsonText) as Record<string, unknown>
+          Object.entries(data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              params.set(key, String(value))
+            }
+          })
+        }
+      } catch {
+        return null
+      }
+    }
+  }
+
+  const payload: TgAuthPayload = {}
+  params.forEach((value, key) => {
+    payload[key] = value
+  })
+
+  if (!payload.hash || !payload.id || !payload.auth_date) {
+    return null
+  }
+
+  return payload
 }
 
 
@@ -60,49 +127,10 @@ onMounted(() => {
     telegramWidgetHost.value.appendChild(script)
   }
 
-  const params = new URLSearchParams(window.location.search)
-  if (!params.get('hash') && window.location.hash.includes('?')) {
-    const hashQuery = window.location.hash.split('?')[1] ?? ''
-    const hashParams = new URLSearchParams(hashQuery)
-    hashParams.forEach((value, key) => params.set(key, value))
-  }
+  const authPayload = parseTelegramAuthFromLocation()
+  if (!authPayload) return
 
-  if (!params.get('hash')) {
-    const tgAuthRaw = window.location.hash.match(/tgAuthResult=([^&]+)/)?.[1]
-    if (tgAuthRaw) {
-      try {
-        const decoded = decodeURIComponent(tgAuthRaw)
-
-        // Variant 1: query-like payload (k=v&k2=v2)
-        const tgParams = new URLSearchParams(decoded)
-        if (tgParams.get('hash')) {
-          tgParams.forEach((value, key) => params.set(key, value))
-        } else {
-          // Variant 2: base64/base64url JSON payload
-          const normalized = decoded.replace(/-/g, '+').replace(/_/g, '/')
-          const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4)
-          const jsonText = atob(padded)
-          const data = JSON.parse(jsonText) as Record<string, unknown>
-          Object.entries(data).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-              params.set(key, String(value))
-            }
-          })
-        }
-      } catch {
-        // leave params as-is; normal validation below will stop auth flow
-      }
-    }
-  }
-  if (!params.get('hash') || !params.get('id') || !params.get('auth_date')) return
-
-  const authPayload: TelegramAuthUser = {}
-  params.forEach((value, key) => {
-    authPayload[key] = value
-  })
-
-  window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
-
+  window.history.replaceState({}, '', window.location.pathname)
   void loginWithTelegram(authPayload)
 })
 
