@@ -104,7 +104,7 @@ docker compose up -d
 
 В репозиторий добавлен отдельный бот поддержки, который работает независимо от VPN-бота и может стартовать вместе с ним:
 
-- код: `src/support_bot`
+- код: `app/support_bot`
 - локальный запуск: `python support_bot_main.py`
 - docker-запуск: `docker compose up -d support-bot`
 - автозапуск вместе с основным ботом: просто задайте `SUPPORT_BOT_TOKEN` и `SUPPORT_BOT_GROUP_ID`

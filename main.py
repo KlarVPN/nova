@@ -6,11 +6,11 @@ import sys
 
 from dotenv import load_dotenv
 
-from src.main_bot import run_bot
-from src.support_bot.__main__ import run_support_bot
-from src.config import get_settings
-from src.database.database_setup import init_db, init_db_connection
-from src.logging_config import configure_logging
+from app.main_bot import run_bot
+from app.support_bot.__main__ import run_support_bot
+from app.config import get_settings
+from app.database.database_setup import init_db, init_db_connection
+from app.logging_config import configure_logging
 
 
 async def main():

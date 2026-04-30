@@ -1,5 +1,0 @@
-export { default as Card } from './Card.vue'
-export { default as LanguageSwitcher } from './LanguageSwitcher.vue'
-export { default as LoadingSpinner } from './LoadingSpinner.vue'
-export { default as Logotype } from './Logotype.vue'
-export { default as QRCode } from './QRCode.vue'

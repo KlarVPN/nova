@@ -1,7 +1,7 @@
 import asyncio
 
-from src.support_bot.__main__ import main
-from src.support_bot.logger import setup_logger
+from app.support_bot.__main__ import main
+from app.support_bot.logger import setup_logger
 
 
 if __name__ == "__main__":

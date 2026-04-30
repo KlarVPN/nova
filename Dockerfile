@@ -10,9 +10,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 FROM oven/bun:1-slim AS webapp-builder
 
 WORKDIR /webapp
-COPY webapp/package.json webapp/bun.lock* ./
+COPY cabinet/package.json cabinet/bun.lock* ./
 RUN bun install --frozen-lockfile
-COPY webapp/ ./
+COPY cabinet/ ./
 RUN bun run build
 
 # ── Stage 3: Final image ──────────────────────────────────────────────────────
@@ -24,8 +24,8 @@ COPY --from=python-builder /usr/local/lib/python3.12/site-packages \
                            /usr/local/lib/python3.12/site-packages
 
 COPY . .
-COPY --from=webapp-builder /webapp/dist ./webapp/dist
+COPY --from=webapp-builder /cabinet/dist ./cabinet/dist
 
-RUN rm -rf /root/.cache webapp/node_modules
+RUN rm -rf /root/.cache cabinet/node_modules
 
 CMD ["python", "main.py"]

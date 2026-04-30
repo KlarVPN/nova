@@ -31,24 +31,24 @@ There is no automated test suite. Testing is done manually through Docker Compos
 
 ## Architecture
 
-**Entry point:** `main.py` → `src/main_bot.py` (bot init, middleware/router registration, webhook server start)
+**Entry point:** `main.py` → `app/main_bot.py` (bot init, middleware/router registration, webhook server start)
 
 **Layers:**
 
 | Layer | Location | Purpose |
 |---|---|---|
-| Handlers | `src/handlers/` | Telegram message/callback handlers (user + admin) |
-| Services | `src/services/` | Business logic, payment integrations, Remnawave API |
-| DAL | `src/database/dal/` | Data Access Layer — all DB queries |
-| Models | `src/database/models.py` | SQLAlchemy ORM models |
-| Keyboards | `src/keyboards/inline/` | Inline keyboard builders |
-| Middlewares | `src/middlewares/` | i18n, ban check, channel subscription, DB session, action logging |
-| States | `src/states/` | Aiogram FSM states for multi-step dialogs |
-| Web | `src/app/web/` | aiohttp webhook routes for payment providers and Telegram |
+| Handlers | `app/handlers/` | Telegram message/callback handlers (user + admin) |
+| Services | `app/services/` | Business logic, payment integrations, Remnawave API |
+| DAL | `app/database/dal/` | Data Access Layer — all DB queries |
+| Models | `app/database/models.py` | SQLAlchemy ORM models |
+| Keyboards | `app/keyboards/inline/` | Inline keyboard builders |
+| Middlewares | `app/middlewares/` | i18n, ban check, channel subscription, DB session, action logging |
+| States | `app/states/` | Aiogram FSM states for multi-step dialogs |
+| Web | `app/app/web/` | aiohttp webhook routes for payment providers and Telegram |
 
-**Service factory:** `src/app/factories/build_services.py` instantiates all services at startup.
+**Service factory:** `app/app/factories/build_services.py` instantiates all services at startup.
 
-**Payment flow:** User selects plan → bot creates payment via provider → provider POSTs webhook to `/webhook/<provider>` → `src/handlers/` processes confirmation → DB updated → Remnawave panel synced via `PanelApiService`.
+**Payment flow:** User selects plan → bot creates payment via provider → provider POSTs webhook to `/webhook/<provider>` → `app/handlers/` processes confirmation → DB updated → Remnawave panel synced via `PanelApiService`.
 
 **Key services:**
 - `panel_api_service.py` — Remnawave panel REST API integration
@@ -58,7 +58,7 @@ There is no automated test suite. Testing is done manually through Docker Compos
 
 ## Configuration
 
-Configuration is managed by Pydantic Settings in `src/config.py` (100+ env vars). See `.env.example` for the full list. Critical variables:
+Configuration is managed by Pydantic Settings in `app/config.py` (100+ env vars). See `.env.example` for the full list. Critical variables:
 
 - `BOT_TOKEN` — Telegram bot token
 - `ADMIN_IDS` — comma-separated Telegram user IDs
@@ -76,7 +76,7 @@ Key tables: `users`, `subscriptions`, `payments`, `promo_codes`, `user_payment_m
 
 ## Localization
 
-Russian and English strings are in `assets/locales/`. The `i18n` middleware (`src/middlewares/i18n.py`) injects the translator into handler context. Use `_("key")` pattern in handlers.
+Russian and English strings are in `assets/locales/`. The `i18n` middleware (`app/middlewares/i18n.py`) injects the translator into handler context. Use `_("key")` pattern in handlers.
 
 ## Tech Stack
 
