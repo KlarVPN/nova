@@ -1,4 +1,3 @@
-import logging
 import json
 from typing import Optional
 
@@ -19,6 +18,9 @@ from app.database.dal import user_dal
 from app.database.dal import payment_dal, active_discount_dal
 from app.utils.text_sanitizer import sanitize_display_name, username_for_display
 from app.utils.config_link import prepare_config_links
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class CryptoPayService:
@@ -45,7 +47,7 @@ class CryptoPayService:
             self.client.register_pay_handler(self._invoice_paid_handler)
             self.configured = True
         else:
-            logging.warning("CryptoPay token not provided. CryptoPay disabled")
+            logger.warning("CryptoPay token not provided. CryptoPay disabled")
             self.client = None
             self.configured = False
 
@@ -54,9 +56,9 @@ class CryptoPayService:
         if self.client:
             try:
                 await self.client.close()
-                logging.info("CryptoPay client session closed.")
+                logger.info("CryptoPay client session closed.")
             except Exception as e:
-                logging.warning(f"Failed to close CryptoPay client: {e}")
+                logger.warning(f"Failed to close CryptoPay client: {e}")
 
     async def create_invoice(
         self,
@@ -69,7 +71,7 @@ class CryptoPayService:
         promo_code_service=None,
     ) -> Optional[str]:
         if not self.configured or not self.client:
-            logging.error("CryptoPayService not configured")
+            logger.error("CryptoPayService not configured")
             return None
 
         # Check for active discount to save metadata (price already discounted from previous step)
@@ -94,12 +96,12 @@ class CryptoPayService:
                     if fallback_original is not None:
                         original_amount = fallback_original
                         discount_amount = original_amount - amount
-                        logging.info(
+                        logger.info(
                             f"Recording {discount_pct}% discount for CryptoPay payment: "
                             f"original {original_amount:.2f} -> final {amount}"
                         )
                     else:
-                        logging.warning(
+                        logger.warning(
                             "CryptoPay discount %s%% has invalid denominator and no fallback price for months=%s.",
                             discount_pct,
                             months,
@@ -107,7 +109,7 @@ class CryptoPayService:
                 else:
                     original_amount = amount / denominator
                     discount_amount = original_amount - amount
-                    logging.info(
+                    logger.info(
                         f"Recording {discount_pct}% discount for CryptoPay payment: "
                         f"original {original_amount:.2f} -> final {amount}"
                     )
@@ -132,7 +134,7 @@ class CryptoPayService:
             await session.commit()
         except Exception as e_db_create:
             await session.rollback()
-            logging.error(
+            logger.error(
                 f"Failed to create cryptopay payment record for user {user_id}: {e_db_create}",
                 exc_info=True,
             )
@@ -163,20 +165,20 @@ class CryptoPayService:
                 await session.commit()
             except Exception as e_db_update:
                 await session.rollback()
-                logging.error(
+                logger.error(
                     f"Failed to update cryptopay payment record {payment_record.payment_id}: {e_db_update}",
                     exc_info=True,
                 )
                 return None
             return invoice.bot_invoice_url
         except Exception as e:
-            logging.error(f"CryptoPay invoice creation failed: {e}", exc_info=True)
+            logger.error(f"CryptoPay invoice creation failed: {e}", exc_info=True)
             return None
 
     async def _invoice_paid_handler(self, update: Update, app: web.Application):
         invoice = update.payload
         if not invoice.payload:
-            logging.warning("CryptoPay webhook without payload")
+            logger.warning("CryptoPay webhook without payload")
             return
         try:
             meta = json.loads(invoice.payload)
@@ -186,7 +188,7 @@ class CryptoPayService:
             sale_mode = meta.get("sale_mode") or ("traffic" if self.settings.traffic_sale_mode else "subscription")
             traffic_gb = float(meta.get("traffic_gb")) if meta.get("traffic_gb") else months
         except Exception as e:
-            logging.error(f"Failed to parse CryptoPay payload: {e}")
+            logger.error(f"Failed to parse CryptoPay payload: {e}")
             return
 
         async_session_factory: sessionmaker = app["async_session_factory"]
@@ -201,11 +203,11 @@ class CryptoPayService:
                 # Fetch payment record to get promo_code_id
                 payment_record = await payment_dal.get_payment_by_db_id(session, payment_db_id)
                 if not payment_record:
-                    logging.error(f"CryptoPay: Payment record {payment_db_id} not found")
+                    logger.error(f"CryptoPay: Payment record {payment_db_id} not found")
                     return
 
                 if payment_record.user_id != user_id:
-                    logging.error(
+                    logger.error(
                         "CryptoPay webhook: user mismatch for payment %s (db=%s, payload=%s)",
                         payment_db_id,
                         payment_record.user_id,
@@ -225,7 +227,7 @@ class CryptoPayService:
                         break
                 expected_currency = str(payment_record.currency or "").upper()
                 if expected_currency and provider_currency and expected_currency != provider_currency:
-                    logging.error(
+                    logger.error(
                         "CryptoPay webhook: currency mismatch for payment %s (expected %s, got %s)",
                         payment_db_id,
                         expected_currency,
@@ -234,14 +236,14 @@ class CryptoPayService:
                     return
 
                 if payment_record.status == "succeeded":
-                    logging.info("CryptoPay webhook: payment %s already succeeded", payment_db_id)
+                    logger.info("CryptoPay webhook: payment %s already succeeded", payment_db_id)
                     return
 
                 try:
                     expected_amount = float(payment_record.amount)
                     incoming_amount = float(invoice.amount)
                     if round(incoming_amount, 2) != round(expected_amount, 2):
-                        logging.error(
+                        logger.error(
                             "CryptoPay webhook: amount mismatch for payment %s (expected %.2f, got %.2f)",
                             payment_db_id,
                             expected_amount,
@@ -249,7 +251,7 @@ class CryptoPayService:
                         )
                         return
                 except Exception as amount_exc:
-                    logging.error(
+                    logger.error(
                         "CryptoPay webhook: failed to compare amount for payment %s: %s",
                         payment_db_id,
                         amount_exc,
@@ -262,7 +264,7 @@ class CryptoPayService:
                     str(invoice.invoice_id),
                 )
                 if not marked:
-                    logging.info(
+                    logger.info(
                         "CryptoPay webhook: payment %s already processed atomically",
                         payment_db_id,
                     )
@@ -296,7 +298,7 @@ class CryptoPayService:
                 await session.commit()
             except Exception as e:
                 await session.rollback()
-                logging.error(f"Failed to process CryptoPay invoice: {e}", exc_info=True)
+                logger.error(f"Failed to process CryptoPay invoice: {e}", exc_info=True)
                 return
 
             db_user = await user_dal.get_user_by_id(session, user_id)
@@ -358,7 +360,7 @@ class CryptoPayService:
                     disable_web_page_preview=True,
                 )
             except Exception as e:
-                logging.error(f"Failed to send CryptoPay success message: {e}")
+                logger.error(f"Failed to send CryptoPay success message: {e}")
 
             # Send notification about payment
             try:
@@ -374,7 +376,7 @@ class CryptoPayService:
                     username=user.username if user else None
                 )
             except Exception as e:
-                logging.error(f"Failed to send crypto_pay payment notification: {e}")
+                logger.error(f"Failed to send crypto_pay payment notification: {e}")
 
     async def webhook_route(self, request: web.Request) -> web.Response:
         if not self.configured or not self.client:

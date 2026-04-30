@@ -4,7 +4,6 @@ Custom implementation for lknpd.nalog.ru API.
 """
 
 import asyncio
-import logging
 import uuid
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -12,8 +11,9 @@ from enum import Enum
 from typing import Any
 
 import httpx
+from app.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PaymentType(str, Enum):

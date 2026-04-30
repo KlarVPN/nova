@@ -1,5 +1,4 @@
 import json
-import logging
 import hmac
 import hashlib
 from aiohttp import web
@@ -12,6 +11,9 @@ from .panel_api_service import PanelApiService
 from app.middlewares.i18n import JsonI18n
 from app.keyboards.inline.user_keyboards import get_subscribe_only_markup, get_autorenew_cancel_keyboard
 from app.database.dal import user_dal
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 EVENT_MAP = {
     "user.expires_in_72_hours": (3, "subscription_72h_notification"),
@@ -41,12 +43,12 @@ class PanelWebhookService:
                 user_id, _(message_key, **kwargs), reply_markup=reply_markup
             )
         except Exception as e:
-            logging.error(f"Failed to send notification to {user_id}: {e}")
+            logger.error(f"Failed to send notification to {user_id}: {e}")
 
     async def handle_event(self, event_name: str, user_payload: dict):
         telegram_id = user_payload.get("telegramId")
         if not telegram_id:
-            logging.warning("Panel webhook without telegramId received")
+            logger.warning("Panel webhook without telegramId received")
             return
         user_id = int(telegram_id)
 
@@ -81,16 +83,16 @@ class PanelWebhookService:
                                         await session.rollback()
                                 except Exception:
                                     await session.rollback()
-                                    logging.exception("Auto-renew attempt (24h) failed")
+                                    logger.exception("Auto-renew attempt (24h) failed")
                 except Exception:
-                    logging.exception("Auto-renew trigger (24h) failed pre-check")
+                    logger.exception("Auto-renew trigger (24h) failed pre-check")
             if days_left <= self.settings.SUBSCRIPTION_NOTIFY_DAYS_BEFORE:
                 # For 48h event, if auto-renew is enabled, show special notice with cancel button
                 if days_left == 2:
                     async with self.async_session_factory() as session:
                         from app.database.dal import subscription_dal
                         sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
-                        logging.info(
+                        logger.info(
                             "48h webhook check: user_id=%s sub_found=%s auto_renew=%s provider=%s",
                             user_id,
                             bool(sub),
@@ -137,7 +139,7 @@ class PanelWebhookService:
 
     async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> web.Response:
         if not self.settings.PANEL_WEBHOOK_SECRET:
-            logging.critical("Panel webhook rejected: PANEL_WEBHOOK_SECRET is not configured")
+            logger.critical("Panel webhook rejected: PANEL_WEBHOOK_SECRET is not configured")
             return web.Response(status=503, text="panel_webhook_secret_required")
 
         if not signature_header:
@@ -165,7 +167,7 @@ class PanelWebhookService:
         if not event_name:
             return web.Response(status=200, text="ok_no_event")
 
-        logging.info(
+        logger.info(
             "Panel webhook event received: %s; telegramId=%s",
             event_name,
             telegram_id if telegram_id is not None else "N/A",

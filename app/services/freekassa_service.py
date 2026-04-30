@@ -3,7 +3,6 @@ from datetime import datetime
 import hashlib
 import hmac
 import json
-import logging
 import time
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Dict, Any, Tuple
@@ -22,6 +21,9 @@ from app.database.dal import user_dal
 from app.database.dal import payment_dal, active_discount_dal
 from app.utils.text_sanitizer import sanitize_display_name, username_for_display
 from app.utils.config_link import prepare_config_links
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class FreeKassaService:
@@ -57,9 +59,9 @@ class FreeKassaService:
 
         self.configured: bool = bool(settings.FREEKASSA_ENABLED and self.shop_id and self.api_key)
         if not self.configured:
-            logging.warning("FreeKassaService initialized but not fully configured. Payments disabled.")
+            logger.warning("FreeKassaService initialized but not fully configured. Payments disabled.")
         if settings.FREEKASSA_ENABLED and not self.server_ip:
-            logging.warning("FreeKassaService: FREEKASSA_PAYMENT_IP is not set. Requests may be rejected by the provider.")
+            logger.warning("FreeKassaService: FREEKASSA_PAYMENT_IP is not set. Requests may be rejected by the provider.")
 
     @staticmethod
     def _format_amount(amount: float) -> str:
@@ -83,7 +85,7 @@ class FreeKassaService:
         session=None,
     ) -> Tuple[bool, Dict[str, Any]]:
         if not self.configured:
-            logging.error("FreeKassaService is not configured. Cannot create order.")
+            logger.error("FreeKassaService is not configured. Cannot create order.")
             return False, {"message": "service_not_configured"}
 
         # Check for active discount to save metadata (price already discounted from previous step)
@@ -109,12 +111,12 @@ class FreeKassaService:
                     if fallback_original is not None:
                         original_amount = fallback_original
                         discount_amount = original_amount - amount
-                        logging.info(
+                        logger.info(
                             f"Recording {discount_pct}% discount for FreeKassa payment: "
                             f"original {original_amount:.2f} -> final {amount}"
                         )
                     else:
-                        logging.warning(
+                        logger.warning(
                             "FreeKassa discount %s%% has invalid denominator and no fallback price for months=%s.",
                             discount_pct,
                             months,
@@ -122,7 +124,7 @@ class FreeKassaService:
                 else:
                     original_amount = amount / denominator
                     discount_amount = original_amount - amount
-                    logging.info(
+                    logger.info(
                         f"Recording {discount_pct}% discount for FreeKassa payment: "
                         f"original {original_amount:.2f} -> final {amount}"
                     )
@@ -138,13 +140,13 @@ class FreeKassaService:
                     )
                     await session.commit()
                 except Exception as e_update:
-                    logging.warning(
+                    logger.warning(
                         f"FreeKassa: failed to update discount metadata for payment {payment_db_id}: {e_update}"
                     )
 
         ip_address = ip_address or self.server_ip
         if not ip_address:
-            logging.error("FreeKassaService: payment IP is required but not configured.")
+            logger.error("FreeKassaService: payment IP is required but not configured.")
             return False, {"message": "missing_ip"}
 
         email = email or f"{user_id}@telegram.org"
@@ -181,11 +183,11 @@ class FreeKassaService:
                 try:
                     response_data = json.loads(response_text) if response_text else {}
                 except json.JSONDecodeError:
-                    logging.error("FreeKassa create_order: failed to decode JSON: %s", response_text)
+                    logger.error("FreeKassa create_order: failed to decode JSON: %s", response_text)
                     return False, {"status": response.status, "message": "invalid_json", "raw": response_text}
 
                 if response.status != 200 or response_data.get("type") != "success":
-                    logging.error(
+                    logger.error(
                         "FreeKassa create_order: API returned error (status=%s, body=%s)",
                         response.status,
                         response_data,
@@ -194,7 +196,7 @@ class FreeKassaService:
 
                 return True, response_data
         except Exception as exc:
-            logging.error("FreeKassa create_order: request failed: %s", exc, exc_info=True)
+            logger.error("FreeKassa create_order: request failed: %s", exc, exc_info=True)
             return False, {"message": str(exc)}
 
     async def _get_session(self) -> ClientSession:
@@ -266,7 +268,7 @@ class FreeKassaService:
         try:
             data = await request.post()
         except Exception as e:
-            logging.error(f"FreeKassa webhook: failed to read POST data: {e}")
+            logger.error(f"FreeKassa webhook: failed to read POST data: {e}")
             return web.Response(status=400, text="bad_request")
 
         payload_dict: Dict[str, Any]
@@ -288,12 +290,12 @@ class FreeKassaService:
 
         merchant_id = _get("MERCHANT_ID")
         if merchant_id != self.shop_id:
-            logging.error(f"FreeKassa webhook: merchant mismatch (got {merchant_id})")
+            logger.error(f"FreeKassa webhook: merchant mismatch (got {merchant_id})")
             return web.Response(status=403, text="merchant_mismatch")
 
         signature = _get("SIGN") or _get("signature")
         if not signature:
-            logging.error("FreeKassa webhook: missing signature")
+            logger.error("FreeKassa webhook: missing signature")
             return web.Response(status=400, text="missing_signature")
 
         order_id_str = _get("MERCHANT_ORDER_ID") or _get("ORDER_ID") or _get("o")
@@ -301,28 +303,28 @@ class FreeKassaService:
         provider_payment_id = _get("intid") or _get("payment_id") or _get("transaction_id")
 
         if not order_id_str or not amount_str:
-            logging.error("FreeKassa webhook: missing order_id or amount")
+            logger.error("FreeKassa webhook: missing order_id or amount")
             return web.Response(status=400, text="missing_data")
 
         if not self._validate_signature(order_id_str, amount_str, signature, payload_dict):
-            logging.error("FreeKassa webhook: invalid signature")
+            logger.error("FreeKassa webhook: invalid signature")
             return web.Response(status=403, text="invalid_signature")
 
         try:
             payment_db_id = int(order_id_str)
         except (TypeError, ValueError):
-            logging.error(f"FreeKassa webhook: invalid order_id value '{order_id_str}'")
+            logger.error(f"FreeKassa webhook: invalid order_id value '{order_id_str}'")
             return web.Response(status=400, text="invalid_order_id")
 
         async with self.async_session_factory() as session:
             payment = await payment_dal.get_payment_by_db_id(session, payment_db_id)
             if not payment:
-                logging.error(f"FreeKassa webhook: payment {payment_db_id} not found")
+                logger.error(f"FreeKassa webhook: payment {payment_db_id} not found")
                 return web.Response(status=404, text="payment_not_found")
 
             if payment.currency and str(payment.currency).upper() != str(self.default_currency or payment.currency).upper():
                 # FreeKassa sends amount without currency; ensure DB currency matches configured service currency
-                logging.error(
+                logger.error(
                     "FreeKassa webhook: currency mismatch for payment %s (db=%s, expected=%s)",
                     payment_db_id,
                     payment.currency,
@@ -331,7 +333,7 @@ class FreeKassaService:
                 return web.Response(status=400, text="currency_mismatch")
 
             if payment.status == "succeeded":
-                logging.info(f"FreeKassa webhook: payment {payment_db_id} already succeeded")
+                logger.info(f"FreeKassa webhook: payment {payment_db_id} already succeeded")
                 return web.Response(text="YES")
 
             # Optional amount verification
@@ -339,13 +341,13 @@ class FreeKassaService:
                 amount_decimal = Decimal(amount_str)
                 expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 if amount_decimal.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) != expected_amount:
-                    logging.error(
+                    logger.error(
                         f"FreeKassa webhook: amount mismatch for payment {payment_db_id} "
                         f"(expected {expected_amount}, got {amount_decimal})"
                     )
                     return web.Response(status=400, text="amount_mismatch")
             except Exception as e:
-                logging.error(f"FreeKassa webhook: failed to compare amount for payment {payment_db_id}: {e}")
+                logger.error(f"FreeKassa webhook: failed to compare amount for payment {payment_db_id}: {e}")
                 return web.Response(status=400, text="amount_validation_error")
 
             activation = None
@@ -358,7 +360,7 @@ class FreeKassaService:
                     provider_payment_id=provider_id,
                 )
                 if not marked:
-                    logging.info(
+                    logger.info(
                         "FreeKassa webhook: payment %s already processed atomically",
                         payment.payment_id,
                     )
@@ -396,7 +398,7 @@ class FreeKassaService:
                 await session.commit()
             except Exception as e:
                 await session.rollback()
-                logging.error(f"FreeKassa webhook: failed to process payment {payment_db_id}: {e}", exc_info=True)
+                logger.error(f"FreeKassa webhook: failed to process payment {payment_db_id}: {e}", exc_info=True)
                 return web.Response(status=500, text="processing_error")
 
             db_user = payment.user or await user_dal.get_user_by_id(session, payment.user_id)
@@ -481,7 +483,7 @@ class FreeKassaService:
                     disable_web_page_preview=True,
                 )
             except Exception as e:
-                logging.error(f"FreeKassa notification: failed to send message to user {payment.user_id}: {e}")
+                logger.error(f"FreeKassa notification: failed to send message to user {payment.user_id}: {e}")
 
             try:
                 notification_service = NotificationService(self.bot, self.settings, self.i18n)
@@ -495,7 +497,7 @@ class FreeKassaService:
                     username=db_user.username if db_user else None,
                 )
             except Exception as e:
-                logging.error(f"FreeKassa notification: failed to notify admins: {e}")
+                logger.error(f"FreeKassa notification: failed to notify admins: {e}")
 
         return web.Response(text="YES")
 

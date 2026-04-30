@@ -1,5 +1,4 @@
 import json
-import logging
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Dict, Any, Tuple
 
@@ -17,6 +16,9 @@ from app.database.dal import user_dal
 from app.database.dal import payment_dal, active_discount_dal
 from app.utils.text_sanitizer import sanitize_display_name, username_for_display
 from app.utils.config_link import prepare_config_links
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class PlategaService:
@@ -56,7 +58,7 @@ class PlategaService:
             settings.PLATEGA_ENABLED and self.merchant_id and self.secret
         )
         if not self.configured:
-            logging.warning("PlategaService initialized but not fully configured. Payments disabled.")
+            logger.warning("PlategaService initialized but not fully configured. Payments disabled.")
 
     async def _get_session(self) -> ClientSession:
         if self._session is None or self._session.closed:
@@ -81,7 +83,7 @@ class PlategaService:
         session=None,
     ) -> Tuple[bool, Dict[str, Any]]:
         if not self.configured:
-            logging.error("PlategaService is not configured. Cannot create transaction.")
+            logger.error("PlategaService is not configured. Cannot create transaction.")
             return False, {"message": "service_not_configured"}
 
         # Check for active discount to save metadata (price already discounted from previous step)
@@ -107,12 +109,12 @@ class PlategaService:
                     if fallback_original is not None:
                         original_amount = fallback_original
                         discount_amount = original_amount - amount
-                        logging.info(
+                        logger.info(
                             f"Recording {discount_pct}% discount for Platega payment: "
                             f"original {original_amount:.2f} -> final {amount}"
                         )
                     else:
-                        logging.warning(
+                        logger.warning(
                             "Platega discount %s%% has invalid denominator and no fallback price for months=%s.",
                             discount_pct,
                             months,
@@ -120,7 +122,7 @@ class PlategaService:
                 else:
                     original_amount = amount / denominator
                     discount_amount = original_amount - amount
-                    logging.info(
+                    logger.info(
                         f"Recording {discount_pct}% discount for Platega payment: "
                         f"original {original_amount:.2f} -> final {amount}"
                     )
@@ -136,7 +138,7 @@ class PlategaService:
                     )
                     await session.commit()
                 except Exception as e_update:
-                    logging.warning(
+                    logger.warning(
                         f"Platega: failed to update discount metadata for payment {payment_db_id}: {e_update}"
                     )
 
@@ -162,7 +164,7 @@ class PlategaService:
                 try:
                     response_data = json.loads(response_text) if response_text else {}
                 except json.JSONDecodeError:
-                    logging.error("Platega create_transaction: invalid JSON response: %s", response_text)
+                    logger.error("Platega create_transaction: invalid JSON response: %s", response_text)
                     return False, {
                         "status": response.status,
                         "message": "invalid_json",
@@ -170,7 +172,7 @@ class PlategaService:
                     }
 
                 if response.status != 200:
-                    logging.error(
+                    logger.error(
                         "Platega create_transaction: API returned error (status=%s, body=%s)",
                         response.status,
                         response_data,
@@ -179,7 +181,7 @@ class PlategaService:
 
                 return True, response_data
         except Exception as exc:
-            logging.error("Platega create_transaction: request failed: %s", exc, exc_info=True)
+            logger.error("Platega create_transaction: request failed: %s", exc, exc_info=True)
             return False, {"message": str(exc)}
 
     async def webhook_route(self, request: web.Request) -> web.Response:
@@ -189,13 +191,13 @@ class PlategaService:
         try:
             data = await request.json()
         except Exception as exc:
-            logging.error("Platega webhook: failed to parse JSON: %s", exc)
+            logger.error("Platega webhook: failed to parse JSON: %s", exc)
             return web.Response(status=400, text="bad_request")
 
         header_merchant = request.headers.get("X-MerchantId")
         header_secret = request.headers.get("X-Secret")
         if header_merchant != self.merchant_id or header_secret != self.secret:
-            logging.error("Platega webhook: invalid auth headers")
+            logger.error("Platega webhook: invalid auth headers")
             return web.Response(status=403, text="forbidden")
 
         transaction_id = str(data.get("id") or data.get("transactionId") or "").strip()
@@ -204,13 +206,13 @@ class PlategaService:
         currency = data.get("currency") or "RUB"
 
         if not transaction_id or not status:
-            logging.error("Platega webhook: missing transaction id or status in payload: %s", data)
+            logger.error("Platega webhook: missing transaction id or status in payload: %s", data)
             return web.Response(status=400, text="missing_fields")
 
         async with self.async_session_factory() as session:
             payment = await payment_dal.get_payment_by_provider_payment_id(session, transaction_id)
             if not payment:
-                logging.error("Platega webhook: payment not found for transaction %s", transaction_id)
+                logger.error("Platega webhook: payment not found for transaction %s", transaction_id)
                 return web.Response(status=404, text="payment_not_found")
 
             if payment.status == "succeeded" and status == "CONFIRMED":
@@ -224,7 +226,7 @@ class PlategaService:
                     provider_currency = str(currency).upper()
                     expected_currency = str(payment.currency or "").upper()
                     if expected_currency and expected_currency != provider_currency:
-                        logging.error(
+                        logger.error(
                             "Platega webhook: currency mismatch for payment %s (expected %s, got %s)",
                             payment.payment_id,
                             expected_currency,
@@ -237,7 +239,7 @@ class PlategaService:
                         incoming_amount = Decimal(str(amount_raw)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                         expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                         if incoming_amount != expected_amount:
-                            logging.error(
+                            logger.error(
                                 "Platega webhook: amount mismatch for payment %s (expected %s, got %s)",
                                 payment.payment_id,
                                 expected_amount,
@@ -245,7 +247,7 @@ class PlategaService:
                             )
                             return web.Response(status=400, text="amount_mismatch")
                     except Exception as exc:
-                        logging.error("Platega webhook: failed to compare amounts for %s: %s", payment.payment_id, exc)
+                        logger.error("Platega webhook: failed to compare amounts for %s: %s", payment.payment_id, exc)
                         return web.Response(status=400, text="amount_validation_error")
 
                 try:
@@ -255,7 +257,7 @@ class PlategaService:
                         transaction_id,
                     )
                     if not marked:
-                        logging.info(
+                        logger.info(
                             "Platega webhook: payment %s already processed atomically",
                             payment.payment_id,
                         )
@@ -290,7 +292,7 @@ class PlategaService:
                     await session.commit()
                 except Exception as exc:
                     await session.rollback()
-                    logging.error("Platega webhook: failed to process payment %s: %s", transaction_id, exc, exc_info=True)
+                    logger.error("Platega webhook: failed to process payment %s: %s", transaction_id, exc, exc_info=True)
                     return web.Response(status=500, text="processing_error")
 
                 db_user = await user_dal.get_user_by_id(session, payment.user_id)
@@ -370,7 +372,7 @@ class PlategaService:
                         disable_web_page_preview=True,
                     )
                 except Exception as exc:
-                    logging.error("Platega webhook: failed to notify user %s: %s", payment.user_id, exc)
+                    logger.error("Platega webhook: failed to notify user %s: %s", payment.user_id, exc)
 
                 try:
                     notification_service = NotificationService(self.bot, self.settings, self.i18n)
@@ -384,7 +386,7 @@ class PlategaService:
                         username=db_user.username if db_user else None,
                     )
                 except Exception as exc:
-                    logging.error("Platega webhook: failed to notify admins: %s", exc)
+                    logger.error("Platega webhook: failed to notify admins: %s", exc)
 
                 return web.Response(text="ok")
 
@@ -399,7 +401,7 @@ class PlategaService:
                     await session.commit()
                 except Exception as exc:
                     await session.rollback()
-                    logging.error("Platega webhook: failed to cancel payment %s: %s", transaction_id, exc)
+                    logger.error("Platega webhook: failed to cancel payment %s: %s", transaction_id, exc)
                     return web.Response(status=500, text="processing_error")
 
                 db_user = await user_dal.get_user_by_id(session, payment.user_id)
@@ -408,10 +410,10 @@ class PlategaService:
                 try:
                     await self.bot.send_message(payment.user_id, _("payment_failed"))
                 except Exception as exc:
-                    logging.debug("Platega webhook: failed to send cancellation message to user %s: %s", payment.user_id, exc)
+                    logger.debug("Platega webhook: failed to send cancellation message to user %s: %s", payment.user_id, exc)
                 return web.Response(text="ok_canceled")
 
-            logging.warning("Platega webhook: unhandled status '%s' for transaction %s", status, transaction_id)
+            logger.warning("Platega webhook: unhandled status '%s' for transaction %s", status, transaction_id)
             return web.Response(status=202, text="status_ignored")
 
 

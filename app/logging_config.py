@@ -1,24 +1,10 @@
 import logging
 import os
 import sys
+from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
 
-
-class ColorFormatter(logging.Formatter):
-    COLORS = {
-        logging.DEBUG: "\033[36m",
-        logging.INFO: "\033[32m",
-        logging.WARNING: "\033[33m",
-        logging.ERROR: "\033[31m",
-        logging.CRITICAL: "\033[35m",
-    }
-    RESET = "\033[0m"
-
-    def format(self, record: logging.LogRecord) -> str:
-        message = super().format(record)
-        color = self.COLORS.get(record.levelno)
-        if not color:
-            return message
-        return f"{color}{message}{self.RESET}"
+import structlog
 
 
 def resolve_log_level(value: str) -> int:
@@ -35,15 +21,77 @@ def resolve_log_level(value: str) -> int:
     return logging.INFO
 
 
-def build_default_formatter() -> logging.Formatter:
-    return logging.Formatter("%(levelname).5s [%(name)s] %(message)s")
+def _configure_structlog(level: int, use_colors: bool) -> None:
+    timestamper = structlog.processors.TimeStamper(fmt="iso")
+    shared_processors = [
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        timestamper,
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+    ]
 
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            *shared_processors,
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
 
-def configure_logging() -> None:
+    renderer = structlog.dev.ConsoleRenderer(colors=use_colors)
+    formatter = structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=shared_processors,
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            renderer,
+        ],
+    )
+
     root = logging.getLogger()
-    root.setLevel(resolve_log_level(os.getenv("LOG_LEVEL", "INFO")))
+    root.setLevel(level)
     root.handlers.clear()
+    logging.captureWarnings(True)
 
-    console_handler = logging.StreamHandler(stream=sys.stdout)
-    console_handler.setFormatter(ColorFormatter("%(levelname).5s [%(name)s] %(message)s"))
-    root.addHandler(console_handler)
+    console = logging.StreamHandler(stream=sys.stdout)
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
+
+def configure_logging(with_rotating_file: bool = False) -> None:
+    level = resolve_log_level(os.getenv("LOG_LEVEL", "INFO"))
+    _configure_structlog(level=level, use_colors=True)
+
+    if with_rotating_file:
+        try:
+            os.makedirs(".logs", exist_ok=True)
+            file_handler = TimedRotatingFileHandler(
+                filename=f".logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log",
+                when="midnight",
+                interval=1,
+                backupCount=7,
+            )
+            file_formatter = structlog.stdlib.ProcessorFormatter(
+                foreign_pre_chain=[
+                    structlog.stdlib.add_logger_name,
+                    structlog.stdlib.add_log_level,
+                    structlog.processors.TimeStamper(fmt="iso"),
+                ],
+                processors=[
+                    structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                    structlog.processors.JSONRenderer(),
+                ],
+            )
+            file_handler.setFormatter(file_formatter)
+            logging.getLogger().addHandler(file_handler)
+        except OSError:
+            pass
+
+
+def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
+    if name:
+        return structlog.get_logger(name)
+    return structlog.get_logger()

@@ -1,5 +1,4 @@
 import json
-import logging
 import secrets
 import hmac
 import hashlib
@@ -20,6 +19,9 @@ from app.database.dal import user_dal
 from app.database.dal import payment_dal, active_discount_dal
 from app.utils.text_sanitizer import sanitize_display_name, username_for_display
 from app.utils.config_link import prepare_config_links
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class SeverPayService:
@@ -52,7 +54,7 @@ class SeverPayService:
 
         self.configured: bool = bool(settings.SEVERPAY_ENABLED and self.mid and self.token)
         if not self.configured:
-            logging.warning("SeverPayService initialized but not fully configured. Payments disabled.")
+            logger.warning("SeverPayService initialized but not fully configured. Payments disabled.")
 
     async def _get_session(self) -> ClientSession:
         if self._session is None or self._session.closed:
@@ -104,7 +106,7 @@ class SeverPayService:
         session=None,
     ) -> Tuple[bool, Dict[str, Any]]:
         if not self.configured:
-            logging.error("SeverPayService is not configured. Cannot create payment.")
+            logger.error("SeverPayService is not configured. Cannot create payment.")
             return False, {"message": "service_not_configured"}
 
         # Check for active discount to save metadata (price already discounted from previous step)
@@ -130,12 +132,12 @@ class SeverPayService:
                     if fallback_original is not None:
                         original_amount = fallback_original
                         discount_amount = original_amount - amount
-                        logging.info(
+                        logger.info(
                             f"Recording {discount_pct}% discount for SeverPay payment: "
                             f"original {original_amount:.2f} -> final {amount}"
                         )
                     else:
-                        logging.warning(
+                        logger.warning(
                             "SeverPay discount %s%% has invalid denominator and no fallback price for months=%s.",
                             discount_pct,
                             months,
@@ -143,7 +145,7 @@ class SeverPayService:
                 else:
                     original_amount = amount / denominator
                     discount_amount = original_amount - amount
-                    logging.info(
+                    logger.info(
                         f"Recording {discount_pct}% discount for SeverPay payment: "
                         f"original {original_amount:.2f} -> final {amount}"
                     )
@@ -159,7 +161,7 @@ class SeverPayService:
                     )
                     await session.commit()
                 except Exception as e_update:
-                    logging.warning(
+                    logger.warning(
                         f"SeverPay: failed to update discount metadata for payment {payment_db_id}: {e_update}"
                     )
 
@@ -188,11 +190,11 @@ class SeverPayService:
                 try:
                     response_data = json.loads(response_text) if response_text else {}
                 except json.JSONDecodeError:
-                    logging.error("SeverPay create_payment: invalid JSON response: %s", response_text)
+                    logger.error("SeverPay create_payment: invalid JSON response: %s", response_text)
                     return False, {"status": response.status, "message": "invalid_json", "raw": response_text}
 
                 if response.status != 200 or not response_data.get("status"):
-                    logging.error(
+                    logger.error(
                         "SeverPay create_payment: API returned error (status=%s, body=%s)",
                         response.status,
                         response_data,
@@ -201,7 +203,7 @@ class SeverPayService:
 
                 return True, response_data.get("data") or response_data
         except Exception as exc:
-            logging.error("SeverPay create_payment: request failed: %s", exc, exc_info=True)
+            logger.error("SeverPay create_payment: request failed: %s", exc, exc_info=True)
             return False, {"message": str(exc)}
 
     async def webhook_route(self, request: web.Request) -> web.Response:
@@ -211,18 +213,18 @@ class SeverPayService:
         try:
             payload = await request.json()
         except Exception as exc:
-            logging.error("SeverPay webhook: failed to parse JSON: %s", exc)
+            logger.error("SeverPay webhook: failed to parse JSON: %s", exc)
             return web.json_response({"status": False, "msg": "bad_request"}, status=400)
 
         if not isinstance(payload, dict) or not self._validate_signature(payload):
-            logging.error("SeverPay webhook: invalid signature or payload.")
+            logger.error("SeverPay webhook: invalid signature or payload.")
             return web.json_response({"status": False, "msg": "invalid_signature"}, status=403)
 
         event_type = str(payload.get("type") or "").lower()
         data = payload.get("data") or {}
 
         if event_type != "payin" or not isinstance(data, dict):
-            logging.warning("SeverPay webhook: unsupported event type '%s'", event_type)
+            logger.warning("SeverPay webhook: unsupported event type '%s'", event_type)
             return web.json_response({"status": True})
 
         provider_payment_id = str(data.get("id") or data.get("uid") or "")
@@ -248,11 +250,11 @@ class SeverPayService:
                 payment = await payment_dal.get_payment_by_provider_payment_id(session, provider_payment_id)
 
             if not payment:
-                logging.error("SeverPay webhook: payment not found (order_id=%s, provider_id=%s)", order_id_raw, provider_payment_id)
+                logger.error("SeverPay webhook: payment not found (order_id=%s, provider_id=%s)", order_id_raw, provider_payment_id)
                 return web.json_response({"status": False, "msg": "payment_not_found"}, status=404)
 
             if payment.status == "succeeded" and status == "success":
-                logging.info("SeverPay webhook: payment %s already succeeded", payment.payment_id)
+                logger.info("SeverPay webhook: payment %s already succeeded", payment.payment_id)
                 return web.json_response({"status": True})
 
             if status == "success" and amount_raw is not None:
@@ -260,7 +262,7 @@ class SeverPayService:
                     incoming_amount = Decimal(str(amount_raw)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                     expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                     if incoming_amount != expected_amount:
-                        logging.error(
+                        logger.error(
                             "SeverPay webhook: amount mismatch for payment %s (expected %s, got %s)",
                             payment.payment_id,
                             expected_amount,
@@ -268,7 +270,7 @@ class SeverPayService:
                         )
                         return web.json_response({"status": False, "msg": "amount_mismatch"}, status=400)
                 except Exception as exc:
-                    logging.error(
+                    logger.error(
                         "SeverPay webhook: failed to compare amounts for payment %s: %s",
                         payment.payment_id,
                         exc,
@@ -279,7 +281,7 @@ class SeverPayService:
                     provider_currency = str(currency_raw).upper()
                     expected_currency = str(payment.currency or "").upper()
                     if expected_currency and provider_currency != expected_currency:
-                        logging.error(
+                        logger.error(
                             "SeverPay webhook: currency mismatch for payment %s (expected %s, got %s)",
                             payment.payment_id,
                             expected_currency,
@@ -298,7 +300,7 @@ class SeverPayService:
                         provider_id,
                     )
                     if not marked:
-                        logging.info(
+                        logger.info(
                             "SeverPay webhook: payment %s already processed atomically",
                             payment.payment_id,
                         )
@@ -329,7 +331,7 @@ class SeverPayService:
                     await session.commit()
                 except Exception as exc:
                     await session.rollback()
-                    logging.error("SeverPay webhook: failed to process payment %s: %s", provider_payment_id, exc, exc_info=True)
+                    logger.error("SeverPay webhook: failed to process payment %s: %s", provider_payment_id, exc, exc_info=True)
                     return web.json_response({"status": False, "msg": "processing_error"}, status=500)
 
                 db_user = payment.user or await user_dal.get_user_by_id(session, payment.user_id)
@@ -409,7 +411,7 @@ class SeverPayService:
                         disable_web_page_preview=True,
                     )
                 except Exception as exc:
-                    logging.error("SeverPay webhook: failed to notify user %s: %s", payment.user_id, exc)
+                    logger.error("SeverPay webhook: failed to notify user %s: %s", payment.user_id, exc)
 
                 try:
                     notification_service = NotificationService(self.bot, self.settings, self.i18n)
@@ -423,7 +425,7 @@ class SeverPayService:
                         username=db_user.username if db_user else None,
                     )
                 except Exception as exc:
-                    logging.error("SeverPay webhook: failed to notify admins: %s", exc)
+                    logger.error("SeverPay webhook: failed to notify admins: %s", exc)
 
                 return web.json_response({"status": True})
 
@@ -438,7 +440,7 @@ class SeverPayService:
                     await session.commit()
                 except Exception as exc:
                     await session.rollback()
-                    logging.error("SeverPay webhook: failed to mark payment %s as failed: %s", provider_payment_id, exc)
+                    logger.error("SeverPay webhook: failed to mark payment %s as failed: %s", provider_payment_id, exc)
                     return web.json_response({"status": False, "msg": "processing_error"}, status=500)
 
                 db_user = payment.user or await user_dal.get_user_by_id(session, payment.user_id)
@@ -447,7 +449,7 @@ class SeverPayService:
                 try:
                     await self.bot.send_message(payment.user_id, _("payment_failed"))
                 except Exception as exc:
-                    logging.debug("SeverPay webhook: failed to send cancellation message to user %s: %s", payment.user_id, exc)
+                    logger.debug("SeverPay webhook: failed to send cancellation message to user %s: %s", payment.user_id, exc)
                 return web.json_response({"status": True})
 
             if status in {"process", "new"}:
@@ -461,10 +463,10 @@ class SeverPayService:
                     await session.commit()
                 except Exception as exc:
                     await session.rollback()
-                    logging.error("SeverPay webhook: failed to update pending status for %s: %s", provider_payment_id, exc)
+                    logger.error("SeverPay webhook: failed to update pending status for %s: %s", provider_payment_id, exc)
                 return web.json_response({"status": True})
 
-            logging.warning("SeverPay webhook: unhandled status '%s' for payment %s", status, provider_payment_id)
+            logger.warning("SeverPay webhook: unhandled status '%s' for payment %s", status, provider_payment_id)
             return web.json_response({"status": True})
 
 

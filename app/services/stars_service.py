@@ -1,4 +1,3 @@
-import logging
 import math
 from typing import Optional
 
@@ -16,6 +15,9 @@ from .notification_service import NotificationService
 from app.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
 from app.utils.text_sanitizer import sanitize_display_name, username_for_display
 from app.utils.config_link import prepare_config_links
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class StarsService:
@@ -62,7 +64,7 @@ class StarsService:
         # Always resolve base price server-side and reject unknown packages.
         resolved_base_price = self._resolve_base_stars_price(months, sale_mode)
         if resolved_base_price is None:
-            logging.warning(
+            logger.warning(
                 "Stars invoice rejected: base price not found for sale_mode=%s months=%s.",
                 sale_mode,
                 months,
@@ -73,7 +75,7 @@ class StarsService:
 
         # Detect callback tampering (or stale callback payload) and prefer server-side price.
         if int(stars_price) != original_stars_price:
-            logging.warning(
+            logger.warning(
                 "Stars callback price mismatch for user %s: callback=%s, resolved=%s, sale_mode=%s, months=%s",
                 user_id,
                 stars_price,
@@ -98,7 +100,7 @@ class StarsService:
             if discount_float:
                 stars_price = math.ceil(final_price_float)
                 discount_amount_stars = original_stars_price - stars_price
-                logging.info(
+                logger.info(
                     "Stars discount applied: %s -> %.2f -> %s (ceiling)",
                     original_stars_price,
                     final_price_float,
@@ -123,7 +125,7 @@ class StarsService:
             await session.commit()
         except Exception as e_db:
             await session.rollback()
-            logging.error(f"Failed to create stars payment record: {e_db}",
+            logger.error(f"Failed to create stars payment record: {e_db}",
                           exc_info=True)
             return None
 
@@ -141,7 +143,7 @@ class StarsService:
             )
             return db_payment_record.payment_id
         except Exception as e_inv:
-            logging.error(f"Failed to send Telegram Stars invoice: {e_inv}",
+            logger.error(f"Failed to send Telegram Stars invoice: {e_inv}",
                           exc_info=True)
             return None
 
@@ -169,7 +171,7 @@ class StarsService:
                 provider_payment_id,
             )
             if not marked:
-                logging.info(
+                logger.info(
                     "Stars payment %s already processed atomically",
                     payment_db_id,
                 )
@@ -202,7 +204,7 @@ class StarsService:
             await session.commit()
         except Exception as e_upd:
             await session.rollback()
-            logging.error(
+            logger.error(
                 f"Failed to process stars payment record {payment_db_id}: {e_upd}",
                 exc_info=True)
             return
@@ -273,7 +275,7 @@ class StarsService:
                 disable_web_page_preview=True,
             )
         except Exception as e_send:
-            logging.error(
+            logger.error(
                 f"Failed to send stars payment success message: {e_send}")
 
         # Send notification about payment
@@ -290,4 +292,4 @@ class StarsService:
                 traffic_gb=months if sale_mode == "traffic" else None,
             )
         except Exception as e:
-            logging.error(f"Failed to send stars payment notification: {e}")
+            logger.error(f"Failed to send stars payment notification: {e}")

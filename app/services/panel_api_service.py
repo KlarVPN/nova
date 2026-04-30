@@ -1,5 +1,4 @@
 import aiohttp
-import logging
 import json
 import re
 from typing import Optional, List, Dict, Any
@@ -13,6 +12,9 @@ from app.config import Settings
 from app.cache.redis_client import get_redis_client
 from app.database.dal import panel_sync_dal
 from app.database.models import PanelSyncStatus
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class PanelApiService:
@@ -42,7 +44,7 @@ class PanelApiService:
         if self._session and not self._session.closed:
             await self._session.close()
             self._session = None
-            logging.debug("Panel API service HTTP session closed.")
+            logger.debug("Panel API service HTTP session closed.")
 
     async def close(self):
         """Alias for close_session for API consistency."""
@@ -89,7 +91,7 @@ class PanelApiService:
                        log_full_response: bool = False,
                        **kwargs) -> Optional[Dict[str, Any]]:
         if not self.base_url:
-            logging.error(
+            logger.error(
                 "Panel API URL (PANEL_API_URL) not configured in settings.")
             return {
                 "error": True,
@@ -108,7 +110,7 @@ class PanelApiService:
             try:
                 url_with_params_for_log += "?" + urlencode(current_params)
             except Exception as exc:
-                logging.debug("Failed to encode params for panel API log URL: %s", exc)
+                logger.debug("Failed to encode params for panel API log URL: %s", exc)
 
         json_payload_for_log = kwargs.get('json') if method.upper() in [
             "POST", "PATCH", "PUT"
@@ -138,15 +140,15 @@ class PanelApiService:
                         pretty_response_text = json.dumps(parsed_json_for_log,
                                                           indent=2,
                                                           ensure_ascii=False)
-                        logging.info(
+                        logger.info(
                             f"{log_prefix} {log_suffix} | Full Response Body:\n{pretty_response_text}"
                         )
                     except json.JSONDecodeError:
-                        logging.info(
+                        logger.info(
                             f"{log_prefix} {log_suffix} | Full Response Text (not JSON):\n{response_text[:2000]}{'...' if len(response_text) > 2000 else ''}"
                         )
                 else:
-                    logging.debug(
+                    logger.debug(
                         f"{log_prefix} {log_suffix} | OK. Response Body Preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}"
                     )
 
@@ -163,7 +165,7 @@ class PanelApiService:
                                 "data_text": response_text
                             }
                     except json.JSONDecodeError as e_json_ok:
-                        logging.error(
+                        logger.error(
                             f"{log_prefix} {log_suffix} | OK but JSON Parse Error. Error: {e_json_ok}. Body was logged above."
                         )
                         return {
@@ -192,7 +194,7 @@ class PanelApiService:
                     }
 
         except aiohttp.ClientConnectorError as e:
-            logging.error(
+            logger.error(
                 f"Panel API ClientConnectorError to {url_for_request}: {e}")
             return {
                 "error": True,
@@ -200,21 +202,21 @@ class PanelApiService:
                 "message": f"Connection error: {str(e)}"
             }
         except aiohttp.ClientError as e:
-            logging.error(f"Panel API ClientError to {url_for_request}: {e}")
+            logger.error(f"Panel API ClientError to {url_for_request}: {e}")
             return {
                 "error": True,
                 "status_code": -2,
                 "message": f"Client error: {str(e)}"
             }
         except asyncio.TimeoutError:
-            logging.error(f"Panel API request to {url_for_request} timed out.")
+            logger.error(f"Panel API request to {url_for_request} timed out.")
             return {
                 "error": True,
                 "status_code": -3,
                 "message": "Request timed out"
             }
         except Exception as e:
-            logging.error(
+            logger.error(
                 f"Unexpected Panel API request error to {url_for_request}: {e}",
                 exc_info=True)
             return {
@@ -238,7 +240,7 @@ class PanelApiService:
                 log_full_response=log_responses)
 
             if not response_data or response_data.get("error"):
-                logging.error(
+                logger.error(
                     f"Failed to fetch panel users batch (start: {start_offset}). Response: {response_data}"
                 )
                 return None
@@ -248,7 +250,7 @@ class PanelApiService:
             if len(users_batch) < page_size: break
             start_offset += page_size
             await asyncio.sleep(0.1)
-        logging.info(f"Fetched {len(all_users)} users from panel API.")
+        logger.info(f"Fetched {len(all_users)} users from panel API.")
         return all_users
 
     async def get_user_by_uuid(
@@ -309,7 +311,7 @@ class PanelApiService:
                         response_data["response"], list):
                 return response_data["response"]
             elif response_data and response_data.get("errorCode") == "A062":
-                logging.info(
+                logger.info(
                     f"Panel API: Users not found for {filter_used_log}")
                 return []
 
@@ -325,7 +327,7 @@ class PanelApiService:
                         response_data["response"], dict):
                 return [response_data["response"]]
             elif response_data and response_data.get("errorCode") == "A062":
-                logging.info(
+                logger.info(
                     f"Panel API: User not found for {filter_used_log}")
                 return []
 
@@ -341,17 +343,17 @@ class PanelApiService:
                         response_data["response"], list):
                 return response_data["response"]
             elif response_data and response_data.get("errorCode") == "A062":
-                logging.info(
+                logger.info(
                     f"Panel API: Users not found for {filter_used_log}")
                 return []
 
         if not telegram_id and not username and not email:
-            logging.warning(
+            logger.warning(
                 "get_users_by_filter called without any specific filter criteria."
             )
             return []
 
-        logging.error(
+        logger.error(
             f"Failed to fetch panel users with filter ({filter_used_log}). Last API response: {response_data if not log_response else '(logged above)'}"
         )
         return None
@@ -378,7 +380,7 @@ class PanelApiService:
         )
         if not username_is_valid:
             msg = f"Panel username '{username_on_panel}' does not meet panel requirements."
-            logging.error(msg)
+            logger.error(msg)
             return {
                 "error": True,
                 "status_code": 400,
@@ -407,7 +409,7 @@ class PanelApiService:
                 if hwid_limit_int >= 0:
                     payload["hwidDeviceLimit"] = hwid_limit_int
             except (TypeError, ValueError):
-                logging.warning(
+                logger.warning(
                     f"Ignoring invalid HWID device limit '{hwid_limit_value}' while creating panel user '{username_on_panel}'."
                 )
         if specific_squad_uuids:
@@ -424,12 +426,12 @@ class PanelApiService:
                                        json=payload,
                                        log_full_response=log_response)
         if response and not response.get("error") and "response" in response:
-            logging.info(
+            logger.info(
                 f"Panel user '{username_on_panel}' created successfully (UUID: {response.get('response',{}).get('uuid')})."
             )
             return response
 
-        logging.error(
+        logger.error(
             "Failed to create panel user '%s'. Payload: %s, Response: %s",
             username_on_panel,
             self._sanitize_payload_for_log(payload),
@@ -451,10 +453,10 @@ class PanelApiService:
                                             log_full_response=log_response)
         if full_response and not full_response.get(
                 "error") and "response" in full_response:
-            logging.info(f"User {user_uuid} details updated on panel.")
+            logger.info(f"User {user_uuid} details updated on panel.")
             return full_response.get("response")
 
-        logging.error(
+        logger.error(
             "Failed to update user %s details on panel. Payload: %s, Response: %s",
             user_uuid,
             self._sanitize_payload_for_log(update_payload),
@@ -477,17 +479,17 @@ class PanelApiService:
             actual_status = response_data.get("response", {}).get("status")
             expected_status = "ACTIVE" if enable else "DISABLED"
             if actual_status == expected_status:
-                logging.info(
+                logger.info(
                     f"User {user_uuid} status on panel successfully set to {action} (Actual: {actual_status})."
                 )
                 return True
             else:
-                logging.warning(
+                logger.warning(
                     f"User {user_uuid} status on panel action '{action}' called, but final status is '{actual_status}'."
                 )
                 return False
 
-        logging.error(
+        logger.error(
             f"Failed to {action} user {user_uuid} on panel. Response: {response_data if not log_response else '(logged above)'}"
         )
         return False
@@ -502,7 +504,7 @@ class PanelApiService:
         )
 
         if not response_data:
-            logging.error(
+            logger.error(
                 f"Panel API delete_user_from_panel returned no data for user {user_uuid}."
             )
             return False
@@ -511,16 +513,16 @@ class PanelApiService:
             details = response_data.get("details") or {}
             error_code = details.get("errorCode") or response_data.get("errorCode")
             if error_code in {"A062", "A040"}:
-                logging.info(
+                logger.info(
                     f"Panel user {user_uuid} already absent (errorCode {error_code}). Treating as deleted."
                 )
                 return True
-            logging.error(
+            logger.error(
                 f"Failed to delete user {user_uuid} on panel. Response: {response_data}"
             )
             return False
 
-        logging.info(f"Panel user {user_uuid} deleted successfully.")
+        logger.info(f"Panel user {user_uuid} deleted successfully.")
         return True
 
     async def get_subscription_link(
@@ -528,7 +530,7 @@ class PanelApiService:
             short_uuid_or_sub_uuid: str,
             client_type: Optional[str] = None) -> Optional[str]:
         if not self.settings.PANEL_API_URL:
-            logging.error(
+            logger.error(
                 "PANEL_API_URL not set, cannot generate subscription link.")
             return None
         base_sub_url = f"{self.settings.PANEL_API_URL.rstrip('/')}/sub/{short_uuid_or_sub_uuid}"
@@ -546,7 +548,7 @@ class PanelApiService:
                 if cached:
                     return json.loads(cached)
             except Exception as e:
-                logging.warning("Failed to read devices cache for user %s: %s", user_uuid, e)
+                logger.warning("Failed to read devices cache for user %s: %s", user_uuid, e)
 
         endpoint = f"/hwid/devices/{user_uuid}"
         response_data = await self._request("GET", endpoint, log_full_response=False)
@@ -556,9 +558,9 @@ class PanelApiService:
                 try:
                     await redis_client.setex(cache_key, 60, json.dumps(devices, ensure_ascii=False))
                 except Exception as e:
-                    logging.warning("Failed to write devices cache for user %s: %s", user_uuid, e)
+                    logger.warning("Failed to write devices cache for user %s: %s", user_uuid, e)
             return devices
-        logging.error(
+        logger.error(
             f"Failed to get user devices for user {user_uuid}. Response: {response_data}"
         )
         return None
@@ -590,9 +592,9 @@ class PanelApiService:
                     else:
                         await redis_client.delete(cache_key)
                 except Exception as e:
-                    logging.warning("Failed to refresh devices cache for user %s: %s", user_uuid, e)
+                    logger.warning("Failed to refresh devices cache for user %s: %s", user_uuid, e)
             return True
-        logging.error(
+        logger.error(
             f"Failed to disconnect device {hwid} for user {user_uuid}. Payload: {payload}, Response: {response_data}"
         )
         return False
@@ -646,5 +648,5 @@ class PanelApiService:
         )
         if response_data and not response_data.get("error") and "response" in response_data:
             return response_data.get("response", {}).get("encryptedLink")
-        logging.error(f"Failed to encrypt happ link. Response: {response_data}")
+        logger.error(f"Failed to encrypt happ link. Response: {response_data}")
         return None

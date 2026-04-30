@@ -1,4 +1,3 @@
-import logging
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.text_decorations import html_decoration as hd
@@ -7,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any, Callable
 
 from app.config import Settings
+from app.logging_config import get_logger
 from app.middlewares.i18n import JsonI18n
 from app.utils.message_queue import get_queue_manager
 from app.utils.text_sanitizer import (
@@ -17,6 +17,8 @@ from app.utils.telegram_markup import (
     is_profile_link_error,
     remove_profile_link_buttons,
 )
+
+logger = get_logger(__name__)
 
 
 class NotificationService:
@@ -80,7 +82,7 @@ class NotificationService:
         
         queue_manager = get_queue_manager()
         if not queue_manager:
-            logging.warning("Message queue manager not available, falling back to direct send")
+            logger.warning("Message queue manager not available, falling back to direct send")
             final_thread_id = thread_id or self.settings.LOG_THREAD_ID
 
             def _build_kwargs(markup: Optional[InlineKeyboardMarkup]) -> Dict[str, Any]:
@@ -101,7 +103,7 @@ class NotificationService:
             except TelegramBadRequest as exc:
                 if is_profile_link_error(exc):
                     fallback_markup = remove_profile_link_buttons(reply_markup)
-                    logging.warning(
+                    logger.warning(
                         "Telegram rejected profile buttons for log chat %s: %s. "
                         "Retrying without tg:// links.",
                         self.settings.LOG_CHAT_ID,
@@ -110,16 +112,16 @@ class NotificationService:
                     try:
                         await self.bot.send_message(**_build_kwargs(fallback_markup))
                     except Exception as retry_exc:
-                        logging.error(
+                        logger.error(
                             "Failed to send notification without profile buttons to log "
                             f"channel {self.settings.LOG_CHAT_ID}: {retry_exc}"
                         )
                     return
-                logging.error(
+                logger.error(
                     f"Failed to send notification to log channel {self.settings.LOG_CHAT_ID}: {exc}"
                 )
             except Exception as e:
-                logging.error(f"Failed to send notification to log channel {self.settings.LOG_CHAT_ID}: {e}")
+                logger.error(f"Failed to send notification to log channel {self.settings.LOG_CHAT_ID}: {e}")
             return
         
         try:
@@ -142,7 +144,7 @@ class NotificationService:
             await queue_manager.send_message(self.settings.LOG_CHAT_ID, **kwargs)
             
         except Exception as e:
-            logging.error(f"Failed to queue notification to log channel {self.settings.LOG_CHAT_ID}: {e}")
+            logger.error(f"Failed to queue notification to log channel {self.settings.LOG_CHAT_ID}: {e}")
     
     async def _send_to_admins(self, message: str):
         """Send message to all admin users using message queue"""
@@ -151,7 +153,7 @@ class NotificationService:
         
         queue_manager = get_queue_manager()
         if not queue_manager:
-            logging.warning("Message queue manager not available, falling back to direct send")
+            logger.warning("Message queue manager not available, falling back to direct send")
             for admin_id in self.settings.ADMIN_IDS:
                 try:
                     await self.bot.send_message(
@@ -161,7 +163,7 @@ class NotificationService:
                         disable_web_page_preview=True
                     )
                 except Exception as e:
-                    logging.error(f"Failed to send notification to admin {admin_id}: {e}")
+                    logger.error(f"Failed to send notification to admin {admin_id}: {e}")
             return
         
         for admin_id in self.settings.ADMIN_IDS:
@@ -173,7 +175,7 @@ class NotificationService:
                     disable_web_page_preview=True
                 )
             except Exception as e:
-                logging.error(f"Failed to queue notification to admin {admin_id}: {e}")
+                logger.error(f"Failed to queue notification to admin {admin_id}: {e}")
     
     async def notify_new_user_registration(self, user_id: int, username: Optional[str] = None, 
                                          first_name: Optional[str] = None, 

@@ -1,4 +1,3 @@
-import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List, Tuple
@@ -13,6 +12,9 @@ from app.database.models import User, Subscription
 
 from app.config import Settings
 from .panel_api_service import PanelApiService
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class SubscriptionService:
@@ -66,7 +68,7 @@ class SubscriptionService:
             try:
                 await self.bot.send_message(admin_id, msg)
             except Exception as e:
-                logging.error(
+                logger.error(
                     f"Failed to notify admin {admin_id} about panel user creation failure: {e}"
                 )
 
@@ -77,7 +79,7 @@ class SubscriptionService:
             db_user = await user_dal.get_user_by_id(session, user_id)
 
         if not db_user:
-            logging.error(
+            logger.error(
                 f"_get_or_create_panel_user_link_details: User {user_id} not found in local DB. Cannot proceed."
             )
             return None, None, None, False
@@ -93,11 +95,11 @@ class SubscriptionService:
         )
         if panel_users_by_tg_id_list and len(panel_users_by_tg_id_list) == 1:
             panel_user_obj_from_api = panel_users_by_tg_id_list[0]
-            logging.info(
+            logger.info(
                 f"Found panel user by telegramId {user_id}: UUID {panel_user_obj_from_api.get('uuid')}, Username: {panel_user_obj_from_api.get('username')}"
             )
         elif panel_users_by_tg_id_list and len(panel_users_by_tg_id_list) > 1:
-            logging.error(
+            logger.error(
                 f"CRITICAL: Multiple panel users found for telegramId {user_id}. Manual intervention needed."
             )
             return None, None, None, False
@@ -105,17 +107,17 @@ class SubscriptionService:
         if not panel_user_obj_from_api:
             if current_local_panel_uuid:
 
-                logging.info(
+                logger.info(
                     f"User {user_id} (local panel_uuid: {current_local_panel_uuid}) not found on panel by TG ID. Fetching by panel_uuid."
                 )
                 panel_user_obj_from_api = await self.panel_service.get_user_by_uuid(
                     current_local_panel_uuid
                 )
                 if not panel_user_obj_from_api:
-                    logging.warning(
+                    logger.warning(
                         f"Local panel_uuid {current_local_panel_uuid} for TG user {user_id} also not found on panel. User might be deleted from panel or UUID desynced."
                     )
-                    logging.info(
+                    logger.info(
                         f"Creating new panel user '{panel_username_on_panel_standard}' for TG user {user_id}."
                     )
                     creation_response = await self.panel_service.create_panel_user(
@@ -144,7 +146,7 @@ class SubscriptionService:
 
             else:
 
-                logging.info(
+                logger.info(
                     f"No panel user by TG ID & no local panel_uuid for TG user {user_id}. Creating new panel user '{panel_username_on_panel_standard}'."
                 )
                 creation_response = await self.panel_service.create_panel_user(
@@ -169,7 +171,7 @@ class SubscriptionService:
                     panel_user_created_or_linked_now = True
 
                 elif creation_response and creation_response.get("errorCode") == "A019":
-                    logging.warning(
+                    logger.warning(
                         f"Panel user '{panel_username_on_panel_standard}' already exists (errorCode A019). Fetching by username."
                     )
                     fetched_by_username_list = (
@@ -181,14 +183,14 @@ class SubscriptionService:
                         panel_user_obj_from_api = fetched_by_username_list[0]
 
                 if not panel_user_obj_from_api:
-                    logging.error(
+                    logger.error(
                         f"Failed to create or link panel user for TG_ID {user_id} with panel username '{panel_username_on_panel_standard}'. Response: {creation_response if 'creation_response' in locals() else 'N/A'}"
                     )
                     await self._notify_admin_panel_user_creation_failed(user_id)
                     return None, None, None, False
 
         if not panel_user_obj_from_api:
-            logging.error(
+            logger.error(
                 f"Could not obtain panel user object for TG user {user_id} after all checks."
             )
 
@@ -204,7 +206,7 @@ class SubscriptionService:
         panel_telegram_id_from_api = panel_user_obj_from_api.get("telegramId")
 
         if not actual_panel_uuid_from_api:
-            logging.error(
+            logger.error(
                 f"Panel user object for TG user {user_id} does not contain 'uuid'. Data: {panel_user_obj_from_api}"
             )
             return (
@@ -221,7 +223,7 @@ class SubscriptionService:
             current_local_panel_uuid is not None
             and current_local_panel_uuid != actual_panel_uuid_from_api
         ):
-            logging.warning(
+            logger.warning(
                 f"Local panel_uuid for user {user_id} ('{current_local_panel_uuid}') "
                 f"differs from panel's UUID ('{actual_panel_uuid_from_api}') for their telegramId. "
                 f"Will attempt to update local to panel's version."
@@ -234,7 +236,7 @@ class SubscriptionService:
                 session, actual_panel_uuid_from_api
             )
             if conflicting_user_record and conflicting_user_record.user_id != user_id:
-                logging.error(
+                logger.error(
                     f"CRITICAL CONFLICT: Panel UUID {actual_panel_uuid_from_api} (from panel for TG ID {user_id}) "
                     f"is ALREADY LINKED in local DB to a different TG User {conflicting_user_record.user_id}. "
                     f"Cannot update panel_user_uuid for user {user_id}. Manual data correction needed."
@@ -269,7 +271,7 @@ class SubscriptionService:
             and current_local_panel_uuid
             and panel_telegram_id_int != user_id
         ):
-            logging.info(
+            logger.info(
                 f"Panel user {current_local_panel_uuid} has telegramId '{panel_telegram_id_from_api}'. Updating on panel to '{user_id}'."
             )
             # Also set readable description with Telegram fields
@@ -293,7 +295,7 @@ class SubscriptionService:
         panel_short_uuid = panel_user_obj_from_api.get("shortUuid")
 
         if not panel_sub_link_id and current_local_panel_uuid:
-            logging.warning(
+            logger.warning(
                 f"No subscriptionUuid or shortUuid found on panel for panel_user_uuid {current_local_panel_uuid} (TG ID: {user_id})."
             )
 
@@ -316,7 +318,7 @@ class SubscriptionService:
 
         db_user = await user_dal.get_user_by_id(session, user_id)
         if not db_user:
-            logging.error(f"User {user_id} not found in DB, cannot activate trial.")
+            logger.error(f"User {user_id} not found in DB, cannot activate trial.")
             return {
                 "eligible": False,
                 "activated": False,
@@ -335,7 +337,7 @@ class SubscriptionService:
         )
 
         if not panel_user_uuid or not panel_sub_link_id:
-            logging.error(f"Failed to get panel link details for trial user {user_id}.")
+            logger.error(f"Failed to get panel link details for trial user {user_id}.")
             return {
                 "eligible": True,
                 "activated": False,
@@ -364,7 +366,7 @@ class SubscriptionService:
         try:
             await subscription_dal.upsert_subscription(session, trial_sub_data)
         except Exception as e_upsert:
-            logging.error(
+            logger.error(
                 f"Failed to upsert trial subscription for user {user_id}: {e_upsert}",
                 exc_info=True,
             )
@@ -395,7 +397,7 @@ class SubscriptionService:
             panel_user_uuid, panel_update_payload
         )
         if not updated_panel_user or updated_panel_user.get("error"):
-            logging.warning(
+            logger.warning(
                 f"Panel user details update FAILED for trial user {panel_user_uuid}. Response: {updated_panel_user}"
             )
             await session.rollback()
@@ -433,7 +435,7 @@ class SubscriptionService:
         """Activate or extend a traffic-based package instead of a time-based subscription."""
         db_user = await user_dal.get_user_by_id(session, user_id)
         if not db_user:
-            logging.error("User %s not found for traffic package activation", user_id)
+            logger.error("User %s not found for traffic package activation", user_id)
             return None
 
         panel_user_uuid, panel_sub_link_id, panel_short_uuid, _ = (
@@ -441,7 +443,7 @@ class SubscriptionService:
         )
 
         if not panel_user_uuid or not panel_sub_link_id:
-            logging.error("Failed to ensure panel linkage for user %s during traffic activation", user_id)
+            logger.error("Failed to ensure panel linkage for user %s during traffic activation", user_id)
             return None
 
         panel_user_data = await self.panel_service.get_user_by_uuid(panel_user_uuid) or {}
@@ -490,7 +492,7 @@ class SubscriptionService:
         try:
             new_or_updated_sub = await subscription_dal.upsert_subscription(session, sub_payload)
         except Exception as exc:
-            logging.error("Failed to upsert traffic subscription for user %s: %s", user_id, exc, exc_info=True)
+            logger.error("Failed to upsert traffic subscription for user %s: %s", user_id, exc, exc_info=True)
             return None
 
         panel_update_payload = self._build_panel_update_payload(
@@ -513,7 +515,7 @@ class SubscriptionService:
             panel_user_uuid, panel_update_payload
         )
         if not updated_panel_user or updated_panel_user.get("error"):
-            logging.warning(
+            logger.warning(
                 "Panel user details update FAILED for traffic package user %s. Response: %s",
                 panel_user_uuid,
                 updated_panel_user,
@@ -560,7 +562,7 @@ class SubscriptionService:
 
         db_user = await user_dal.get_user_by_id(session, user_id)
         if not db_user:
-            logging.error(
+            logger.error(
                 f"User {user_id} not found in DB for paid subscription activation."
             )
             return None
@@ -570,7 +572,7 @@ class SubscriptionService:
         )
 
         if not panel_user_uuid or not panel_sub_link_id:
-            logging.error(
+            logger.error(
                 f"Failed to ensure panel user for TG {user_id} during paid subscription."
             )
             return None
@@ -619,11 +621,11 @@ class SubscriptionService:
                         session, promo_code_id_from_payment, allow_overflow=True
                     )
                 else:
-                    logging.warning(
+                    logger.warning(
                         f"Promo code {promo_code_id_from_payment} was already activated by user {user_id}, but bonus applied via payment {payment_db_id}."
                     )
             else:
-                logging.warning(
+                logger.warning(
                     f"Promo code ID {promo_code_id_from_payment} (from payment) not found or invalid."
                 )
                 promo_code_id_from_payment = None
@@ -658,7 +660,7 @@ class SubscriptionService:
                 session, sub_payload
             )
         except Exception as e_upsert_sub:
-            logging.error(
+            logger.error(
                 f"Failed to upsert paid subscription for user {user_id}: {e_upsert_sub}",
                 exc_info=True,
             )
@@ -684,7 +686,7 @@ class SubscriptionService:
             panel_user_uuid, panel_update_payload
         )
         if not updated_panel_user or updated_panel_user.get("error"):
-            logging.warning(
+            logger.warning(
                 f"Panel user details update FAILED for paid sub user {panel_user_uuid}. Response: {updated_panel_user}"
             )
             return None
@@ -703,7 +705,7 @@ class SubscriptionService:
                 )
             await promo_code_service.consume_discount(session, user_id, payment_db_id)
         except Exception as e:
-            logging.error(
+            logger.error(
                 f"Failed to consume discount for user {user_id}, payment {payment_db_id}: {e}"
             )
             # Don't fail the subscription activation if discount consumption fails
@@ -732,7 +734,7 @@ class SubscriptionService:
 
         user = await user_dal.get_user_by_id(session, user_id)
         if not user:
-            logging.warning(
+            logger.warning(
                 f"Cannot extend subscription for user {user_id}: user not found."
             )
             return None
@@ -741,7 +743,7 @@ class SubscriptionService:
             session, user_id, user
         )
         if not panel_uuid or not panel_sub_uuid:
-            logging.error(
+            logger.error(
                 f"Failed to ensure panel user for subscription extension of user {user_id}."
             )
             return None
@@ -750,7 +752,7 @@ class SubscriptionService:
             session, user_id, panel_uuid
         )
         if not active_sub or not active_sub.end_date:
-            logging.info(
+            logger.info(
                 f"No active subscription found for user {user_id}. Creating new one for {bonus_days} days."
             )
             start_date = datetime.now(timezone.utc)
@@ -821,16 +823,16 @@ class SubscriptionService:
                 )
             )
             if not panel_update_success:
-                logging.warning(
+                logger.warning(
                     f"Panel expiry update failed for {panel_uuid} after {reason} bonus. Local DB was updated to {new_end_date_obj}."
                 )
 
-            logging.info(
+            logger.info(
                 f"Subscription for user {user_id} extended by {bonus_days} days ({reason}). New end date: {new_end_date_obj}."
             )
             return new_end_date_obj
         else:
-            logging.error(
+            logger.error(
                 f"Failed to update subscription end date locally for user {user_id}."
             )
             return None
@@ -840,7 +842,7 @@ class SubscriptionService:
     ) -> Optional[Dict[str, Any]]:
         db_user = await user_dal.get_user_by_id(session, user_id)
         if not db_user or not db_user.panel_user_uuid:
-            logging.info(
+            logger.info(
                 f"User {user_id} not found in DB or no panel_user_uuid for 'my_subscription'."
             )
             return None
@@ -852,7 +854,7 @@ class SubscriptionService:
         panel_user_data = await self.panel_service.get_user_by_uuid(panel_user_uuid)
 
         if not panel_user_data:
-            logging.warning(
+            logger.warning(
                 f"Panel user {panel_user_uuid} not found on panel for user {user_id}. Clearing local linkage."
             )
             await subscription_dal.deactivate_all_user_subscriptions(session, user_id)
@@ -976,7 +978,7 @@ class SubscriptionService:
     ) -> bool:
         """Attempt to charge user using saved payment method. Return True on initiated/handled, False on failure."""
         if getattr(self.settings, "traffic_sale_mode", False):
-            logging.info("Auto-renew skipped: traffic sale mode enabled")
+            logger.info("Auto-renew skipped: traffic sale mode enabled")
             return True
         if not sub.auto_renew_enabled:
             return True
@@ -984,13 +986,13 @@ class SubscriptionService:
         if not self.settings.yookassa_autopayments_active:
             return True
         if sub.provider != "yookassa":
-            logging.info("Auto-renew skipped: provider %s does not support auto-renew", sub.provider)
+            logger.info("Auto-renew skipped: provider %s does not support auto-renew", sub.provider)
             return True
 
         from app.database.dal.user_billing_dal import get_user_default_payment_method
         default_pm = await get_user_default_payment_method(session, sub.user_id)
         if not default_pm:
-            logging.info(f"Auto-renew skipped: no saved payment method for user {sub.user_id}")
+            logger.info(f"Auto-renew skipped: no saved payment method for user {sub.user_id}")
             return False
 
         try:
@@ -999,13 +1001,13 @@ class SubscriptionService:
         except Exception:
             yk = None  # type: ignore
         if not yk or not getattr(yk, 'configured', False):
-            logging.warning("YooKassa unavailable for auto-renew")
+            logger.warning("YooKassa unavailable for auto-renew")
             return False
 
         months = sub.duration_months or 1
         amount = self.settings.subscription_options.get(months)
         if not amount:
-            logging.error(f"Auto-renew price missing for {months} months")
+            logger.error(f"Auto-renew price missing for {months} months")
             return False
 
         payment_description = f"Auto-renewal for {months} months"
@@ -1038,7 +1040,7 @@ class SubscriptionService:
             capture=True,
         )
         if not resp or resp.get("status") not in {"pending", "waiting_for_capture", "succeeded"}:
-            logging.error(f"Auto-renew create_payment failed: {resp}")
+            logger.error(f"Auto-renew create_payment failed: {resp}")
             return False
         provider_payment_id = resp.get("id")
         if provider_payment_id:
@@ -1048,7 +1050,7 @@ class SubscriptionService:
                 provider_payment_id=provider_payment_id,
                 new_status="pending_yookassa",
             )
-        logging.info(f"Auto-renew initiated for user {sub.user_id} payment_id={resp.get('id')}")
+        logger.info(f"Auto-renew initiated for user {sub.user_id} payment_id={resp.get('id')}")
         return True
 
     async def update_last_notification_sent(
@@ -1063,11 +1065,11 @@ class SubscriptionService:
             await subscription_dal.update_subscription_notification_time(
                 session, sub_to_update.subscription_id, datetime.now(timezone.utc)
             )
-            logging.info(
+            logger.info(
                 f"Updated last_notification_sent for user {user_id}, sub_id {sub_to_update.subscription_id}"
             )
         else:
-            logging.warning(
+            logger.warning(
                 f"Could not find subscription for user {user_id} ending at {subscription_end_date.isoformat()} to update notification time."
             )
 
