@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { Button } from '@/components/ui/button'
 import FloatingSubscriptionLink from '@/components/common/FloatingSubscriptionLink.vue'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
@@ -65,17 +66,11 @@ function openOtherPlatforms() {
   <div
     class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-4 pt-3 pb-24"
   >
-    <div class="bg-wh flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-25">
-      <span class="flex w-fit items-center justify-center rounded-[7px] bg-white/10 p-4">
-        <Icon icon="lucide:settings" class="size-8 opacity-60" />
-      </span>
-      <h1 class="mt-1 text-2xl leading-[0.9] font-medium tracking-tight text-balance text-white">
-        {{ t('support.setupOtherDevice') }}
-      </h1>
-      <p class="text-sm text-balance opacity-60">
-        {{ t('support.setupOtherDeviceDesc') }}
-      </p>
-    </div>
+    <PageHeroCard
+      icon="lucide:settings"
+      :title="t('support.setupOtherDevice')"
+      :description="t('support.setupOtherDeviceDesc')"
+    />
 
     <div class="grid grid-cols-2 gap-3">
       <button
