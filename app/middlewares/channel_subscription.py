@@ -12,7 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import Settings
 from app.database.dal import user_dal
 from app.middlewares.i18n import JsonI18n
-from app.keyboards.inline.user_keyboards import get_channel_subscription_keyboard
+from app.keyboards.inline.user_keyboards import (
+    get_channel_subscription_keyboard,
+    get_terms_acknowledge_keyboard,
+)
 
 
 class ChannelSubscriptionMiddleware(BaseMiddleware):
@@ -50,13 +53,22 @@ class ChannelSubscriptionMiddleware(BaseMiddleware):
             and callback_query.data == "channel_subscription:verify"
         ):
             return await handler(event, data)
+        if (
+            callback_query
+            and callback_query.data
+            and callback_query.data == "onboarding:terms_acknowledge"
+        ):
+            return await handler(event, data)
 
         # Allow /start to reach the handler so the check can be re-run.
         message_object: Optional[Message] = event.message
         if (
             message_object
             and message_object.text
-            and message_object.text.startswith("/start")
+            and (
+                message_object.text.startswith("/start")
+                or message_object.text.startswith("/language")
+            )
         ):
             return await handler(event, data)
 
@@ -74,6 +86,10 @@ class ChannelSubscriptionMiddleware(BaseMiddleware):
 
         if not db_user:
             return await handler(event, data)
+
+        if db_user.terms_accepted_at is None:
+            await self._send_terms_prompt(event, data, current_lang=None)
+            return
 
         if (
             db_user.channel_subscription_verified
@@ -147,3 +163,40 @@ class ChannelSubscriptionMiddleware(BaseMiddleware):
                 text=prompt_text,
                 reply_markup=keyboard,
             )
+
+    async def _send_terms_prompt(self, event: Update, data: Dict[str, Any], current_lang: Optional[str]) -> None:
+        i18n_payload: Dict[str, Any] = data.get("i18n_data", {})
+        lang = current_lang or i18n_payload.get("current_language", self.settings.DEFAULT_LANGUAGE)
+        i18n_instance: Optional[JsonI18n] = i18n_payload.get(
+            "i18n_instance", self.i18n_main_instance
+        )
+        if not i18n_instance:
+            return
+
+        text = i18n_instance.gettext(
+            lang,
+            "terms_acknowledge_text",
+        )
+        keyboard = get_terms_acknowledge_keyboard(
+            i18n_instance,
+            lang,
+            self.settings.TERMS_OF_SERVICE_URL,
+            self.settings.PRIVACY_POLICY_URL,
+        )
+
+        if event.callback_query:
+            callback = event.callback_query
+            try:
+                await callback.answer(
+                    i18n_instance.gettext(lang, "terms_acknowledge_required_alert"),
+                    show_alert=True,
+                )
+            except Exception:
+                pass
+            if callback.message:
+                await callback.message.answer(text, reply_markup=keyboard, disable_web_page_preview=True)
+            return
+
+        message_object: Optional[Message] = event.message
+        if message_object:
+            await message_object.answer(text, reply_markup=keyboard, disable_web_page_preview=True)

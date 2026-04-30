@@ -928,6 +928,14 @@ def get_settings() -> Settings:
                     "WARNING: TELEGRAM_WEBHOOK_SECRET is empty while webhook mode is enabled. "
                     "Set TELEGRAM_WEBHOOK_SECRET to validate X-Telegram-Bot-Api-Secret-Token header."
                 )
+            if not (_settings_instance.TERMS_OF_SERVICE_URL or "").strip():
+                logging.warning(
+                    "WARNING: TERMS_OF_SERVICE_URL is empty. Onboarding 'Terms of Service' button will be hidden."
+                )
+            if not (_settings_instance.PRIVACY_POLICY_URL or "").strip():
+                logging.warning(
+                    "WARNING: PRIVACY_POLICY_URL is empty. Onboarding 'Privacy Policy' button will be hidden."
+                )
             if (
                 not _settings_instance.YOOKASSA_SHOP_ID
                 or not _settings_instance.YOOKASSA_SECRET_KEY

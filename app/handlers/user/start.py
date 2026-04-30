@@ -20,6 +20,7 @@ from app.keyboards.inline.user_keyboards import (
     get_proxies_keyboard,
     get_channel_subscription_keyboard, get_cabinet_keyboard, get_information_keyboard, get_location_info_keyboard,
     get_instructions_keyboard,
+    get_terms_acknowledge_keyboard,
 )
 from app.services.subscription_service import SubscriptionService
 from app.services.panel_api_service import PanelApiService
@@ -30,6 +31,44 @@ from app.middlewares.i18n import JsonI18n
 from app.utils.text_sanitizer import sanitize_username, sanitize_display_name
 
 router = Router(name="user_start_router")
+
+
+def _resolve_user_language(raw_lang: Optional[str], settings: Settings) -> str:
+    if not raw_lang:
+        return settings.DEFAULT_LANGUAGE
+    normalized = raw_lang.lower().strip()
+    if normalized.startswith("ru"):
+        return "ru"
+    if normalized.startswith("en"):
+        return "en"
+    return settings.DEFAULT_LANGUAGE
+
+
+async def send_terms_acknowledgement_prompt(
+    event: Union[types.Message, types.CallbackQuery],
+    settings: Settings,
+    i18n_data: dict,
+) -> None:
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    if not i18n:
+        return
+    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
+
+    text = _("terms_acknowledge_text")
+    kb = get_terms_acknowledge_keyboard(
+        i18n,
+        current_lang,
+        settings.TERMS_OF_SERVICE_URL,
+        settings.PRIVACY_POLICY_URL,
+    )
+
+    if isinstance(event, types.CallbackQuery):
+        if event.message:
+            await replace_with_text(event.message, text, kb)
+        await event.answer()
+    else:
+        await event.answer(text, reply_markup=kb, disable_web_page_preview=True)
 
 
 async def send_main_menu(target_event: Union[types.Message,
@@ -326,6 +365,8 @@ async def start_command_handler(message: types.Message,
 
     user = message.from_user
     user_id = user.id
+    current_lang = _resolve_user_language(user.language_code, settings)
+    i18n_data["current_language"] = current_lang
 
     referred_by_user_id: Optional[int] = None
     promo_code_to_apply: Optional[str] = None
@@ -366,6 +407,7 @@ async def start_command_handler(message: types.Message,
     sanitized_last_name = sanitize_display_name(user.last_name)
 
     db_user = await user_dal.get_user_by_id(session, user_id)
+    is_new_user = False
     if not db_user:
         user_data_to_create = {
             "user_id": user_id,
@@ -394,6 +436,7 @@ async def start_command_handler(message: types.Message,
                 logging.info(
                     f"New user {user_id} added to session. Referred by: {referred_by_user_id or 'N/A'}."
                 )
+                is_new_user = True
 
                 # Send notification about new user registration
                 try:
@@ -461,6 +504,18 @@ async def start_command_handler(message: types.Message,
                 await session.rollback()
             except Exception as exc:
                 logging.debug("Suppressed exception in bot/handlers/user/start.py: %s", exc)
+
+    if is_new_user:
+        db_user = await user_dal.get_user_by_id(session, user_id)
+        if db_user and db_user.language_code != current_lang:
+            await user_dal.update_user_language(session, user_id, current_lang)
+        await send_terms_acknowledgement_prompt(message, settings, i18n_data)
+        return
+
+    db_user = await user_dal.get_user_by_id(session, user_id)
+    if db_user and not db_user.terms_accepted_at:
+        await send_terms_acknowledgement_prompt(message, settings, i18n_data)
+        return
 
     if not await ensure_required_channel_subscription(message, settings, i18n,
                                                       current_lang, session,
@@ -676,12 +731,59 @@ async def select_language_callback_handler(
             exc_info=True)
         await callback.answer("Error setting language.", show_alert=True)
         return
+    db_user = await user_dal.get_user_by_id(session, user_id)
+    if db_user and not db_user.terms_accepted_at:
+        await send_terms_acknowledgement_prompt(callback, settings, i18n_data)
+        return
+
     await send_main_menu(callback,
                          settings,
                          i18n_data,
                          subscription_service,
                          session,
                          is_edit=True)
+
+
+@router.callback_query(F.data == "onboarding:terms_acknowledge")
+async def onboarding_terms_acknowledge_handler(
+    callback: types.CallbackQuery,
+    settings: Settings,
+    i18n_data: dict,
+    subscription_service: SubscriptionService,
+    session: AsyncSession,
+):
+    if not callback.message:
+        await callback.answer("Message context lost", show_alert=True)
+        return
+
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+
+    await user_dal.update_user(
+        session,
+        callback.from_user.id,
+        {"terms_accepted_at": datetime.now(timezone.utc)},
+    )
+
+    db_user = await user_dal.get_user_by_id(session, callback.from_user.id)
+    if not await ensure_required_channel_subscription(
+        callback,
+        settings,
+        i18n,
+        current_lang,
+        session,
+        db_user,
+    ):
+        return
+
+    await send_main_menu(
+        callback,
+        settings,
+        i18n_data,
+        subscription_service,
+        session,
+        is_edit=True,
+    )
 
 
 @router.message(Command("proxy"))

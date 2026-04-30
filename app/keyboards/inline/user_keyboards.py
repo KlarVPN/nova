@@ -378,6 +378,37 @@ def get_language_selection_keyboard(
     return builder.as_markup()
 
 
+def get_terms_acknowledge_keyboard(
+    i18n_instance,
+    lang: str,
+    terms_url: Optional[str],
+    privacy_url: Optional[str],
+) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    if terms_url:
+        builder.row(
+            InlineKeyboardButton(
+                text=_(key="terms_link_button"),
+                url=terms_url,
+            )
+        )
+    if privacy_url:
+        builder.row(
+            InlineKeyboardButton(
+                text=_(key="privacy_link_button"),
+                url=privacy_url,
+            )
+        )
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="terms_acknowledge_button"),
+            callback_data="onboarding:terms_acknowledge",
+        )
+    )
+    return builder.as_markup()
+
+
 def get_trial_confirmation_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
