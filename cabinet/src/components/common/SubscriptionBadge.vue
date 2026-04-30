@@ -14,7 +14,7 @@ const props = defineProps<{
 const statusIcon = computed(() => {
   switch (props.type) {
     case 'none':
-      return 'lucide:shield-off'
+      return 'lucide:x'
     case 'expired':
       return 'lucide:clock-alert'
     case 'disabled':
@@ -52,15 +52,25 @@ const noSub = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-5 pt-6">
-    <span :class="cn('flex rounded-full p-3', props.type ? 'bg-lime-accent' : 'bg-white')">
-      <Icon :icon="statusIcon" class="animate-pulse-glow size-12 text-black" />
+  <div class="flex flex-1 flex-col items-center justify-center gap-5 pt-6">
+    <span
+      :class="
+        cn(
+          'flex rounded-full',
+          props.type === 'active' ? 'animate-pulse-glow bg-lime-accent p-4' : 'bg-white p-6',
+        )
+      "
+    >
+      <Icon
+        :icon="statusIcon"
+        :class="cn('text-black', props.type === 'active' ? 'size-12' : 'size-10')"
+      />
     </span>
-    <div class="flex flex-col gap-1">
-      <span class="text-3xl leading-[0.9] font-extrabold tracking-tighter uppercase">
+    <div :class="cn('flex flex-col', props.type === 'active' ? 'gap-1' : 'gap-3')">
+      <span class="text-4xl leading-[0.9] font-extrabold tracking-tighter uppercase">
         {{ noSubTitle }}
       </span>
-      <p class="text-sm text-neutral-400">{{ noSub }}</p>
+      <p class="text-base text-neutral-400">{{ noSub }}</p>
     </div>
   </div>
 </template>
@@ -69,14 +79,15 @@ const noSub = computed(() => {
 @keyframes pulse-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px currentColor);
+    filter: drop-shadow(0 0 8px oklch(0.319 0.234351 126.141));
   }
   50% {
-    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 35px currentColor);
+    filter: drop-shadow(0 0 20px oklch(0.319 0.234351 126.141))
+      drop-shadow(0 0 35px oklch(0.319 0.234351 126.141));
   }
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulse-glow 4s ease-in-out infinite;
 }
 </style>

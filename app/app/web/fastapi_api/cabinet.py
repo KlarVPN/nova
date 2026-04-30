@@ -18,6 +18,30 @@ from app.logging_config import get_logger
 router = APIRouter(prefix="/api", tags=["cabinet"])
 logger = get_logger(__name__)
 
+INACTIVE_PANEL_STATUSES = {
+    "EXPIRED",
+    "CANCELLED",
+    "DISABLED",
+    "INACTIVE",
+    "INACTIVE_BY_BOT_SYNC",
+    "INACTIVE_USER_NOT_FOUND",
+}
+
+
+def _is_subscription_effectively_active(sub: Subscription | None) -> bool:
+    if not sub or not sub.is_active:
+        return False
+    now = datetime.now(timezone.utc)
+    end = sub.end_date
+    if end and end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+    if end and end <= now:
+        return False
+    status_value = (sub.status_from_panel or "").strip().upper()
+    if status_value in INACTIVE_PANEL_STATUSES:
+        return False
+    return True
+
 
 def _sub_to_dict(sub) -> dict:
     now = datetime.now(timezone.utc)
@@ -44,7 +68,7 @@ def _sub_to_dict(sub) -> dict:
         "start_date": sub.start_date.isoformat() if sub.start_date else None,
         "end_date": end.isoformat() if end else None,
         "duration_months": sub.duration_months,
-        "is_active": sub.is_active,
+        "is_active": _is_subscription_effectively_active(sub),
         "auto_renew_enabled": sub.auto_renew_enabled,
         "days_remaining": days_remaining,
         "traffic_limit_gb": traffic_limit_gb,
@@ -114,6 +138,8 @@ async def get_me(
         and _is_telegram_linked_user(user)
     )
 
+    has_active_subscription = _is_subscription_effectively_active(sub)
+
     return {
         "user_id": user.user_id,
         "first_name": user.first_name or current_user.get("first_name", ""),
@@ -123,7 +149,7 @@ async def get_me(
         "language_code": user.language_code or "ru",
         "referral_code": user.referral_code or "",
         "is_banned": user.is_banned,
-        "has_active_subscription": sub is not None and sub.is_active,
+        "has_active_subscription": has_active_subscription,
         "subscription": _sub_to_dict(sub) if sub else None,
         "trial_available": trial_available,
         "links": {

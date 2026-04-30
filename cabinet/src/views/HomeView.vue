@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
-import { formatDaysRemaining } from '@/lib/utils'
+import { formatDaysRemaining, formatPrice } from '@/lib/utils'
 import { Card } from '@/components/common'
 import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
 import type { Device } from '@/types'
@@ -33,6 +33,9 @@ const statusKey = computed(() => {
 const showDevices = ref(false)
 
 onMounted(() => {
+  if (!subStore.plansData) {
+    void subStore.fetchPlans()
+  }
   if (statusKey.value === 'active') {
     Promise.all([subStore.fetchConnect(), subStore.fetchDevices()])
   }
@@ -41,12 +44,34 @@ onMounted(() => {
 watch(
   () => auth.profile,
   (profile) => {
+    if (!profile?.has_active_subscription && !subStore.plansData) {
+      void subStore.fetchPlans()
+    }
     if (profile?.has_active_subscription && statusKey.value === 'active') {
       if (!subStore.connectInfo) subStore.fetchConnect()
       if (!subStore.devicesData) subStore.fetchDevices()
     }
   },
 )
+
+const subscribeFromLabel = computed(() => {
+  if (!subStore.activePlans.length) return ''
+
+  const minRub = subStore.activePlans
+    .map((plan) => plan.price_rub)
+    .filter((price): price is number => price != null)
+    .reduce<number | null>((min, price) => (min == null || price < min ? price : min), null)
+
+  if (minRub != null) return `${t('home.from')} ${formatPrice(minRub)}`
+
+  const minStars = subStore.activePlans
+    .map((plan) => plan.price_stars)
+    .filter((price): price is number => price != null)
+    .reduce<number | null>((min, price) => (min == null || price < min ? price : min), null)
+
+  if (minStars != null) return `${t('home.from')} ${minStars} ⭐`
+  return ''
+})
 
 async function openDevicesModal() {
   hapticImpact('light')
@@ -141,10 +166,10 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 
 <template>
   <div
-    class="mx-auto flex min-h-[calc(100dvh-4.75rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 text-center md:min-h-[calc(100dvh-2rem)]"
+    class="mx-auto flex h-[calc(100dvh-4.75rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 py-6 text-center md:h-[calc(100dvh-2rem)]"
   >
     <Transition name="content-fade" mode="out-in">
-      <div :key="statusKey" class="flex w-full flex-col items-center justify-center gap-5">
+      <div :key="statusKey" class="flex h-full w-full flex-col items-center justify-between gap-5">
         <!-- LOADING SKELETON -->
         <template v-if="statusKey === 'loading'">
           <div class="flex flex-col items-center gap-5 pt-6">
@@ -190,30 +215,21 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
         <template v-else-if="statusKey === 'none'">
           <SubscriptionBadge :type="statusKey" />
           <div class="flex w-full flex-col gap-3">
+            <Button class="h-12" @click="goToPlans">
+              <Icon icon="lucide:coins" class="size-5 text-black" />
+              <span class="text-left font-sans text-base">{{ t('home.subscribe') }}</span>
+              <span v-if="subscribeFromLabel" class="ml-auto text-sm font-medium text-black/80">
+                {{ subscribeFromLabel }}
+              </span>
+            </Button>
             <Button
               v-if="auth.trialAvailable"
-              class="flex h-12 w-full cursor-pointer items-center justify-center gap-3 bg-neutral-900 p-2"
+              class="h-12 bg-neutral-900 text-white"
               :disabled="subStore.processingTrial"
               @click="activateTrial"
             >
-              <Icon icon="lucide:gift" class="size-5 text-neutral-400" />
-              <span
-                class="text-left font-sans text-sm leading-4 font-extrabold text-white uppercase"
-                >{{ t('home.trialBtn') }}</span
-              >
-            </Button>
-            <Button
-              class="flex h-12 w-full cursor-pointer items-center gap-3 bg-white p-2 text-black"
-              @click="goToPlans"
-            >
-              <span class="flex bg-black p-2">
-                <Icon icon="lucide:shield" class="size-5 text-white" />
-              </span>
-              <span class="flex flex-col items-start">
-                <span class="text-left font-sans text-sm leading-4 font-bold uppercase">{{
-                  t('home.subscribe')
-                }}</span>
-              </span>
+              <Icon icon="lucide:gift" class="size-5" />
+              <span class="text-left font-sans text-base">{{ t('home.trialBtn') }}</span>
             </Button>
           </div>
         </template>
@@ -261,92 +277,97 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
           <SubscriptionBadge :type="statusKey" :sub="sub" />
 
           <!-- Data Cards -->
-          <div class="flex w-full flex-col gap-3">
-            <div class="flex items-center gap-3">
-              <!-- Expires / Days remaining -->
-              <Card class="h-18">
-                <span class="flex items-center gap-2 text-sm">
-                  <Icon icon="lucide:calendar" class="size-4" />
-                  {{ t('home.expires') }}
-                </span>
-                <span class="text-left font-medium text-white">
-                  {{ formatDaysRemaining(sub.days_remaining) }}
-                </span>
-              </Card>
-
-              <!-- Devices -->
-              <Card @click="openDevicesModal" class="h-18 cursor-pointer">
-                <span class="flex items-center gap-2 text-sm">
-                  <Icon icon="lucide:monitor-smartphone" class="size-4" />
-                  {{ t('devices.title') }}
-                  <Icon icon="lucide:chevron-right" class="size-3" />
-                </span>
-                <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
-                  <Icon icon="lucide:loader-circle" class="size-4 animate-spin text-neutral-400" />
-                </div>
-                <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
-                  <span class="font-medium text-white">
-                    {{ subStore.devicesData.current_count }}
-                    <span class="text-white/50">
-                      / {{ subStore.devicesData.max_devices ?? '∞' }}
-                    </span>
+          <div class="flex w-full flex-col gap-5">
+            <div class="flex w-full flex-col gap-3">
+              <div class="flex items-center gap-3">
+                <!-- Expires / Days remaining -->
+                <Card class="h-18">
+                  <span class="flex items-center gap-2 text-sm">
+                    <Icon icon="lucide:calendar" class="size-4" />
+                    {{ t('home.expires') }}
                   </span>
-                </div>
-                <div v-else class="text-sm text-neutral-500">—</div>
+                  <span class="text-left font-medium text-white">
+                    {{ formatDaysRemaining(sub.days_remaining) }}
+                  </span>
+                </Card>
+
+                <!-- Devices -->
+                <Card @click="openDevicesModal" class="h-18 cursor-pointer">
+                  <span class="flex items-center gap-2 text-sm">
+                    <Icon icon="lucide:monitor-smartphone" class="size-4" />
+                    {{ t('devices.title') }}
+                    <Icon icon="lucide:chevron-right" class="size-3" />
+                  </span>
+                  <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
+                    <Icon
+                      icon="lucide:loader-circle"
+                      class="size-4 animate-spin text-neutral-400"
+                    />
+                  </div>
+                  <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
+                    <span class="font-medium text-white">
+                      {{ subStore.devicesData.current_count }}
+                      <span class="text-white/50">
+                        / {{ subStore.devicesData.max_devices ?? '∞' }}
+                      </span>
+                    </span>
+                  </div>
+                  <div v-else class="text-sm text-neutral-500">—</div>
+                </Card>
+              </div>
+              <!-- Traffic -->
+              <Card>
+                <span class="flex items-center gap-2 text-sm">
+                  <Icon icon="lucide:activity" class="size-4" />
+                  {{ t('home.traffic') }}
+                </span>
+                <template v-if="isUnlimitedTraffic">
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">{{ t('plans.unlimitedTraffic') }}</span>
+                    <span class="text-xs text-neutral-500">∞</span>
+                  </div>
+                  <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+                    <div
+                      class="h-full w-full rounded-full bg-green-500 transition-all duration-500"
+                    />
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">
+                      {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
+                      {{ sub.traffic_limit_gb?.toFixed(0) ?? '0' }} GB
+                    </span>
+                    <span class="text-xs text-neutral-500">
+                      {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
+                    </span>
+                  </div>
+                  <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="trafficBarColor"
+                      :style="{ width: trafficUsedPct + '%' }"
+                    />
+                  </div>
+                </template>
               </Card>
             </div>
-            <!-- Traffic -->
-            <Card>
-              <span class="flex items-center gap-2 text-sm">
-                <Icon icon="lucide:activity" class="size-4" />
-                {{ t('home.traffic') }}
-              </span>
-              <template v-if="isUnlimitedTraffic">
-                <div class="flex items-center justify-between">
-                  <span class="font-medium text-white">{{ t('plans.unlimitedTraffic') }}</span>
-                  <span class="text-xs text-neutral-500">∞</span>
-                </div>
-                <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-                  <div
-                    class="h-full w-full rounded-full bg-green-500 transition-all duration-500"
-                  />
-                </div>
-              </template>
-              <template v-else>
-                <div class="flex items-center justify-between">
-                  <span class="font-medium text-white">
-                    {{ sub.traffic_used_gb?.toFixed(1) ?? '0' }} /
-                    {{ sub.traffic_limit_gb?.toFixed(0) ?? '0' }} GB
-                  </span>
-                  <span class="text-xs text-neutral-500">
-                    {{ (100 - (sub.traffic_remaining_pct ?? 0)).toFixed(0) }}%
-                  </span>
-                </div>
-                <div class="h-1 w-full overflow-hidden rounded-full bg-neutral-800">
-                  <div
-                    class="h-full rounded-full transition-all duration-500"
-                    :class="trafficBarColor"
-                    :style="{ width: trafficUsedPct + '%' }"
-                  />
-                </div>
-              </template>
-            </Card>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex w-full flex-col gap-3">
-            <div class="flex w-full items-center gap-2">
-              <Button
-                :disabled="subStore.loadingConnect || !subStore.connectInfo"
-                @click="router.push({ name: 'setup' })"
-              >
-                {{ t('home.connect') }}
-                <Icon icon="lucide:chevron-right" class="size-4" />
+            <!-- Action Buttons -->
+            <div class="flex w-full flex-col gap-3">
+              <div class="flex w-full items-center gap-2">
+                <Button
+                  :disabled="subStore.loadingConnect || !subStore.connectInfo"
+                  @click="router.push({ name: 'setup' })"
+                >
+                  {{ t('home.connect') }}
+                  <Icon icon="lucide:chevron-right" class="size-4" />
+                </Button>
+              </div>
+              <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
+                {{ t('home.renewSub') }}
               </Button>
             </div>
-            <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
-              {{ t('home.renewSub') }}
-            </Button>
           </div>
         </template>
       </div>
@@ -356,7 +377,10 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
   <!-- Device Management Bottom Sheet -->
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="showDevices" class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4">
+      <div
+        v-if="showDevices"
+        class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
+      >
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeDevicesModal" />
         <div
           class="sheet-panel relative flex max-h-[90vh] flex-col bg-[#0a0a0a] md:w-full md:max-w-2xl md:rounded-2xl md:shadow-2xl"
