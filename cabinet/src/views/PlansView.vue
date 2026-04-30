@@ -372,11 +372,11 @@ watch(
                 <button
                   v-for="plan in sortedPlans"
                   :key="plan.months"
-                  class="relative flex aspect-square cursor-pointer flex-col justify-between gap-2 overflow-hidden rounded-[18px] border p-4 text-left transition-all"
+                  class="relative flex aspect-square cursor-pointer flex-col justify-between gap-2 overflow-hidden rounded-[18px] p-4 text-left transition-all"
                   :class="
                     selectedMonths === plan.months
-                      ? 'border-emerald-300/80 bg-neutral-900/90'
-                      : 'border-white/10 bg-neutral-950/70 hover:border-white/20 hover:bg-neutral-900/70'
+                      ? 'bg-neutral-900/90 ring-2 ring-white'
+                      : 'bg-neutral-950/70 ring ring-white/10 hover:bg-neutral-900/70 hover:ring-white/20'
                   "
                   @click="selectPlan(plan.months)"
                 >
@@ -385,9 +385,9 @@ watch(
                       {{ monthsLabel(plan.months) }}
                     </span>
                     <Icon
-                      v-if="plan.months === 6"
+                      v-if="plan.months === 3"
                       icon="mingcute:star-fill"
-                      class="size-4 shrink-0 text-amber-300"
+                      class="size-4 shrink-0 text-white"
                     />
                   </div>
                   <div class="flex flex-col gap-2">
@@ -434,7 +434,7 @@ watch(
           </div>
 
           <Button
-            class="mt-2 flex h-12 w-full cursor-pointer items-center justify-between rounded-[14px] px-4 text-base font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+            class="mt-2 flex h-12 w-full cursor-pointer items-center justify-between px-4 text-base transition-all disabled:cursor-not-allowed disabled:opacity-40"
             :disabled="!selectedMonths && !selectedGb"
             @click="goToPaymentStep"
           >
