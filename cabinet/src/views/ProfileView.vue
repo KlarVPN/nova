@@ -8,6 +8,7 @@ import { AVAILABLE_LOCALES, locale, setLocale } from '@/i18n/i18n.ts'
 import { hapticError, hapticImpact, hapticSuccess, openLink } from '@/lib/telegram'
 import { Button } from '@/components/ui/button'
 import FloatingSubscriptionLink from '@/components/common/FloatingSubscriptionLink.vue'
+import SheetModal from '@/components/common/SheetModal.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
@@ -295,19 +296,13 @@ const router = useRouter()
       </Button>
     </div>
 
-    <Teleport to="body">
-      <Transition name="sheet">
-        <div
-          v-if="showLanguageModal"
-          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-4"
-        >
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeLanguageModal" />
-          <div
-            class="relative border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
-          >
-            <div class="mb-4 flex justify-center md:hidden">
-              <div class="h-1 w-10 rounded-full bg-neutral-700" />
-            </div>
+    <SheetModal
+      :model-value="showLanguageModal"
+      show-handle
+      overlay-class="bg-black/70 backdrop-blur-sm"
+      panel-class="border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
+      @close="closeLanguageModal"
+    >
             <h2 class="mb-3 text-base font-medium text-white">{{ t('profile.language') }}</h2>
             <div class="flex flex-col gap-2">
               <button
@@ -329,22 +324,15 @@ const router = useRouter()
                 />
               </button>
             </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    </SheetModal>
 
-    <Teleport to="body">
-      <Transition name="sheet">
-        <div
-          v-if="showPromoModal"
-          class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-end md:p-4"
-        >
-          <div class="absolute inset-0 bg-black/70" @click="closePromoModal" />
-          <div class="relative bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4">
-            <div class="mb-4 flex justify-center md:hidden">
-              <div class="h-1 w-10 rounded-full bg-neutral-700" />
-            </div>
+    <SheetModal
+      :model-value="showPromoModal"
+      desktop-position="end"
+      show-handle
+      panel-class="bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
+      @close="closePromoModal"
+    >
             <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
             <p class="mb-3 text-sm text-neutral-400">
               {{ t('promo.modalDesc') }}
@@ -381,10 +369,7 @@ const router = useRouter()
                 </template>
               </p>
             </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    </SheetModal>
 
     <FloatingSubscriptionLink :url="connectUrl" />
   </div>
@@ -414,25 +399,4 @@ const router = useRouter()
   box-shadow: inset 0 1px 0 #d2d2d7;
 }
 
-.sheet-enter-active,
-.sheet-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.sheet-enter-active > div:last-child,
-.sheet-leave-active > div:last-child {
-  transition: transform 0.25s ease;
-}
-
-.sheet-enter-from > div:last-child,
-.sheet-leave-to > div:last-child {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .sheet-enter-from > div:last-child,
-  .sheet-leave-to > div:last-child {
-    transform: translateY(0) scale(0.96);
-  }
-}
 </style>
