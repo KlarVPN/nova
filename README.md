@@ -100,6 +100,18 @@ docker network create remnawave-network
 docker compose up -d
 ```
 
+### Отдельный Support Bot
+
+В репозиторий добавлен отдельный бот поддержки, который работает независимо от VPN-бота и может стартовать вместе с ним:
+
+- код: `src/support_bot`
+- локальный запуск: `python support_bot_main.py`
+- docker-запуск: `docker compose up -d support-bot`
+- автозапуск вместе с основным ботом: просто задайте `SUPPORT_BOT_TOKEN` и `SUPPORT_BOT_GROUP_ID`
+
+Для него используются отдельные переменные окружения: `SUPPORT_BOT_*` (см. `.env.example`).
+Администраторы support-бота берутся из `ADMIN_IDS` (все ID из списка).
+
 ### Обязательные переменные
 
 ```env

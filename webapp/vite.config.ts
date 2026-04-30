@@ -51,7 +51,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['qy806beu8rip.share.zrok.io'],
+    allowedHosts: ['y2uhw4eaxtv8.share.zrok.io'],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

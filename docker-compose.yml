@@ -17,6 +17,20 @@ services:
       remnawave-tg-shop-redis:
         condition: service_healthy
 
+  support-bot:
+    build: .
+    container_name: support-bot
+    hostname: support-bot
+    command: ["python", "-m", "src.support_bot"]
+    env_file:
+      - .env
+    networks:
+      - remnawave-network
+    restart: unless-stopped
+    depends_on:
+      remnawave-tg-shop-redis:
+        condition: service_healthy
+
   remnawave-tg-shop-db:
     image: postgres:17
     container_name: remnawave-tg-shop-db
