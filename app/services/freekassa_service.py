@@ -7,8 +7,9 @@ import time
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Dict, Any, Tuple
 
-from aiohttp import ClientSession, ClientTimeout, web
+from aiohttp import ClientSession, ClientTimeout
 from aiogram import Bot
+from fastapi.responses import PlainTextResponse, Response
 from sqlalchemy.orm import sessionmaker
 
 from app.config import Settings
@@ -261,15 +262,15 @@ class FreeKassaService:
 
         return False
 
-    async def webhook_route(self, request: web.Request) -> web.Response:
+    async def webhook_route(self, request) -> Response:
         if not self.configured:
-            return web.Response(status=503, text="freekassa_disabled")
+            return PlainTextResponse("freekassa_disabled", status_code=503)
 
         try:
             data = await request.post()
         except Exception as e:
             logger.error(f"FreeKassa webhook: failed to read POST data: {e}")
-            return web.Response(status=400, text="bad_request")
+            return PlainTextResponse("bad_request", status_code=400)
 
         payload_dict: Dict[str, Any]
         if data:
@@ -291,12 +292,12 @@ class FreeKassaService:
         merchant_id = _get("MERCHANT_ID")
         if merchant_id != self.shop_id:
             logger.error(f"FreeKassa webhook: merchant mismatch (got {merchant_id})")
-            return web.Response(status=403, text="merchant_mismatch")
+            return PlainTextResponse("merchant_mismatch", status_code=403)
 
         signature = _get("SIGN") or _get("signature")
         if not signature:
             logger.error("FreeKassa webhook: missing signature")
-            return web.Response(status=400, text="missing_signature")
+            return PlainTextResponse("missing_signature", status_code=400)
 
         order_id_str = _get("MERCHANT_ORDER_ID") or _get("ORDER_ID") or _get("o")
         amount_str = _get("AMOUNT") or _get("OA") or _get("amount")
@@ -304,23 +305,23 @@ class FreeKassaService:
 
         if not order_id_str or not amount_str:
             logger.error("FreeKassa webhook: missing order_id or amount")
-            return web.Response(status=400, text="missing_data")
+            return PlainTextResponse("missing_data", status_code=400)
 
         if not self._validate_signature(order_id_str, amount_str, signature, payload_dict):
             logger.error("FreeKassa webhook: invalid signature")
-            return web.Response(status=403, text="invalid_signature")
+            return PlainTextResponse("invalid_signature", status_code=403)
 
         try:
             payment_db_id = int(order_id_str)
         except (TypeError, ValueError):
             logger.error(f"FreeKassa webhook: invalid order_id value '{order_id_str}'")
-            return web.Response(status=400, text="invalid_order_id")
+            return PlainTextResponse("invalid_order_id", status_code=400)
 
         async with self.async_session_factory() as session:
             payment = await payment_dal.get_payment_by_db_id(session, payment_db_id)
             if not payment:
                 logger.error(f"FreeKassa webhook: payment {payment_db_id} not found")
-                return web.Response(status=404, text="payment_not_found")
+                return PlainTextResponse("payment_not_found", status_code=404)
 
             if payment.currency and str(payment.currency).upper() != str(self.default_currency or payment.currency).upper():
                 # FreeKassa sends amount without currency; ensure DB currency matches configured service currency
@@ -330,11 +331,11 @@ class FreeKassaService:
                     payment.currency,
                     self.default_currency,
                 )
-                return web.Response(status=400, text="currency_mismatch")
+                return PlainTextResponse("currency_mismatch", status_code=400)
 
             if payment.status == "succeeded":
                 logger.info(f"FreeKassa webhook: payment {payment_db_id} already succeeded")
-                return web.Response(text="YES")
+                return PlainTextResponse("YES")
 
             # Optional amount verification
             try:
@@ -345,10 +346,10 @@ class FreeKassaService:
                         f"FreeKassa webhook: amount mismatch for payment {payment_db_id} "
                         f"(expected {expected_amount}, got {amount_decimal})"
                     )
-                    return web.Response(status=400, text="amount_mismatch")
+                    return PlainTextResponse("amount_mismatch", status_code=400)
             except Exception as e:
                 logger.error(f"FreeKassa webhook: failed to compare amount for payment {payment_db_id}: {e}")
-                return web.Response(status=400, text="amount_validation_error")
+                return PlainTextResponse("amount_validation_error", status_code=400)
 
             activation = None
             referral_bonus = None
@@ -364,7 +365,7 @@ class FreeKassaService:
                         "FreeKassa webhook: payment %s already processed atomically",
                         payment.payment_id,
                     )
-                    return web.Response(text="YES")
+                    return PlainTextResponse("YES")
 
                 months = payment.subscription_duration_months or 1
                 sale_mode = "traffic" if self.settings.traffic_sale_mode else "subscription"
@@ -399,7 +400,7 @@ class FreeKassaService:
             except Exception as e:
                 await session.rollback()
                 logger.error(f"FreeKassa webhook: failed to process payment {payment_db_id}: {e}", exc_info=True)
-                return web.Response(status=500, text="processing_error")
+                return PlainTextResponse("processing_error", status_code=500)
 
             db_user = payment.user or await user_dal.get_user_by_id(session, payment.user_id)
             lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
@@ -499,9 +500,9 @@ class FreeKassaService:
             except Exception as e:
                 logger.error(f"FreeKassa notification: failed to notify admins: {e}")
 
-        return web.Response(text="YES")
+        return PlainTextResponse("YES")
 
 
-async def freekassa_webhook_route(request: web.Request) -> web.Response:
+async def freekassa_webhook_route(request) -> Response:
     service: FreeKassaService = request.app["freekassa_service"]
     return await service.webhook_route(request)

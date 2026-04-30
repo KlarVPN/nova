@@ -11,7 +11,7 @@ export default defineConfig({
     vue(),
     tailwindcss(),
     VueI18nPlugin({
-      include: resolve(__dirname, './app/i18n/locales/**'),
+      include: resolve(__dirname, './src/i18n/locales/**'),
       runtimeOnly: false,
       compositionOnly: false,
       strictMessage: false,
@@ -51,7 +51,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['y2uhw4eaxtv8.share.zrok.io'],
+    allowedHosts: ['ny0b3on6hopq.share.zrok.io'],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

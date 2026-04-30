@@ -2,7 +2,8 @@ import json
 from typing import Optional
 
 from aiogram import Bot
-from aiohttp import web
+from fastapi import Request
+from fastapi.responses import PlainTextResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from aiocryptopay import AioCryptoPay, Networks
@@ -175,7 +176,7 @@ class CryptoPayService:
             logger.error(f"CryptoPay invoice creation failed: {e}", exc_info=True)
             return None
 
-    async def _invoice_paid_handler(self, update: Update, app: web.Application):
+    async def _invoice_paid_handler(self, update: Update, app):
         invoice = update.payload
         if not invoice.payload:
             logger.warning("CryptoPay webhook without payload")
@@ -378,12 +379,12 @@ class CryptoPayService:
             except Exception as e:
                 logger.error(f"Failed to send crypto_pay payment notification: {e}")
 
-    async def webhook_route(self, request: web.Request) -> web.Response:
+    async def webhook_route(self, request: Request) -> Response:
         if not self.configured or not self.client:
-            return web.Response(status=503, text="cryptopay_disabled")
+            return PlainTextResponse("cryptopay_disabled", status_code=503)
         return await self.client.get_updates(request)
 
 
-async def cryptopay_webhook_route(request: web.Request) -> web.Response:
+async def cryptopay_webhook_route(request: Request) -> Response:
     service: CryptoPayService = request.app["cryptopay_service"]
     return await service.webhook_route(request)

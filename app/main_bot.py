@@ -14,7 +14,7 @@ from app.database.database_setup import init_db_connection
 from app.middlewares.i18n import JsonI18n
 from app.app.controllers.dispatcher_controller import build_dispatcher
 from app.app.factories.build_services import build_core_services
-from app.app.web.web_server import build_and_start_web_app
+from app.app.web.fastapi_server import build_and_start_fastapi_app
 
 from app.routers import build_root_router
 
@@ -280,21 +280,22 @@ async def run_bot(settings_param: Settings):
     logging.info(f"--- Bot Run Mode Decision ---")
     logging.info(f"Configured WEBHOOK_BASE_URL: '{tg_webhook_base}' -> Webhook Mode: ENABLED")
     logging.info(f"YooKassa webhook path: '{settings_param.yookassa_webhook_path}'")
-    logging.info(f"Decision: Run AIOHTTP server: ENABLED (required for webhooks)")
+    logging.info("Decision: Run FastAPI server: ENABLED (required for webhooks)")
     logging.info(f"--- End Bot Run Mode Decision ---")
 
-    web_app_runner = None
     main_tasks = []
 
-    # Only run AIOHTTP server for webhook mode
-    async def web_server_task():
-        await build_and_start_web_app(dp, bot, settings_param, local_async_session_factory)
+    await dp.emit_startup()
 
-    main_tasks.append(asyncio.create_task(web_server_task(), name="AIOHTTPServerTask"))
+    # Webhook/API server (FastAPI)
+    async def web_server_task():
+        await build_and_start_fastapi_app(dp, bot, settings_param, local_async_session_factory)
+
+    main_tasks.append(asyncio.create_task(web_server_task(), name="FastAPIServerTask"))
 
     # Recurring billing moved to panel webhook (24h before expiry). No periodic task needed here.
 
-    logging.info("Starting bot in Webhook mode with AIOHTTP server...")
+    logging.info("Starting bot in Webhook mode with FastAPI server...")
     logging.info(f"Starting bot with main tasks: {[task.get_name() for task in main_tasks]}")
 
     try:
@@ -317,10 +318,6 @@ async def run_bot(settings_param: Settings):
                         f"Error during cancellation of task '{task.get_name()}': {e_task_cancel}",
                         exc_info=True,
                     )
-
-        if web_app_runner:
-            await web_app_runner.cleanup()
-            logging.info("AIOHTTP AppRunner cleaned up.")
 
         await dp.emit_shutdown()
         logging.info("Dispatcher shutdown sequence emitted.")

@@ -3,7 +3,7 @@ import { isTelegramWebApp } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
-  history: createWebHistory('/app/'),
+  history: createWebHistory('/'),
   routes: [
     {
       name: 'login',

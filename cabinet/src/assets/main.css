@@ -1,6 +1,5 @@
 /* Import Tailwind CSS and Tailwind CSS Animated */
 @import 'tailwindcss';
-@import 'tailwindcss-animated';
 @import 'tw-animate-css';
 
 /* Theme variables (custom properties) */

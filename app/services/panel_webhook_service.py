@@ -1,7 +1,7 @@
 import json
 import hmac
 import hashlib
-from aiohttp import web
+from fastapi.responses import PlainTextResponse, Response
 from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup
 from sqlalchemy.orm import sessionmaker
@@ -137,25 +137,25 @@ class PanelWebhookService:
                 end_date=user_payload.get("expireAt", "")[:10],
             )
 
-    async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> web.Response:
+    async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> Response:
         if not self.settings.PANEL_WEBHOOK_SECRET:
             logger.critical("Panel webhook rejected: PANEL_WEBHOOK_SECRET is not configured")
-            return web.Response(status=503, text="panel_webhook_secret_required")
+            return PlainTextResponse("panel_webhook_secret_required", status_code=503)
 
         if not signature_header:
-            return web.Response(status=403, text="no_signature")
+            return PlainTextResponse("no_signature", status_code=403)
         expected_sig = hmac.new(
             self.settings.PANEL_WEBHOOK_SECRET.encode(),
             raw_body,
             hashlib.sha256,
         ).hexdigest()
         if not hmac.compare_digest(expected_sig, signature_header):
-            return web.Response(status=403, text="invalid_signature")
+            return PlainTextResponse("invalid_signature", status_code=403)
 
         try:
             payload = json.loads(raw_body.decode())
         except Exception:
-            return web.Response(status=400, text="bad_request")
+            return PlainTextResponse("bad_request", status_code=400)
 
         event_name = payload.get("name") or payload.get("event")
         user_data = payload.get("payload") or payload.get("data", {})
@@ -165,7 +165,7 @@ class PanelWebhookService:
         telegram_id = user_data.get("telegramId") if isinstance(user_data, dict) else None
 
         if not event_name:
-            return web.Response(status=200, text="ok_no_event")
+            return PlainTextResponse("ok_no_event")
 
         logger.info(
             "Panel webhook event received: %s; telegramId=%s",
@@ -174,9 +174,9 @@ class PanelWebhookService:
         )
 
         await self.handle_event(event_name, user_data)
-        return web.Response(status=200, text="ok")
+        return PlainTextResponse("ok")
 
-async def panel_webhook_route(request: web.Request):
+async def panel_webhook_route(request) -> Response:
     service: PanelWebhookService = request.app["panel_webhook_service"]
     raw = await request.read()
     signature_header = request.headers.get("X-Remnawave-Signature")

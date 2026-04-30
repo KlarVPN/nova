@@ -3,8 +3,8 @@ import json
 from datetime import datetime, timezone
 from typing import Optional
 
-from aiohttp import web
 from aiogram import Bot
+from fastapi.responses import PlainTextResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
@@ -585,7 +585,7 @@ async def process_cancelled_payment(session: AsyncSession, bot: Bot,
         raise
 
 
-async def yookassa_webhook_route(request: web.Request):
+async def yookassa_webhook_route(request) -> Response:
 
     try:
         bot: Bot = request.app['bot']
@@ -603,9 +603,10 @@ async def yookassa_webhook_route(request: web.Request):
         logging.error(
             f"KeyError accessing app context in yookassa_webhook_route: {e_app_ctx}.",
             exc_info=True)
-        return web.Response(
-            status=500,
-            text="Internal Server Error: Missing app context component")
+        return PlainTextResponse(
+            "Internal Server Error: Missing app context component",
+            status_code=500,
+        )
 
     try:
         event_json = await request.json()
@@ -624,7 +625,7 @@ async def yookassa_webhook_route(request: web.Request):
             logging.error(
                 f"YooKassa webhook payment {payment_data_from_notification.id} lacks metadata. Cannot process."
             )
-            return web.Response(status=200, text="yookassa_missing_metadata")
+            return PlainTextResponse("yookassa_missing_metadata")
 
         # Safely extract payment_method details (SDK objects may not have to_dict)
         pm_obj = getattr(payment_data_from_notification, 'payment_method', None)
@@ -692,7 +693,7 @@ async def yookassa_webhook_route(request: web.Request):
                             notification_object.event,
                             payment_dict_for_processing.get("id"),
                         )
-                        return web.Response(status=503, text="yookassa_verification_required")
+                        return PlainTextResponse("yookassa_verification_required", status_code=503)
 
                     provider_payment_info = await yookassa_service.get_payment_info(
                         payment_dict_for_processing.get("id")
@@ -702,7 +703,7 @@ async def yookassa_webhook_route(request: web.Request):
                             "YooKassa webhook verification failed: payment %s not found via provider API",
                             payment_dict_for_processing.get("id"),
                         )
-                        return web.Response(status=503, text="yookassa_verification_failed")
+                        return PlainTextResponse("yookassa_verification_failed", status_code=503)
 
                     provider_status = str(provider_payment_info.get("status") or "")
                     provider_paid = bool(provider_payment_info.get("paid"))
@@ -732,7 +733,7 @@ async def yookassa_webhook_route(request: web.Request):
                             "YooKassa webhook rejected: verification service is not configured for succeeded event (payment_id=%s)",
                             payment_dict_for_processing.get("id"),
                         )
-                        return web.Response(status=503, text="yookassa_verification_required")
+                        return PlainTextResponse("yookassa_verification_required", status_code=503)
 
                     if payment_dict_for_processing.get(
                             "paid") and payment_dict_for_processing.get(
@@ -773,15 +774,15 @@ async def yookassa_webhook_route(request: web.Request):
                                         "Failed to commit failure status for YooKassa payment %s",
                                         payment_dict_for_processing.get("id"),
                                     )
-                                    return web.Response(status=503, text="yookassa_processing_failed_retry")
-                                return web.Response(status=200, text="ok")
+                                    return PlainTextResponse("yookassa_processing_failed_retry", status_code=503)
+                                return PlainTextResponse("ok")
 
                             await session.rollback()
                             logging.warning(
                                 "YooKassa payment %s processing returned non-terminal failure; responding 503 for retry",
                                 payment_dict_for_processing.get("id"),
                             )
-                            return web.Response(status=503, text="yookassa_processing_failed_retry")
+                            return PlainTextResponse("yookassa_processing_failed_retry", status_code=503)
                         await session.commit()
                     else:
                         logging.warning(
@@ -790,7 +791,7 @@ async def yookassa_webhook_route(request: web.Request):
                             f"paid='{payment_dict_for_processing.get('paid')}'"
                         )
                         await session.rollback()
-                        return web.Response(status=503, text="yookassa_invalid_succeeded_payload")
+                        return PlainTextResponse("yookassa_invalid_succeeded_payload", status_code=503)
                 elif notification_object.event == YOOKASSA_EVENT_PAYMENT_CANCELED:
                     if payment_dict_for_processing.get("status") not in {"canceled", "cancelled"}:
                         logging.error(
@@ -798,7 +799,7 @@ async def yookassa_webhook_route(request: web.Request):
                             payment_dict_for_processing.get("id"),
                             payment_dict_for_processing.get("status"),
                         )
-                        return web.Response(status=503, text="yookassa_invalid_canceled_payload")
+                        return PlainTextResponse("yookassa_invalid_canceled_payload", status_code=503)
                     await process_cancelled_payment(
                         session, bot, payment_dict_for_processing,
                         i18n_instance, settings)
@@ -813,7 +814,7 @@ async def yookassa_webhook_route(request: web.Request):
                                 payment_dict_for_processing.get("id"),
                                 payment_dict_for_processing.get("status"),
                             )
-                            return web.Response(status=503, text="yookassa_invalid_waiting_payload")
+                            return PlainTextResponse("yookassa_invalid_waiting_payload", status_code=503)
                         try:
                             user_id_str = metadata.get("user_id")
                             if user_id_str and user_id_str.isdigit():
@@ -901,17 +902,15 @@ async def yookassa_webhook_route(request: web.Request):
                     f"Error processing YooKassa webhook event '{notification_object.event}' "
                     f"for YK Payment ID {payment_dict_for_processing.get('id')} in DB transaction: {e_webhook_db_processing}",
                     exc_info=True)
-                return web.Response(
-                    status=503, text="yookassa_processing_error_retry")
+                return PlainTextResponse("yookassa_processing_error_retry", status_code=503)
 
-        return web.Response(status=200, text="ok")
+        return PlainTextResponse("ok")
 
     except json.JSONDecodeError:
         logging.error("YooKassa Webhook: Invalid JSON received.")
-        return web.Response(status=400, text="bad_request_invalid_json")
+        return PlainTextResponse("bad_request_invalid_json", status_code=400)
     except Exception as e_general_webhook:
         logging.error(
             f"YooKassa Webhook general processing error: {e_general_webhook}",
             exc_info=True)
-        return web.Response(status=503,
-                            text="yookassa_general_error_retry")
+        return PlainTextResponse("yookassa_general_error_retry", status_code=503)

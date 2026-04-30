@@ -2,8 +2,9 @@ import json
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, Dict, Any, Tuple
 
-from aiohttp import ClientSession, ClientTimeout, web
+from aiohttp import ClientSession, ClientTimeout
 from aiogram import Bot
+from fastapi.responses import PlainTextResponse, Response
 from sqlalchemy.orm import sessionmaker
 
 from app.config import Settings
@@ -184,21 +185,21 @@ class PlategaService:
             logger.error("Platega create_transaction: request failed: %s", exc, exc_info=True)
             return False, {"message": str(exc)}
 
-    async def webhook_route(self, request: web.Request) -> web.Response:
+    async def webhook_route(self, request) -> Response:
         if not self.configured:
-            return web.Response(status=503, text="platega_disabled")
+            return PlainTextResponse("platega_disabled", status_code=503)
 
         try:
             data = await request.json()
         except Exception as exc:
             logger.error("Platega webhook: failed to parse JSON: %s", exc)
-            return web.Response(status=400, text="bad_request")
+            return PlainTextResponse("bad_request", status_code=400)
 
         header_merchant = request.headers.get("X-MerchantId")
         header_secret = request.headers.get("X-Secret")
         if header_merchant != self.merchant_id or header_secret != self.secret:
             logger.error("Platega webhook: invalid auth headers")
-            return web.Response(status=403, text="forbidden")
+            return PlainTextResponse("forbidden", status_code=403)
 
         transaction_id = str(data.get("id") or data.get("transactionId") or "").strip()
         status = str(data.get("status") or "").upper()
@@ -207,16 +208,16 @@ class PlategaService:
 
         if not transaction_id or not status:
             logger.error("Platega webhook: missing transaction id or status in payload: %s", data)
-            return web.Response(status=400, text="missing_fields")
+            return PlainTextResponse("missing_fields", status_code=400)
 
         async with self.async_session_factory() as session:
             payment = await payment_dal.get_payment_by_provider_payment_id(session, transaction_id)
             if not payment:
                 logger.error("Platega webhook: payment not found for transaction %s", transaction_id)
-                return web.Response(status=404, text="payment_not_found")
+                return PlainTextResponse("payment_not_found", status_code=404)
 
             if payment.status == "succeeded" and status == "CONFIRMED":
-                return web.Response(text="ok")
+                return PlainTextResponse("ok")
 
             payment_months = payment.subscription_duration_months or 1
             sale_mode = "traffic" if self.settings.traffic_sale_mode else "subscription"
@@ -232,7 +233,7 @@ class PlategaService:
                             expected_currency,
                             provider_currency,
                         )
-                        return web.Response(status=400, text="currency_mismatch")
+                        return PlainTextResponse("currency_mismatch", status_code=400)
 
                 if amount_raw is not None:
                     try:
@@ -245,10 +246,10 @@ class PlategaService:
                                 expected_amount,
                                 incoming_amount,
                             )
-                            return web.Response(status=400, text="amount_mismatch")
+                            return PlainTextResponse("amount_mismatch", status_code=400)
                     except Exception as exc:
                         logger.error("Platega webhook: failed to compare amounts for %s: %s", payment.payment_id, exc)
-                        return web.Response(status=400, text="amount_validation_error")
+                        return PlainTextResponse("amount_validation_error", status_code=400)
 
                 try:
                     marked = await payment_dal.mark_provider_payment_succeeded_once(
@@ -261,7 +262,7 @@ class PlategaService:
                             "Platega webhook: payment %s already processed atomically",
                             payment.payment_id,
                         )
-                        return web.Response(text="ok")
+                        return PlainTextResponse("ok")
 
                     activation = await self.subscription_service.activate_subscription(
                         session,
@@ -293,7 +294,7 @@ class PlategaService:
                 except Exception as exc:
                     await session.rollback()
                     logger.error("Platega webhook: failed to process payment %s: %s", transaction_id, exc, exc_info=True)
-                    return web.Response(status=500, text="processing_error")
+                    return PlainTextResponse("processing_error", status_code=500)
 
                 db_user = await user_dal.get_user_by_id(session, payment.user_id)
                 lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
@@ -388,7 +389,7 @@ class PlategaService:
                 except Exception as exc:
                     logger.error("Platega webhook: failed to notify admins: %s", exc)
 
-                return web.Response(text="ok")
+                return PlainTextResponse("ok")
 
             if status in {"CANCELED", "CANCELLED", "CHARGEBACK", "CHARGEBACKED"}:
                 try:
@@ -402,7 +403,7 @@ class PlategaService:
                 except Exception as exc:
                     await session.rollback()
                     logger.error("Platega webhook: failed to cancel payment %s: %s", transaction_id, exc)
-                    return web.Response(status=500, text="processing_error")
+                    return PlainTextResponse("processing_error", status_code=500)
 
                 db_user = await user_dal.get_user_by_id(session, payment.user_id)
                 lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
@@ -411,12 +412,12 @@ class PlategaService:
                     await self.bot.send_message(payment.user_id, _("payment_failed"))
                 except Exception as exc:
                     logger.debug("Platega webhook: failed to send cancellation message to user %s: %s", payment.user_id, exc)
-                return web.Response(text="ok_canceled")
+                return PlainTextResponse("ok_canceled")
 
             logger.warning("Platega webhook: unhandled status '%s' for transaction %s", status, transaction_id)
-            return web.Response(status=202, text="status_ignored")
+            return PlainTextResponse("status_ignored", status_code=202)
 
 
-async def platega_webhook_route(request: web.Request) -> web.Response:
+async def platega_webhook_route(request) -> Response:
     service: PlategaService = request.app["platega_service"]
     return await service.webhook_route(request)

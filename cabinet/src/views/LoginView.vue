@@ -168,6 +168,7 @@ function startTelegramOauthFallback() {
   opacity: 0.001;
   overflow: hidden;
   z-index: 2;
+  pointer-events: none;
 }
 
 .telegram-widget-hitbox :deep(iframe) {
