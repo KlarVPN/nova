@@ -44,6 +44,7 @@ async def build_and_start_fastapi_app(
         port=settings.WEB_SERVER_PORT,
         log_level="info",
         loop="asyncio",
+        log_config=None,
     )
     server = uvicorn.Server(config)
 

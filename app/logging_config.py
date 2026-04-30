@@ -60,6 +60,12 @@ def _configure_structlog(level: int, use_colors: bool) -> None:
     console.setFormatter(formatter)
     root.addHandler(console)
 
+    for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"):
+        framework_logger = logging.getLogger(logger_name)
+        framework_logger.handlers.clear()
+        framework_logger.propagate = True
+        framework_logger.setLevel(level)
+
 
 def configure_logging(with_rotating_file: bool = False) -> None:
     level = resolve_log_level(os.getenv("LOG_LEVEL", "INFO"))
