@@ -1,5 +1,5 @@
 [project]
-name = "nova"
+name = "klar"
 version = "1.0.0"
 description = "Telegram bot for sales using Remnawave"
 readme = "README.md"

@@ -578,7 +578,7 @@ async def create_payment(
     if price is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid plan selected")
 
-    desc = f"Nova VPN — {value:g} GB" if sale_mode == "traffic" else f"Nova VPN — {int(value)} мес."
+    desc = f"KLAR VPN — {value:g} GB" if sale_mode == "traffic" else f"KLAR VPN — {int(value)} мес."
     metadata = {"user_id": user_id, "subscription_months": months, "traffic_gb": gb, "sale_mode": sale_mode}
 
     if provider == "yookassa":
@@ -593,11 +593,11 @@ async def create_payment(
     if provider == "stars":
         bot = request.app.state.bot
         invoice = await bot.create_invoice_link(
-            title="Nova VPN",
+            title="KLAR VPN",
             description=desc,
             payload=f"miniapp_{user_id}_{value}",
             currency="XTR",
-            prices=[{"label": "Nova VPN", "amount": int(stars_price or 1)}],
+            prices=[{"label": "KLAR VPN", "amount": int(stars_price or 1)}],
         )
         return {"payment_id": "", "payment_url": None, "invoice_link": invoice, "provider": provider}
 

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "nova-miniapp",
+      "name": "klar-miniapp",
       "dependencies": {
         "@iconify-json/lucide": "^1.2.104",
         "@iconify/vue": "^5.0.0",

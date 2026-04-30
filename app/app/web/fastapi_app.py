@@ -25,7 +25,7 @@ def create_fastapi_app(
     dp=None,
     bot=None,
 ) -> FastAPI:
-    app = FastAPI(title="Nova API", version="1.0.0")
+    app = FastAPI(title="KLAR API", version="1.0.0")
 
     app.state.settings = settings
     app.state.async_session_factory = async_session_factory

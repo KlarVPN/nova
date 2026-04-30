@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌌 Nova
+# 🌌 KLAR
 
 **Telegram-бот для автоматизации продажи VPN-подписок на базе [Remnawave](https://github.com/remnawave/backend)**
 
@@ -93,8 +93,8 @@
 ## 🚀 Быстрый старт
 
 ```bash
-git clone https://github.com/your-repo/nova.git
-cd nova
+git clone https://github.com/your-repo/klar.git
+cd klar
 cp .env.example .env   # заполните переменные
 docker network create remnawave-network
 docker compose up -d

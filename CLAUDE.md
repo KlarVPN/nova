@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Nova** is an async Telegram bot for selling VPN subscriptions, integrated with the **Remnawave** panel. It supports multiple payment providers (YooKassa, FreeKassa, CryptoPay, Platega, SeverPay, Telegram Stars), referral programs, promo codes, trial periods, and admin tools.
+**KLAR** is an async Telegram bot for selling VPN subscriptions, integrated with the **Remnawave** panel. It supports multiple payment providers (YooKassa, FreeKassa, CryptoPay, Platega, SeverPay, Telegram Stars), referral programs, promo codes, trial periods, and admin tools.
 
 ## Commands
 

@@ -38,7 +38,7 @@
     "button": "Открыть Telegram"
   },
   "login": {
-    "title": "Вход в Nova",
+    "title": "Вход в KLAR",
     "subtitle": "Войдите через Telegram, чтобы продолжить",
     "submit": "Войти",
     "submitting": "Вхожу...",
@@ -108,7 +108,7 @@
     "purchased": "Купили",
     "link": "Ссылка",
     "linkLabel": "Ваша реферальная ссылка",
-    "shareText": "Попробуй Nova VPN — быстрый и надёжный VPN-сервис!",
+    "shareText": "Попробуй KLAR VPN — быстрый и надёжный VPN-сервис!",
     "bonusTitle": "Бонусы за приглашение",
     "plan": "Тариф",
     "you": "Вам",
@@ -126,7 +126,7 @@
     "expiresIn": "Истекает через {n} мин",
     "useHint": "Оформите подписку, чтобы воспользоваться скидкой",
     "inputLabel": "Промокод",
-    "placeholder": "NOVA2025",
+    "placeholder": "KLAR2025",
     "applied": "Промокод применён!",
     "addedDays": "+{days} добавлено к вашей подписке.",
     "newExpiry": "Новая дата окончания: {date}",

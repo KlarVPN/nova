@@ -25,7 +25,7 @@ def build_dispatcher(
 ) -> tuple[Dispatcher, Bot, Dict]:
     storage = RedisStorage(
         redis=redis_client,
-        key_builder=DefaultKeyBuilder(prefix="nova", with_bot_id=True),
+        key_builder=DefaultKeyBuilder(prefix="klar", with_bot_id=True),
     )
     default_props = DefaultBotProperties(parse_mode=ParseMode.HTML)
 
