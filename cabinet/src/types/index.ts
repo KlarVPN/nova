@@ -27,6 +27,7 @@ export interface UserProfile {
   first_name: string
   last_name: string | null
   username: string | null
+  photo_url: string | null
   language_code: string
   referral_code: string
   is_banned: boolean

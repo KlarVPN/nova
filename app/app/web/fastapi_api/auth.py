@@ -30,6 +30,7 @@ async def auth_by_telegram(request: Request, session: AsyncSession = Depends(get
             {
                 "user_id": user_id,
                 "username": tg_user.get("username"),
+                "telegram_photo_url": tg_user.get("photo_url"),
                 "first_name": tg_user.get("first_name"),
                 "last_name": tg_user.get("last_name"),
                 "language_code": "ru",
@@ -37,6 +38,7 @@ async def auth_by_telegram(request: Request, session: AsyncSession = Depends(get
         )
     else:
         user.username = tg_user.get("username")
+        user.telegram_photo_url = tg_user.get("photo_url")
         user.first_name = tg_user.get("first_name")
         user.last_name = tg_user.get("last_name")
 

@@ -27,11 +27,25 @@ const privacyUrl = computed(() => auth.profile?.links.privacy || '')
 
 const displayName = computed(() => {
   const p = auth.profile
-  if (!p) return ''
-  return [p.first_name, p.last_name].filter(Boolean).join(' ')
+  const firstName = p?.first_name || auth.telegramUserCache.first_name || ''
+  const lastName = p?.last_name || auth.telegramUserCache.last_name || ''
+  return [firstName, lastName].filter(Boolean).join(' ')
 })
 
+const displayUsername = computed(
+  () => auth.profile?.username || auth.telegramUserCache.username || '',
+)
+
 const userInitial = computed(() => displayName.value.charAt(0).toUpperCase() || '?')
+const randomAvatarSeed = ref(`rnd-${Math.random().toString(36).slice(2, 10)}`)
+const telegramAvatarUrl = computed(
+  () => auth.profile?.photo_url || auth.user?.photo_url || auth.telegramPhotoUrl || '',
+)
+const fallbackAvatarUrl = computed(() => {
+  const seed = `${auth.profile?.user_id ?? randomAvatarSeed.value}-${randomAvatarSeed.value}`
+  return `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(seed)}`
+})
+const resolvedAvatarUrl = computed(() => telegramAvatarUrl.value || fallbackAvatarUrl.value)
 const showLanguageModal = ref(false)
 const showPromoModal = ref(false)
 const promoCode = ref('')
@@ -151,27 +165,24 @@ const router = useRouter()
     <!-- User info -->
     <div
       v-if="auth.profile"
-      class="flex cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950 px-4 py-3 transition-colors hover:bg-neutral-900"
+      class="flex cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950 p-1 transition-colors hover:bg-neutral-900"
       @click="copyTelegramId"
     >
       <img
-        :src="`https://api.dicebear.com/9.x/notionists/svg?seed=${auth.profile.user_id}`"
-        class="size-10 shrink-0 rounded-[14px] bg-neutral-700"
+        :src="resolvedAvatarUrl"
+        class="size-12 shrink-0 rounded-[14px] bg-neutral-700"
         alt="avatar"
       />
       <div class="min-w-0 flex-1">
         <p class="truncate font-semibold text-white">{{ displayName }}</p>
-        <p class="text-sm text-neutral-400">
-          <template v-if="auth.profile.username">@{{ auth.profile.username }} / </template>
-          ID: {{ auth.profile.user_id }}
-        </p>
+        <p class="text-sm text-neutral-400">ID: {{ auth.profile.user_id }}</p>
       </div>
       <button
         type="button"
-        class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-neutral-400"
+        class="flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-neutral-950 text-neutral-400"
         @click.stop="copyTelegramId"
       >
-        <Icon icon="lucide:copy" class="size-4" />
+        <Icon icon="lucide:copy" class="size-5" />
       </button>
     </div>
 
@@ -330,9 +341,7 @@ const router = useRouter()
           class="fixed inset-0 z-50 flex flex-col justify-end md:items-center md:justify-end md:p-4"
         >
           <div class="absolute inset-0 bg-black/70" @click="closePromoModal" />
-          <div
-            class="relative bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
-          >
+          <div class="relative bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4">
             <div class="mb-4 flex justify-center md:hidden">
               <div class="h-1 w-10 rounded-full bg-neutral-700" />
             </div>

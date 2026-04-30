@@ -70,6 +70,39 @@ async def get_me(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+    changed = False
+
+    tg_first_name = current_user.get("first_name")
+    if isinstance(tg_first_name, str):
+        normalized_first_name = tg_first_name.strip()
+        if normalized_first_name and user.first_name != normalized_first_name:
+            user.first_name = normalized_first_name
+            changed = True
+
+    tg_last_name = current_user.get("last_name")
+    if isinstance(tg_last_name, str):
+        normalized_last_name = tg_last_name.strip() or None
+        if user.last_name != normalized_last_name:
+            user.last_name = normalized_last_name
+            changed = True
+
+    tg_username = current_user.get("username")
+    if isinstance(tg_username, str):
+        normalized_username = tg_username.strip().lstrip("@") or None
+        if user.username != normalized_username:
+            user.username = normalized_username
+            changed = True
+
+    tg_photo_url = current_user.get("photo_url")
+    if isinstance(tg_photo_url, str):
+        normalized_tg_photo = tg_photo_url.strip() or None
+        if user.telegram_photo_url != normalized_tg_photo:
+            user.telegram_photo_url = normalized_tg_photo
+            changed = True
+
+    if changed:
+        await session.commit()
+
     sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
     has_any = await subscription_dal.has_any_subscription_for_user(session, user_id)
     settings = request.app.state.settings
@@ -86,6 +119,7 @@ async def get_me(
         "first_name": user.first_name or current_user.get("first_name", ""),
         "last_name": user.last_name,
         "username": user.username,
+        "photo_url": user.telegram_photo_url,
         "language_code": user.language_code or "ru",
         "referral_code": user.referral_code or "",
         "is_banned": user.is_banned,

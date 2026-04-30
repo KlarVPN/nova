@@ -14,6 +14,7 @@ class User(Base):
 
     user_id = Column(BigInteger, primary_key=True, index=True)
     username = Column(String, nullable=True, index=True)
+    telegram_photo_url = Column(Text, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     language_code = Column(String, default="ru")
