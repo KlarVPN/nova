@@ -23,12 +23,12 @@ venv/
 /assets/locales/en_backup.json
 /assets/proxies.json
 /assets/locations.json
-src/database/models_old.py
+app/database/models_old.py
 
 # Webapp (Mini App)
-webapp/node_modules/
-webapp/dist/
-webapp/.env
+/cabinet/node_modules/
+/cabinet/dist/
+/cabinet/.env
 
 # Bun (bun.lock is text format and should be committed; ignore only legacy binary)
 bun.lockb

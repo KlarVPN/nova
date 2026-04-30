@@ -58,7 +58,7 @@ venv/
 **/*.swp
 **/.ropeproject/
 
-# Webapp: skip source & node_modules (dist is built in Docker)
-webapp/node_modules/
-webapp/.env
-webapp/.env.*
+# Cabinet: skip source env and node_modules (dist is built in Docker)
+cabinet/node_modules/
+cabinet/.env
+cabinet/.env.*
