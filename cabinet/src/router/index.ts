@@ -3,7 +3,7 @@ import { isTelegramWebApp } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
-  history: createWebHistory('/'),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       name: 'login',
@@ -12,8 +12,8 @@ const router = createRouter({
       meta: { public: true },
     },
     {
-      name: 'th-auth',
-      path: '/th/:uuid',
+      name: 'access-auth',
+      path: '/access/:uuid',
       component: () => import('@/views/AccessLinkAuthView.vue'),
       meta: { public: true },
     },

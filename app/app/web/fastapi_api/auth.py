@@ -88,7 +88,7 @@ async def get_access_link(
 
     return {
         "uuid": user.access_link_uuid,
-        "url": f"{app_base}/th/{user.access_link_uuid}",
+        "url": f"{app_base}/access/{user.access_link_uuid}",
     }
 
 

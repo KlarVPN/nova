@@ -14,6 +14,12 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
+function isAccessAuthPath() {
+  const appBase = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const pathname = window.location.pathname
+  return pathname.startsWith('/access/') || Boolean(appBase && pathname.startsWith(`${appBase}/access/`))
+}
+
 watch(
   () => locale.value,
   (locale) => {
@@ -32,7 +38,15 @@ onMounted(async () => {
     window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
   }
 
-  if (route.name === 'th-auth') {
+  if (route.name === 'access-auth' || isAccessAuthPath()) {
+    if (route.name !== 'access-auth') {
+      console.error('[access-link-auth] Access URL opened before router resolved access route', {
+        routeName: route.name,
+        routePath: route.path,
+        pathname: window.location.pathname,
+        baseUrl: import.meta.env.BASE_URL,
+      })
+    }
     return
   }
 

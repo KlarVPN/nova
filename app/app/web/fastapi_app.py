@@ -50,9 +50,9 @@ def create_fastapi_app(
     if settings is not None and dp is not None and bot is not None:
         app.include_router(build_webhook_router(dp, bot, settings))
 
-    @app.get("/th/{access_uuid}")
+    @app.get("/access/{access_uuid}")
     async def access_link_redirect(access_uuid: str) -> RedirectResponse:
-        return RedirectResponse(url=f"/app/th/{access_uuid}", status_code=307)
+        return RedirectResponse(url=f"/app/access/{access_uuid}", status_code=307)
 
     cabinet_dist = Path(__file__).resolve().parents[3] / "cabinet" / "dist"
     if cabinet_dist.exists():

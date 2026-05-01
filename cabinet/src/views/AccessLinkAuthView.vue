@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
@@ -15,6 +15,11 @@ const { error } = useToast()
 onMounted(async () => {
   const uuid = String(route.params.uuid || '').trim()
   if (!uuid) {
+    console.error('[access-link-auth] Missing access UUID', {
+      path: route.fullPath,
+      params: route.params,
+    })
+    error(t('accessLinkAuth.missing'))
     await router.replace({ name: 'login' })
     return
   }
@@ -27,8 +32,16 @@ onMounted(async () => {
       await router.replace({ name: 'home' })
       return
     }
-  } catch {
-    error(t('accessLinkAuth.invalid'))
+  } catch (e: unknown) {
+    const detail = e instanceof ApiError ? e.detail : e instanceof Error ? e.message : String(e)
+    const message = e instanceof ApiError && e.status === 401 ? t('accessLinkAuth.invalid') : t('accessLinkAuth.failed')
+    console.error('[access-link-auth] Login failed', {
+      uuid,
+      path: route.fullPath,
+      error: e,
+      detail,
+    })
+    error(message)
   }
 
   await router.replace({ name: 'login' })

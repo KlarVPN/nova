@@ -55,7 +55,9 @@ function decodeBase64Url(value: string): string {
 
 function parseTelegramAuthFromLocation(): TgAuthPayload | null {
   const params = new URLSearchParams(window.location.search)
-  const hashRaw = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash
+  const hashRaw = window.location.hash.startsWith('#')
+    ? window.location.hash.slice(1)
+    : window.location.hash
 
   const hashParams = new URLSearchParams(hashRaw)
   hashParams.forEach((value, key) => {
@@ -105,7 +107,6 @@ function parseTelegramAuthFromLocation(): TgAuthPayload | null {
 
   return payload
 }
-
 
 onMounted(() => {
   if (TELEGRAM_BOT_USERNAME && telegramWidgetHost.value) {
@@ -157,7 +158,9 @@ function startTelegramOauthFallback() {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col items-center justify-center gap-8 px-6 py-10">
+  <div
+    class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col items-center justify-center gap-8 px-6 py-10"
+  >
     <!-- Logo -->
     <Logotype class="h-10" />
 
@@ -174,7 +177,12 @@ function startTelegramOauthFallback() {
     <!-- Telegram OAuth 2.0 -->
     <div class="relative flex w-full max-w-sm flex-col items-center gap-3">
       <div ref="telegramWidgetHost" class="telegram-widget-hitbox" />
-      <Button type="button" class="w-full" :disabled="submitting" @click="startTelegramOauthFallback">
+      <Button
+        type="button"
+        class="w-full"
+        :disabled="submitting"
+        @click="startTelegramOauthFallback"
+      >
         <Icon icon="lucide:send" class="mr-2 h-4 w-4" />
         {{ t('login.telegramBtn') }}
       </Button>
