@@ -67,10 +67,10 @@ function navigate(path: string) {
 
 <template>
   <nav
-    class="fixed right-3 bottom-3 left-3 z-50 flex h-18 items-center justify-center rounded-full bg-black/45 p-1 backdrop-blur-xl"
+    class="fixed right-3 bottom-3 left-3 z-50 flex items-center justify-center rounded-full bg-neutral-900/45 p-1 backdrop-blur-xl"
   >
     <div
-      class="pointer-events-none absolute top-full right-0 left-0 h-16 rounded-b-full bg-gradient-to-b from-transparent to-black/80"
+      class="pointer-events-none absolute top-full right-0 left-0 h-16 rounded-b-full bg-linear-to-b from-transparent to-black/80"
     />
 
     <div ref="tabsContainerRef" class="relative flex w-full max-w-md justify-around px-1">
@@ -80,7 +80,7 @@ function navigate(path: string) {
         :initial="false"
         :animate="{ x: bubbleX, width: bubbleWidth, opacity: 1 }"
         :transition="{ type: 'spring', stiffness: 380, damping: 34, mass: 0.52 }"
-        style="top: -12px; bottom: -12px; left: 0"
+        style="top: 0; bottom: 0; left: 0"
       />
 
       <button
@@ -88,7 +88,7 @@ function navigate(path: string) {
         :key="tab.path"
         :ref="(el) => setTabRef(tab.path, el)"
         type="button"
-        class="relative flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-2xl px-2 py-1.5 text-[10px] font-medium transition-all duration-200"
+        class="relative flex flex-1 cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-2xl px-3 py-4 text-[10px] font-medium transition-all duration-200"
         :class="active === tab.path ? 'text-white' : 'text-neutral-400'"
         @click="navigate(tab.path)"
       >

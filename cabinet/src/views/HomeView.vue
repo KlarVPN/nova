@@ -215,7 +215,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 
 <template>
   <div
-    class="mx-auto flex h-[calc(100dvh-4.75rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 py-6 text-center md:h-[calc(100dvh-2rem)]"
+    class="mx-auto flex h-[calc(100dvh-4.5rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 py-6 text-center md:h-[calc(100dvh-2rem)]"
   >
     <Transition name="content-fade" mode="out-in">
       <div :key="statusKey" class="flex h-full w-full flex-col items-center justify-between gap-5">
@@ -432,73 +432,73 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
     overlay-class="bg-black/70 backdrop-blur-sm"
     @close="closeDevicesModal"
   >
-          <div class="flex items-center justify-between px-4 py-3">
-            <div>
-              <h2 class="text-base font-medium text-white">
-                {{ t('devices.manage') }}
-              </h2>
-              <p v-if="deviceCountLabel" class="mt-0.5 text-xs text-neutral-400">
-                {{ deviceCountLabel }}
-              </p>
-            </div>
+    <div class="flex items-center justify-between px-4 py-3">
+      <div>
+        <h2 class="text-base font-medium text-white">
+          {{ t('devices.manage') }}
+        </h2>
+        <p v-if="deviceCountLabel" class="mt-0.5 text-xs text-neutral-400">
+          {{ deviceCountLabel }}
+        </p>
+      </div>
+    </div>
+    <div class="h-px bg-neutral-900" />
+    <div class="flex-1 overflow-y-auto p-4">
+      <div
+        v-if="subStore.loadingDevices"
+        class="flex flex-col items-center gap-3 py-10 text-neutral-400"
+      >
+        <Icon icon="lucide:loader-circle" class="size-8 animate-spin" />
+        <span class="text-sm">{{ t('devices.loading') }}</span>
+      </div>
+      <div
+        v-else-if="!subStore.devicesData?.devices?.length"
+        class="flex flex-col items-center gap-3 rounded-[14px] py-10 text-neutral-400"
+      >
+        <Icon icon="lucide:monitor-smartphone" class="size-10" />
+        <span class="text-sm">{{ t('devices.noDevices') }}</span>
+      </div>
+      <div v-else class="flex flex-col gap-2">
+        <div
+          v-for="device in subStore.devicesData.devices"
+          :key="device.hwid"
+          class="flex items-start gap-3 rounded-[14px] bg-neutral-950 px-4 py-3"
+        >
+          <div
+            class="flex size-9 shrink-0 items-center justify-center rounded-[14px] bg-neutral-900"
+          >
+            <Icon :icon="platformIcon(device.platform)" class="size-4 text-neutral-300" />
           </div>
-          <div class="h-px bg-neutral-900" />
-          <div class="flex-1 overflow-y-auto p-4">
-            <div
-              v-if="subStore.loadingDevices"
-              class="flex flex-col items-center gap-3 py-10 text-neutral-400"
-            >
-              <Icon icon="lucide:loader-circle" class="size-8 animate-spin" />
-              <span class="text-sm">{{ t('devices.loading') }}</span>
-            </div>
-            <div
-              v-else-if="!subStore.devicesData?.devices?.length"
-              class="flex flex-col items-center gap-3 rounded-[14px] py-10 text-neutral-400"
-            >
-              <Icon icon="lucide:monitor-smartphone" class="size-10" />
-              <span class="text-sm">{{ t('devices.noDevices') }}</span>
-            </div>
-            <div v-else class="flex flex-col gap-2">
-              <div
-                v-for="device in subStore.devicesData.devices"
-                :key="device.hwid"
-                class="flex items-start gap-3 rounded-[14px] bg-neutral-950 px-4 py-3"
-              >
-                <div
-                  class="flex size-9 shrink-0 items-center justify-center rounded-[14px] bg-neutral-900"
-                >
-                  <Icon :icon="platformIcon(device.platform)" class="size-4 text-neutral-300" />
-                </div>
-                <div class="flex min-w-0 flex-1 flex-col gap-px">
-                  <p class="truncate font-sans text-sm leading-tight font-semibold text-white">
-                    {{ deviceDisplayName(device) }}
-                  </p>
-                  <p class="text-xs text-neutral-500">
-                    <template v-if="device.platform">
-                      {{ device.platform
-                      }}<template v-if="device.osVersion"> {{ device.osVersion }}</template>
-                    </template>
-                  </p>
-                  <p class="text-xs text-neutral-500">
-                    {{ t('devices.firstSeen') }} {{ formatDeviceDate(device.createdAt) }}
-                  </p>
-                </div>
-                <button
-                  class="flex shrink-0 cursor-pointer items-center justify-center rounded-[14px] bg-red-950 px-2 py-1.5 text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
-                  :disabled="subStore.disconnectingHwid === device.hwid"
-                  @click="handleDisconnect(device.hwid)"
-                >
-                  <Icon
-                    v-if="subStore.disconnectingHwid === device.hwid"
-                    icon="lucide:loader-circle"
-                    class="size-3.5 animate-spin"
-                  />
-                  <template v-else>{{ t('devices.disconnect') }}</template>
-                </button>
-              </div>
-            </div>
+          <div class="flex min-w-0 flex-1 flex-col gap-px">
+            <p class="truncate font-sans text-sm leading-tight font-semibold text-white">
+              {{ deviceDisplayName(device) }}
+            </p>
+            <p class="text-xs text-neutral-500">
+              <template v-if="device.platform">
+                {{ device.platform
+                }}<template v-if="device.osVersion"> {{ device.osVersion }}</template>
+              </template>
+            </p>
+            <p class="text-xs text-neutral-500">
+              {{ t('devices.firstSeen') }} {{ formatDeviceDate(device.createdAt) }}
+            </p>
           </div>
-          <div class="md:hidden" style="height: max(env(safe-area-inset-bottom), 12px)" />
+          <button
+            class="flex shrink-0 cursor-pointer items-center justify-center rounded-[14px] bg-red-950 px-2 py-1.5 text-xs font-semibold text-red-400 uppercase transition-opacity active:opacity-50 disabled:cursor-not-allowed disabled:opacity-30"
+            :disabled="subStore.disconnectingHwid === device.hwid"
+            @click="handleDisconnect(device.hwid)"
+          >
+            <Icon
+              v-if="subStore.disconnectingHwid === device.hwid"
+              icon="lucide:loader-circle"
+              class="size-3.5 animate-spin"
+            />
+            <template v-else>{{ t('devices.disconnect') }}</template>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="md:hidden" style="height: max(env(safe-area-inset-bottom), 12px)" />
   </SheetModal>
 
   <SheetModal
@@ -545,5 +545,4 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 .content-fade-leave-to {
   opacity: 0;
 }
-
 </style>

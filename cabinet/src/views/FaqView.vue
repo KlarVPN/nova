@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
 
 const { t } = useI18n()
 const openIndex = ref(0)
@@ -36,19 +37,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-center gap-4 pt-2 pb-6">
-    <h1 class="relative text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('faq.title') }}
-    </h1>
-    <p class="relative px-2 text-center text-sm text-neutral-400">
-      {{ t('faq.subtitle') }}
-    </p>
-
+  <div
+    class="relative mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-center gap-4 pt-2 pb-6"
+  >
+    <PageHeroCard
+      :title="t('faq.title')"
+      :description="t('faq.subtitle')"
+      icon="lucide:help-circle"
+    />
     <div class="relative mt-2 flex flex-col gap-2">
       <details
         v-for="(item, idx) in faqItems"
         :key="idx"
-        class="faq-item group overflow-hidden rounded-[16px] border border-neutral-800 bg-neutral-950/85 backdrop-blur-sm"
+        class="faq-item group overflow-hidden rounded-[16px] bg-neutral-950/85 backdrop-blur-sm"
         :open="openIndex === idx"
       >
         <summary
@@ -56,7 +57,7 @@ onBeforeUnmount(() => {
           @click.prevent="openItem(idx)"
         >
           <span
-            class="flex size-6 shrink-0 items-center justify-center rounded-[10px] border border-neutral-700 bg-neutral-900 text-xs font-semibold text-[#bdfe00]"
+            class="flex size-6 shrink-0 items-center justify-center rounded-[10px] bg-neutral-900 text-xs font-semibold"
           >
             {{ idx + 1 }}
           </span>
@@ -66,7 +67,7 @@ onBeforeUnmount(() => {
             class="faq-icon ml-auto size-4 shrink-0 text-neutral-500 transition-transform duration-300"
           />
         </summary>
-        <div class="faq-content grid border-t border-neutral-800/80 px-4">
+        <div class="faq-content grid border-t border-neutral-800/50 px-4">
           <p class="overflow-hidden py-3 text-sm leading-relaxed text-neutral-300">
             {{ item.answer }}
           </p>
