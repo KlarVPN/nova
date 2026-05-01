@@ -136,6 +136,7 @@ export type PaymentProvider =
   | 'stars'
   | 'cryptopay'
   | 'freekassa'
+  | 'kassa_ai'
   | 'platega'
   | 'severpay'
 

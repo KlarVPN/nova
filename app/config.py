@@ -169,6 +169,16 @@ class Settings(BaseSettings):
     FREEKASSA_PAYMENT_IP: Optional[str] = None
     FREEKASSA_PAYMENT_METHOD_ID: Optional[int] = None
 
+    KASSA_AI_ENABLED: bool = Field(default=False)
+    KASSA_AI_SHOP_ID: Optional[int] = None
+    KASSA_AI_API_KEY: Optional[str] = None
+    KASSA_AI_SECRET_WORD_2: Optional[str] = None
+    KASSA_AI_PAYMENT_SYSTEM_ID: Optional[int] = Field(
+        default=44,
+        description="Kassa AI payment system ID (44=SBP, 36=Card, 43=SberPay)",
+    )
+    KASSA_AI_PAYMENT_IP: Optional[str] = None
+
     SEVERPAY_ENABLED: bool = Field(default=False)
     SEVERPAY_MID: Optional[int] = None
     SEVERPAY_TOKEN: Optional[str] = None
@@ -730,6 +740,7 @@ class Settings(BaseSettings):
         Ordered list of payment providers to show in the subscription payment keyboard.
         """
         default_order = [
+            "kassa_ai",
             "freekassa",
             "platega",
             "severpay",
@@ -842,6 +853,8 @@ class Settings(BaseSettings):
         "USER_HWID_DEVICE_LIMIT",
         "SEVERPAY_MID",
         "SEVERPAY_LIFETIME_MINUTES",
+        "KASSA_AI_SHOP_ID",
+        "KASSA_AI_PAYMENT_SYSTEM_ID",
         "LOG_CHAT_ID",
         "LOG_THREAD_ID",
         "YOOKASSA_TAX_SYSTEM_CODE",
@@ -966,6 +979,15 @@ def get_settings() -> Settings:
                 if not _settings_instance.subscription_options:
                     logging.warning(
                         "CRITICAL: FreeKassa is enabled but no subscription prices are configured (RUB_PRICE_*). Users will not see payment buttons."
+                    )
+
+            if _settings_instance.KASSA_AI_ENABLED:
+                if (
+                    not _settings_instance.KASSA_AI_SHOP_ID
+                    or not _settings_instance.KASSA_AI_API_KEY
+                ):
+                    logging.warning(
+                        "CRITICAL: Kassa AI is enabled but KASSA_AI_SHOP_ID or KASSA_AI_API_KEY is missing. Kassa AI payments will not work."
                     )
 
             if _settings_instance.PLATEGA_ENABLED:

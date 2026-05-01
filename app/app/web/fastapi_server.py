@@ -33,6 +33,7 @@ async def build_and_start_fastapi_app(
         freekassa_service=dp.get("freekassa_service"),
         platega_service=dp.get("platega_service"),
         severpay_service=dp.get("severpay_service"),
+        kassa_ai_service=dp.get("kassa_ai_service"),
         bot_username=bot_username,
         dp=dp,
         bot=bot,

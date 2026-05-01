@@ -21,6 +21,7 @@ def create_fastapi_app(
     freekassa_service=None,
     platega_service=None,
     severpay_service=None,
+    kassa_ai_service=None,
     bot_username: str = "",
     dp=None,
     bot=None,
@@ -37,6 +38,7 @@ def create_fastapi_app(
     app.state.freekassa_service = freekassa_service
     app.state.platega_service = platega_service
     app.state.severpay_service = severpay_service
+    app.state.kassa_ai_service = kassa_ai_service
     app.state.bot_username = bot_username
     app.state.dp = dp
     app.state.bot = bot

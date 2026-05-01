@@ -88,6 +88,7 @@ export function providerIcon(provider: string): string {
     stars: 'star',
     cryptopay: 'bitcoin',
     freekassa: 'banknote',
+    kassa_ai: 'sparkles',
     platega: 'wallet',
     severpay: 'shield',
   }

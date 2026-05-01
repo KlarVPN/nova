@@ -285,6 +285,8 @@ async def get_plans(
         active_methods.append("cryptopay")
     if settings.FREEKASSA_ENABLED and "freekassa" in methods_order:
         active_methods.append("freekassa")
+    if settings.KASSA_AI_ENABLED and "kassa_ai" in methods_order:
+        active_methods.append("kassa_ai")
     if settings.PLATEGA_ENABLED and "platega" in methods_order:
         active_methods.append("platega")
     if settings.SEVERPAY_ENABLED and "severpay" in methods_order:
@@ -654,7 +656,7 @@ async def create_payment(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="months or gb is required")
 
     settings = request.app.state.settings
-    if provider not in {"yookassa", "stars", "cryptopay", "freekassa", "platega", "severpay"}:
+    if provider not in {"yookassa", "stars", "cryptopay", "freekassa", "kassa_ai", "platega", "severpay"}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Provider '{provider}' not supported via Mini App")
 
     sale_mode = "traffic" if (gb is not None and not months) else "subscription"
@@ -726,7 +728,12 @@ async def create_payment(
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Payment creation failed")
         return {"payment_id": "", "payment_url": invoice_url, "invoice_link": None, "provider": provider}
 
-    status_map = {"freekassa": "pending_freekassa", "platega": "pending_platega", "severpay": "pending_severpay"}
+    status_map = {
+        "freekassa": "pending_freekassa",
+        "kassa_ai": "pending_kassa_ai",
+        "platega": "pending_platega",
+        "severpay": "pending_severpay",
+    }
     payment_record = await payment_dal.create_payment_record(
         session,
         {
@@ -763,6 +770,27 @@ async def create_payment(
         if not ok:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Payment creation failed")
         return {"payment_id": str(payment_record.payment_id), "payment_url": resp.get("location"), "invoice_link": None, "provider": provider}
+
+    if provider == "kassa_ai":
+        svc = request.app.state.kassa_ai_service
+        if not svc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Kassa AI not configured")
+        ok, resp = await svc.create_order(
+            payment_db_id=payment_record.payment_id,
+            user_id=user_id,
+            months=value,
+            amount=float(price),
+            currency="RUB",
+            payment_system_id=settings.KASSA_AI_PAYMENT_SYSTEM_ID,
+        )
+        if not ok:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Payment creation failed")
+        return {
+            "payment_id": str(payment_record.payment_id),
+            "payment_url": resp.get("location"),
+            "invoice_link": None,
+            "provider": provider,
+        }
 
     if provider == "platega":
         svc = request.app.state.platega_service

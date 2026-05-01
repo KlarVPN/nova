@@ -15,6 +15,7 @@ from app.services.panel_webhook_service import PanelWebhookService
 from app.services.freekassa_service import FreeKassaService
 from app.services.platega_service import PlategaService
 from app.services.severpay_service import SeverPayService
+from app.services.kassa_ai_service import KassaAiService
 from app.services.lknpd_service import LknpdService
 
 
@@ -66,6 +67,7 @@ def build_core_services(
         referral_service=referral_service,
         default_return_url=bot_username_for_default_return,
     )
+    kassa_ai_service = KassaAiService(settings)
     panel_webhook_service = PanelWebhookService(bot, settings, i18n, async_session_factory, panel_service)
     yookassa_service = YooKassaService(
         shop_id=settings.YOOKASSA_SHOP_ID,
@@ -104,4 +106,5 @@ def build_core_services(
         "lknpd_service": lknpd_service,
         "platega_service": platega_service,
         "severpay_service": severpay_service,
+        "kassa_ai_service": kassa_ai_service,
     }

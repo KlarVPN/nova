@@ -29,6 +29,7 @@ const supportedProviders: PaymentProvider[] = [
   'stars',
   'cryptopay',
   'freekassa',
+  'kassa_ai',
   'platega',
   'severpay',
 ]
@@ -146,6 +147,7 @@ const providerIconMap: Record<string, string> = {
   stars: 'mingcute:star-fill',
   cryptopay: 'lucide:bitcoin',
   freekassa: 'lucide:banknote',
+  kassa_ai: 'lucide:sparkles',
   severpay: 'lucide:shield',
 }
 
