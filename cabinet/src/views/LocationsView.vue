@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '@/lib/api'
 import type { LocationStatus } from '@/types'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
 
 const { t } = useI18n()
 
@@ -18,12 +19,6 @@ const filtered = computed(() => {
   if (filter.value === 'offline') list = list.filter((item) => item.status === 'offline')
   return list
 })
-
-const counts = computed(() => ({
-  all: locations.value.length,
-  online: locations.value.filter((item) => item.status === 'online').length,
-  offline: locations.value.filter((item) => item.status === 'offline').length,
-}))
 
 function flagEmojiToCode(flagEmoji: string): string | null {
   const chars = Array.from(flagEmoji)
@@ -69,51 +64,40 @@ onBeforeUnmount(() => {
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-2 pb-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
-        {{ t('locations.title') }}
-      </h1>
-      <button
-        class="inline-flex cursor-pointer items-center justify-center rounded-[10px] bg-neutral-950 p-2 text-neutral-300 hover:bg-neutral-900"
-        :disabled="loading"
-        @click="fetchLocations"
-      >
-        <Icon icon="lucide:refresh-cw" class="size-4" :class="loading ? 'animate-spin' : ''" />
-      </button>
+      <PageHeroCard
+        icon="lucide:map"
+        :title="t('locations.title')"
+        :description="t('support.description')"
+      />
     </div>
 
-    <div class="grid grid-cols-3 gap-2">
+    <div class="grid grid-cols-3 gap-1">
       <button
-        class="cursor-pointer rounded-[12px] border px-3 py-2 text-xs font-semibold"
-        :class="
-          filter === 'all'
-            ? 'border-white/30 bg-neutral-900 text-white'
-            : 'border-neutral-800 bg-neutral-950 text-neutral-300'
-        "
+        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
+        :class="filter === 'all' ? 'bg-neutral-900 text-white' : 'bg-neutral-950 text-neutral-300'"
         @click="filter = 'all'"
       >
-        {{ t('locations.filters.all') }} ({{ counts.all }})
+        {{ t('locations.filters.all') }}
       </button>
       <button
-        class="cursor-pointer rounded-[12px] border px-3 py-2 text-xs font-semibold"
+        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
         :class="
           filter === 'online'
-            ? 'border-emerald-500/60 bg-emerald-950/30 text-emerald-300'
-            : 'border-neutral-800 bg-neutral-950 text-neutral-300'
+            ? 'bg-emerald-950/30 text-emerald-300'
+            : 'bg-neutral-950 text-neutral-300'
         "
         @click="filter = 'online'"
       >
-        {{ t('locations.filters.online') }} ({{ counts.online }})
+        {{ t('locations.filters.online') }}
       </button>
       <button
-        class="cursor-pointer rounded-[12px] border px-3 py-2 text-xs font-semibold"
+        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
         :class="
-          filter === 'offline'
-            ? 'border-rose-500/60 bg-rose-950/30 text-rose-300'
-            : 'border-neutral-800 bg-neutral-950 text-neutral-300'
+          filter === 'offline' ? 'bg-rose-950/30 text-rose-300' : 'bg-neutral-950 text-neutral-300'
         "
         @click="filter = 'offline'"
       >
-        {{ t('locations.filters.offline') }} ({{ counts.offline }})
+        {{ t('locations.filters.offline') }}
       </button>
     </div>
 

@@ -15,7 +15,7 @@ const { t } = useI18n()
 const tabs = computed(() => [
   { path: '/', label: t('nav.home'), icon: 'lucide:home' },
   { path: '/setup', icon: 'lucide:settings', label: t('nav.setup') },
-  { path: '/locations', icon: 'lucide:map-pin', label: t('nav.locations') },
+  { path: '/locations', icon: 'lucide:map', label: t('nav.locations') },
   { path: '/profile', icon: 'lucide:user', label: t('nav.profile') },
   { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
 ])
@@ -69,7 +69,9 @@ function navigate(path: string) {
 </script>
 
 <template>
-  <nav class="fixed top-0 left-0 z-50 flex h-dvh w-48 flex-col items-start bg-black/25 px-6 py-6 backdrop-blur-md">
+  <nav
+    class="fixed top-0 left-0 z-50 flex h-dvh w-48 flex-col items-start bg-black/25 px-6 py-6 backdrop-blur-md"
+  >
     <div class="font-logo flex flex-row items-center gap-2 text-sm font-bold">
       <Logotype class="size-6" /> KLAR
     </div>
