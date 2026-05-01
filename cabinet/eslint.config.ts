@@ -1,14 +1,16 @@
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
-import vueTsEslintConfig from '@vue/eslint-config-typescript'
+import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import prettierConfig from '@vue/eslint-config-prettier'
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
 export default [
   { ignores: ['dist/**', 'node_modules/**', '*.config.*'] },
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
-  ...vueTsEslintConfig(),
+  vueTsConfigs.recommended,
   prettierConfig,
+  skipFormatting,
   {
     files: ['**/*.vue', '**/*.ts', '**/*.tsx'],
     rules: {
