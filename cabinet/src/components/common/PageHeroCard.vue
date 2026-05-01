@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-25">
+  <div class="flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-18">
     <span class="flex w-fit items-center justify-center rounded-[14px] bg-white/5 p-4">
       <Icon :icon="icon" class="size-8 opacity-60" />
     </span>

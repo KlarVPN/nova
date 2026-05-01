@@ -2,7 +2,6 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
-import { TextMorph } from 'torph/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { useAuthStore } from '@/stores/auth'
 import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
@@ -11,6 +10,7 @@ import { useToast } from '@/components/ui/toast'
 import type { PaymentProvider } from '@/types'
 import { Button } from '@/components/ui/button'
 import SheetModal from '@/components/common/SheetModal.vue'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
 
 const store = useSubscriptionStore()
 const auth = useAuthStore()
@@ -115,6 +115,55 @@ const paySubscriptionPrice = computed(() => {
 
 const paySubscriptionFinalPriceText = computed(() => paySubscriptionPrice.value.finalPrice ?? '')
 const paySubscriptionOldPriceText = computed(() => paySubscriptionPrice.value.oldPrice ?? '')
+
+const defaultCtaPriceText = computed(() => {
+  if (store.isTrafficMode) {
+    const rubMin = displayTrafficPackages.value
+      .map((p) => p.price_rub)
+      .filter((v): v is number => v != null)
+      .reduce<number | null>((min, v) => (min == null || v < min ? v : min), null)
+    if (rubMin != null) return formatPrice(discountedPrice(rubMin))
+
+    const starsMin = displayTrafficPackages.value
+      .map((p) => p.price_stars)
+      .filter((v): v is number => v != null)
+      .reduce<number | null>((min, v) => (min == null || v < min ? v : min), null)
+    if (starsMin != null) return `${starsMin} ⭐`
+    return ''
+  }
+
+  const rubMin = sortedPlans.value
+    .map((p) => p.price_rub)
+    .filter((v): v is number => v != null)
+    .reduce<number | null>((min, v) => (min == null || v < min ? v : min), null)
+  if (rubMin != null) return formatPrice(discountedPrice(rubMin))
+
+  const starsMin = sortedPlans.value
+    .map((p) => p.price_stars)
+    .filter((v): v is number => v != null)
+    .reduce<number | null>((min, v) => (min == null || v < min ? v : min), null)
+  if (starsMin != null) return `${starsMin} ⭐`
+  return ''
+})
+
+const ctaPriceText = computed(() => {
+  if (selectedMonths.value) {
+    const plan = sortedPlans.value.find((p) => p.months === selectedMonths.value)
+    if (!plan) return ''
+    if (plan.price_rub != null) return formatPrice(discountedPrice(plan.price_rub))
+    if (plan.price_stars != null) return `${plan.price_stars} ⭐`
+    return ''
+  }
+
+  if (selectedGb.value) {
+    const pkg = displayTrafficPackages.value.find((p) => p.gb === selectedGb.value)
+    if (!pkg) return ''
+    if (pkg.price_rub != null) return formatPrice(discountedPrice(pkg.price_rub))
+    if (pkg.price_stars != null) return `${pkg.price_stars} ⭐`
+  }
+
+  return defaultCtaPriceText.value
+})
 
 onMounted(() => {
   if (store.plansData) {
@@ -314,30 +363,19 @@ watch(
   <div
     class="plans-page relative mx-auto flex w-full max-w-5xl flex-col items-center gap-5 pt-2 pb-6"
   >
-    <div class="bg-wh flex flex-col gap-3 rounded-[14px] bg-neutral-950 p-5 pr-25">
-      <h1 class="mt-1 text-2xl leading-[0.9] font-medium tracking-tight text-balance text-white">
-        {{ t('plans.title') }}
-      </h1>
-      <p class="text-sm text-balance opacity-60">
-        {{ t('plans.description') }}
-      </p>
-    </div>
+    <PageHeroCard
+      :title="t('plans.title')"
+      :description="t('plans.description')"
+      icon="grommet-icons:money"
+    />
 
     <Transition name="content-fade">
       <!-- Loading -->
       <div v-if="showPlansSkeleton" key="loading" class="flex w-full flex-col gap-3 py-4">
-        <div
-          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
-        <div
-          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
-        <div
-          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
-        <div
-          class="h-[136px] w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
+        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
+        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
+        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
+        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
       </div>
 
       <div v-else key="content" class="w-full">
@@ -379,7 +417,7 @@ watch(
                   :class="
                     selectedMonths === plan.months
                       ? 'bg-neutral-900/90 ring-2 ring-white'
-                      : 'bg-neutral-950/70 ring ring-white/10 hover:bg-neutral-900/70 hover:ring-white/20'
+                      : 'bg-neutral-950/70 hover:bg-neutral-900/70'
                   "
                   @click="selectPlan(plan.months)"
                 >
@@ -441,14 +479,17 @@ watch(
             :disabled="!selectedMonths && !selectedGb"
             @click="goToPaymentStep"
           >
-            <span>{{ t('plans.paySubscription') }}</span>
+            <span class="flex items-center gap-2">
+              <Icon icon="grommet-icons:money" class="size-5" />
+              {{ t('plans.paySubscription') }}
+            </span>
             <span
-              v-if="paySubscriptionPrice.finalPrice"
+              v-if="ctaPriceText"
               class="flex items-center gap-1 text-right text-xs tracking-normal normal-case"
             >
-              <TextMorph :text="paySubscriptionFinalPriceText" class="text-sm font-semibold" />
-              <span v-if="paySubscriptionPrice.oldPrice" class="old-price-strike text-black/40">
-                <TextMorph :text="paySubscriptionOldPriceText" />
+              <span class="text-sm font-semibold">{{ ctaPriceText }}</span>
+              <span v-if="paySubscriptionOldPriceText" class="old-price-strike text-black/40">
+                <span>{{ paySubscriptionOldPriceText }}</span>
               </span>
             </span>
           </Button>

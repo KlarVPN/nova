@@ -5,12 +5,15 @@ import { Icon } from '@iconify/vue'
 import { api } from '@/lib/api'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import type { ProxyItem } from '@/types'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
 
 const { t } = useI18n()
 
 const loading = ref(false)
 const proxies = ref<ProxyItem[]>([])
-const probeState = ref<Record<string, { status: 'online' | 'offline' | 'unknown'; ping_ms: number | null }>>({})
+const probeState = ref<
+  Record<string, { status: 'online' | 'offline' | 'unknown'; ping_ms: number | null }>
+>({})
 
 function flagEmojiToCode(flagEmoji: string): string | null {
   const chars = Array.from(flagEmoji || '')
@@ -74,11 +77,13 @@ function openProxy(link: string) {
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-3 pb-6">
-    <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('proxies.title') }}
-    </h1>
+    <PageHeroCard
+      :title="t('proxies.title')"
+      :description="t('proxies.description')"
+      icon="mdi:proxy"
+    />
 
-    <div class="rounded-[14px] border border-neutral-800 bg-neutral-950 p-4 text-sm text-neutral-300">
+    <div class="rounded-[14px] bg-neutral-950 p-4 text-sm text-neutral-300">
       <p class="font-medium text-white">{{ t('proxies.helpTitle') }}</p>
       <p class="mt-2">{{ t('proxies.helpIntro') }}</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-neutral-400">
@@ -96,7 +101,10 @@ function openProxy(link: string) {
       <Icon icon="lucide:loader-circle" class="size-8 animate-spin text-neutral-400" />
     </div>
 
-    <div v-else-if="!proxies.length" class="rounded-[14px] border border-neutral-800 bg-neutral-950 p-4 text-center text-sm text-neutral-400">
+    <div
+      v-else-if="!proxies.length"
+      class="rounded-[14px] bg-neutral-950 p-4 text-center text-sm text-neutral-400"
+    >
       {{ t('proxies.empty') }}
     </div>
 
@@ -104,7 +112,7 @@ function openProxy(link: string) {
       <button
         v-for="proxy in proxies"
         :key="proxy.link"
-        class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-3 text-left transition-colors hover:bg-neutral-900"
+        class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] bg-neutral-950 px-4 py-3 text-left transition-colors hover:bg-neutral-900"
         @click="openProxy(proxy.link)"
       >
         <Icon
@@ -117,7 +125,12 @@ function openProxy(link: string) {
           <p class="font-medium text-white">{{ proxy.country }}</p>
           <p
             class="text-xs"
-            :class="pingClass(probeState[proxy.link]?.status ?? 'unknown', probeState[proxy.link]?.ping_ms ?? null)"
+            :class="
+              pingClass(
+                probeState[proxy.link]?.status ?? 'unknown',
+                probeState[proxy.link]?.ping_ms ?? null,
+              )
+            "
           >
             {{
               probeState[proxy.link]?.ping_ms != null

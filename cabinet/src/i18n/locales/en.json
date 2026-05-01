@@ -281,7 +281,7 @@
     "locations": "Locations",
     "promo": "Promo code",
     "operations": "Operations history",
-    "freeTelegramProxies": "Free Telegram proxies",
+    "freeTelegramProxies": "Free proxies",
     "accessSave": "Access backup",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
@@ -308,7 +308,8 @@
     "months": "Duration"
   },
   "proxies": {
-    "title": "Free Telegram proxies",
+    "title": "Free proxies",
+    "description": "Open Telegram even with restrictions: choose a country and connect a ready-made proxy in one tap.",
     "empty": "No proxies available yet",
     "unavailable": "Unavailable",
     "helpTitle": "Telegram won't open?",
