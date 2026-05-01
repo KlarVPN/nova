@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import { Button } from '@/components/ui/button'
 import { FloatingLink, PageHeroCard } from '@/components/common'
+import { Button } from '@/components/ui/button'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
+import { Icon } from '@iconify/vue'
+import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -62,9 +62,7 @@ function openOtherPlatforms() {
 </script>
 
 <template>
-  <div
-    class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-4 pt-3 pb-24"
-  >
+  <div class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col gap-4 pt-3 pb-24">
     <PageHeroCard
       icon="lucide:settings"
       :title="t('support.setupOtherDevice')"
