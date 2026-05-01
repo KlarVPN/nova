@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import { useAuthStore } from '@/stores/auth'
-import { useSubscriptionStore } from '@/stores/subscription'
-import { hapticError, hapticImpact, hapticSuccess, openLink } from '@/lib/telegram'
-import { Button } from '@/components/ui/button'
 import { FloatingLink, ProfileLanguageSelector, SheetModal } from '@/components/common'
-import { useRouter } from 'vue-router'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
+import { hapticError, hapticImpact, hapticSuccess, openLink } from '@/lib/telegram'
 import { pluralDays } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth'
+import { useSubscriptionStore } from '@/stores/subscription'
 import type { PromoResult } from '@/types'
+import { Icon } from '@iconify/vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const store = useSubscriptionStore()

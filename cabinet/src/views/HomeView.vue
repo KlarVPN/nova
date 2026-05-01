@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import NumberFlow from '@number-flow/vue'
+import { Card, SheetModal, Skeleton, SubscriptionBadge } from '@/components/common'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast'
+import { api } from '@/lib/api'
+import { hapticError, hapticImpact, hapticSuccess, openLink, twa } from '@/lib/telegram'
+import { formatDaysRemaining, formatPrice } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
-import { formatDaysRemaining, formatPrice } from '@/lib/utils'
-import { Card } from '@/components/common'
-import { api } from '@/lib/api'
-import { hapticImpact, hapticSuccess, hapticError, openLink, twa } from '@/lib/telegram'
 import type { Device } from '@/types'
-import { Button } from '@/components/ui/button'
-import { SubscriptionBadge, SheetModal, Skeleton } from '@/components/common'
-import { useToast } from '@/components/ui/toast'
+import { Icon } from '@iconify/vue'
+import NumberFlow from '@number-flow/vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
@@ -453,7 +452,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
   <!-- Device Management Bottom Sheet -->
   <SheetModal
     :model-value="showDevices"
-    desktop-position="center"
+    desktop-position="end"
     show-handle
     panel-class="flex max-h-[90vh] flex-col bg-[#0a0a0a] md:w-full md:max-w-2xl md:rounded-2xl md:shadow-2xl"
     overlay-class="bg-black/70 backdrop-blur-sm"
@@ -530,13 +529,13 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 
   <SheetModal
     v-model="showTrialGate"
-    desktop-position="center"
+    desktop-position="end"
     :show-handle="true"
     panel-class="mx-3 rounded-2xl border border-neutral-800 bg-neutral-950 p-4 md:mx-0 md:w-full md:max-w-md"
   >
     <div class="flex flex-col gap-3">
       <div class="flex items-center gap-2">
-        <Icon icon="lucide:gift" class="size-5 text-[#bdfe00]" />
+        <Icon icon="lucide:gift" class="size-5 text-white" />
         <p class="text-base font-semibold text-white">{{ t('home.trialModalTitle') }}</p>
       </div>
       <p class="text-sm text-neutral-400">{{ t('home.trialModalDesc') }}</p>
