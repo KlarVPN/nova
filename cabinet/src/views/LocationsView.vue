@@ -104,7 +104,7 @@ onBeforeUnmount(() => {
       <PageHeroCard
         icon="lucide:map"
         :title="t('locations.title')"
-        :description="t('support.description')"
+        :description="t('locations.description')"
       />
     </div>
 

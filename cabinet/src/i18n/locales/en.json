@@ -356,6 +356,7 @@
   },
   "locations": {
     "title": "Locations",
+    "description": "Check server availability and choose a suitable location for connection.",
     "filters": {
       "all": "All locations",
       "online": "Online",

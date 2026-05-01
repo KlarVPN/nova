@@ -19,7 +19,7 @@ const props = withDefaults(
   <button
     :class="
       cn(
-        'flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-white p-3 font-sans font-medium tracking-tight text-black transition-all hover:bg-neutral-200',
+        'flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4.5 py-3 font-sans font-medium tracking-tight text-black transition-all hover:bg-neutral-200',
         props.disabled ? 'cursor-not-allowed opacity-50' : '',
         props.class,
       )

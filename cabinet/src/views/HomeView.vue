@@ -3,12 +3,13 @@ import { onMounted, computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
+import NumberFlow from '@number-flow/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { formatDaysRemaining, formatPrice } from '@/lib/utils'
 import { Card } from '@/components/common'
 import { api } from '@/lib/api'
-import { hapticImpact, hapticSuccess, hapticError, openLink } from '@/lib/telegram'
+import { hapticImpact, hapticSuccess, hapticError, openLink, twa } from '@/lib/telegram'
 import type { Device } from '@/types'
 import { Button } from '@/components/ui/button'
 import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
@@ -78,6 +79,20 @@ const subscribeFromLabel = computed(() => {
   return ''
 })
 
+const currentDeviceIcon = computed(() => {
+  const p = String(twa?.platform || '').toLowerCase()
+  if (p.includes('ios') || p.includes('macos') || p.includes('mac')) return 'lucide:laptop'
+  if (p.includes('android')) return 'lucide:smartphone'
+  if (p.includes('web') || p.includes('tdesktop')) return 'lucide:monitor'
+
+  const ua = navigator.userAgent.toLowerCase()
+  if (ua.includes('android') || ua.includes('iphone')) return 'lucide:smartphone'
+  if (ua.includes('ipad')) return 'lucide:tablet'
+  if (ua.includes('mac os') || ua.includes('windows') || ua.includes('linux'))
+    return 'lucide:monitor'
+  return 'lucide:laptop'
+})
+
 async function openDevicesModal() {
   hapticImpact('light')
   if (!subStore.devicesData) {
@@ -137,6 +152,21 @@ const deviceCountLabel = computed(() => {
   if (!d) return null
   if (d.max_devices) return t('devices.countOf', { current: d.current_count, max: d.max_devices })
   return t('devices.countFree', { current: d.current_count })
+})
+
+const devicesCurrentCount = computed(() => {
+  if (subStore.loadingDevices) return 0
+  return subStore.devicesData?.current_count ?? 0
+})
+
+const devicesMaxCount = computed(() => {
+  if (subStore.loadingDevices) return 0
+  return subStore.devicesData?.max_devices ?? 0
+})
+
+const devicesUnlimited = computed(() => {
+  if (subStore.loadingDevices) return false
+  return devicesMaxCount.value === 0
 })
 
 function goToPlans() {
@@ -347,21 +377,14 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                     {{ t('devices.title') }}
                     <Icon icon="lucide:chevron-right" class="size-3" />
                   </span>
-                  <div v-if="subStore.loadingDevices" class="flex items-center gap-2">
-                    <Icon
-                      icon="lucide:loader-circle"
-                      class="size-4 animate-spin text-neutral-400"
-                    />
-                  </div>
-                  <div v-else-if="subStore.devicesData" class="flex items-center justify-between">
-                    <span class="font-medium text-white">
-                      {{ subStore.devicesData.current_count }}
-                      <span class="text-white/50">
-                        / {{ subStore.devicesData.max_devices ?? '∞' }}
-                      </span>
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1 font-medium text-white">
+                      <NumberFlow :value="devicesCurrentCount" />
+                      <span class="text-white/50">/</span>
+                      <span v-if="devicesUnlimited" class="text-white/50">∞</span>
+                      <NumberFlow v-else :value="devicesMaxCount" class="text-white/50" />
                     </span>
                   </div>
-                  <div v-else class="text-sm text-neutral-500">—</div>
                 </Card>
               </div>
               <!-- Traffic -->
@@ -409,12 +432,17 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
                   :disabled="subStore.loadingConnect || !subStore.connectInfo"
                   @click="router.push({ name: 'setup' })"
                 >
+                  <Icon icon="lucide:plug-zap" class="size-5" />
                   {{ t('home.connect') }}
-                  <Icon icon="lucide:chevron-right" class="size-4" />
+                  <Icon icon="lucide:chevron-right" class="ml-auto size-5 text-black/40" />
                 </Button>
               </div>
               <Button class="bg-neutral-900 text-white hover:bg-neutral-800" @click="goToPlans">
+                <Icon icon="lucide:refresh-cw" class="size-5" />
                 {{ t('home.renewSub') }}
+                <span v-if="subscribeFromLabel" class="ml-auto text-sm font-medium text-white/40">
+                  {{ subscribeFromLabel }}
+                </span>
               </Button>
             </div>
           </div>
