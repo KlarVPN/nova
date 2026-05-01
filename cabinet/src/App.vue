@@ -3,8 +3,7 @@ import { onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { locale, initLocale } from '@/i18n/i18n.ts'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AuthLayout from '@/components/layout/AuthLayout.vue'
+import { AppLayout, AuthLayout } from '@/components/layout'
 import Toaster from '@/components/ui/toast/Toaster.vue'
 import { i18n } from '@/i18n/i18n.ts'
 import { useRoute, useRouter } from 'vue-router'
@@ -17,7 +16,9 @@ const route = useRoute()
 function isAccessAuthPath() {
   const appBase = import.meta.env.BASE_URL.replace(/\/$/, '')
   const pathname = window.location.pathname
-  return pathname.startsWith('/access/') || Boolean(appBase && pathname.startsWith(`${appBase}/access/`))
+  return (
+    pathname.startsWith('/access/') || Boolean(appBase && pathname.startsWith(`${appBase}/access/`))
+  )
 }
 
 watch(

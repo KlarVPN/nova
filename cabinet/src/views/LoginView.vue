@@ -6,7 +6,7 @@ import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
-import Logotype from '@/components/common/Logotype.vue'
+import { Logotype } from '@/components/common'
 
 const { t } = useI18n()
 const router = useRouter()

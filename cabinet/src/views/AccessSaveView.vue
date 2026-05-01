@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
-import Skeleton from '@/components/common/Skeleton.vue'
+import { Skeleton } from '@/components/common'
 
 const { t } = useI18n()
 const { success, error } = useToast()

@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
-import ActionListButton from '@/components/common/ActionListButton.vue'
+import { PageHeroCard, ActionListButton } from '@/components/common'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
 

@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { motion } from 'motion-v'
 import { api } from '@/lib/api'
 import type { LocationStatus } from '@/types'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
+import { PageHeroCard } from '@/components/common'
 
 const { t } = useI18n()
 

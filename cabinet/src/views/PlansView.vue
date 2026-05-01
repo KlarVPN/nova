@@ -9,9 +9,7 @@ import { hapticImpact } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import type { PaymentProvider } from '@/types'
 import { Button } from '@/components/ui/button'
-import SheetModal from '@/components/common/SheetModal.vue'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
-import Skeleton from '@/components/common/Skeleton.vue'
+import { SheetModal, PageHeroCard, Skeleton } from '@/components/common'
 
 const store = useSubscriptionStore()
 const auth = useAuthStore()

@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
+import { PageHeroCard } from '@/components/common'
 
 const { t } = useI18n()
 const openIndex = ref(0)

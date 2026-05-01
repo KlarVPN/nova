@@ -1,7 +1,6 @@
 export { default as ActionListButton } from './ActionListButton.vue'
 export { default as Card } from './Card.vue'
 export { default as FloatingLink } from './FloatingLink.vue'
-export { default as GlassCard } from './GlassCard.vue'
 export { default as LoadingSpinner } from './LoadingSpinner.vue'
 export { default as Logotype } from './Logotype.vue'
 export { default as PageHeroCard } from './PageHeroCard.vue'

@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { Button } from '@/components/ui/button'
-import SheetModal from '@/components/common/SheetModal.vue'
+import { SheetModal } from '@/components/common'
 import { hapticImpact } from '@/lib/telegram'
 
 type SetupOS = 'ios' | 'android' | 'macos' | 'linux' | 'windows' | 'other'
@@ -306,18 +306,15 @@ onBeforeUnmount(() => {
       panel-class="bg-[#0a0a0a] p-4 pb-6 shadow-[0_-20px_40px_rgba(0,0,0,0.45)] md:w-full md:max-w-lg md:rounded-2xl md:pb-4"
       @close="showInstallWarning = false"
     >
-            <h2 class="mb-3 text-2xl font-semibold text-white">
-              {{ t('setup.wizard.warning.title') }}
-            </h2>
-            <p class="text-base text-neutral-300">
-              {{ t('setup.wizard.warning.body') }}
-            </p>
-            <Button
-              class="mt-4 h-11 bg-white text-black hover:bg-neutral-200"
-              @click="confirmInstall"
-            >
-              {{ t('setup.wizard.warning.confirm') }}
-            </Button>
+      <h2 class="mb-3 text-2xl font-semibold text-white">
+        {{ t('setup.wizard.warning.title') }}
+      </h2>
+      <p class="text-base text-neutral-300">
+        {{ t('setup.wizard.warning.body') }}
+      </p>
+      <Button class="mt-4 h-11 bg-white text-black hover:bg-neutral-200" @click="confirmInstall">
+        {{ t('setup.wizard.warning.confirm') }}
+      </Button>
     </SheetModal>
   </div>
 </template>
@@ -451,5 +448,4 @@ onBeforeUnmount(() => {
     transform: scale(1);
   }
 }
-
 </style>

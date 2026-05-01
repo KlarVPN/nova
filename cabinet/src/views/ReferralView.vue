@@ -7,9 +7,7 @@ import { copyToClipboard, monthsLabel, pluralDays } from '@/lib/utils'
 import { hapticSuccess, shareUrl } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import { Card } from '@/components/common'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
-import FloatingLink from '@/components/common/FloatingLink.vue'
-import Skeleton from '@/components/common/Skeleton.vue'
+import { PageHeroCard, FloatingLink, Skeleton } from '@/components/common'
 
 const store = useSubscriptionStore()
 const { t } = useI18n()

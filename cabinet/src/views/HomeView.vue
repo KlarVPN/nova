@@ -12,9 +12,7 @@ import { api } from '@/lib/api'
 import { hapticImpact, hapticSuccess, hapticError, openLink, twa } from '@/lib/telegram'
 import type { Device } from '@/types'
 import { Button } from '@/components/ui/button'
-import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
-import SheetModal from '@/components/common/SheetModal.vue'
-import Skeleton from '@/components/common/Skeleton.vue'
+import { SubscriptionBadge, SheetModal, Skeleton } from '@/components/common'
 import { useToast } from '@/components/ui/toast'
 
 const auth = useAuthStore()

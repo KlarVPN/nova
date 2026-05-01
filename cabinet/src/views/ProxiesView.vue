@@ -5,7 +5,7 @@ import { Icon } from '@iconify/vue'
 import { api } from '@/lib/api'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import type { ProxyItem } from '@/types'
-import PageHeroCard from '@/components/common/PageHeroCard.vue'
+import { PageHeroCard } from '@/components/common'
 
 const { t } = useI18n()
 
