@@ -105,11 +105,11 @@ function toggleFaq(index: number) {
     <Transition name="content-fade" mode="out-in">
       <div v-if="store.loadingReferral" key="loading" class="flex w-full flex-col gap-3 py-2">
         <div class="grid grid-cols-2 gap-3">
-          <Skeleton class="h-24 border border-neutral-800" />
-          <Skeleton class="h-24 border border-neutral-800" />
+          <Skeleton class="h-24" />
+          <Skeleton class="h-24" />
         </div>
-        <Skeleton class="h-32 w-full border border-neutral-800" />
-        <Skeleton class="h-44 w-full border border-neutral-800" />
+        <Skeleton class="h-32 w-full" />
+        <Skeleton class="h-44 w-full" />
       </div>
 
       <div v-else-if="store.referralData" key="content" class="flex w-full flex-col gap-3">

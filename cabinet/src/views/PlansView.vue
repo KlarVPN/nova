@@ -373,10 +373,10 @@ watch(
     <Transition name="content-fade">
       <!-- Loading -->
       <div v-if="showPlansSkeleton" key="loading" class="flex w-full flex-col gap-3 py-4">
-        <Skeleton class="h-[136px] w-full" />
-        <Skeleton class="h-[136px] w-full" />
-        <Skeleton class="h-[136px] w-full" />
-        <Skeleton class="h-[136px] w-full" />
+        <Skeleton class="h-34 w-full" />
+        <Skeleton class="h-34 w-full" />
+        <Skeleton class="h-34 w-full" />
+        <Skeleton class="h-34 w-full" />
       </div>
 
       <div v-else key="content" class="w-full">
