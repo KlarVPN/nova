@@ -6,7 +6,9 @@
     "referral": "추천",
     "promo": "프로모 코드",
     "configs": "설정 파일",
-    "profile": "프로필"
+    "profile": "프로필",
+    "support": "Support",
+    "locations": "Locations"
   },
   "common": {
     "loading": "로딩 중...",
@@ -56,7 +58,15 @@
     "renewDesc": "미리 구독을 갱신하세요",
     "renewSub": "구독 갱신",
     "expiredDesc": "구독이 만료되었습니다. VPN을 계속 사용하려면 갱신하세요.",
-    "disabledDesc": "구독이 비활성화되었습니다. 지원팀에 문의하세요."
+    "disabledDesc": "구독이 비활성화되었습니다. 지원팀에 문의하세요.",
+    "trialModalTitle": "Trial period",
+    "trialModalDesc": "To activate the trial period, subscribe to our Telegram channel and confirm your subscription.",
+    "goToChannel": "Go to channel",
+    "checkSubscription": "Check subscription",
+    "trialNeedChannel": "Subscribe to the channel to activate trial",
+    "trialCheckFailed": "Failed to check subscription",
+    "trialActivateFailed": "Failed to activate trial",
+    "channelLinkUnavailable": "Channel link is unavailable"
   },
   "plans": {
     "title": "요금제",
@@ -76,7 +86,11 @@
     "paymentMethod": "결제 방법",
     "pay": "결제",
     "redirecting": "결제 페이지로 이동 중...",
-    "paymentError": "결제 생성 실패"
+    "paymentError": "결제 생성 실패",
+    "perMonth": "per month",
+    "activeUntil": "Active until",
+    "paySubscription": "Pay subscription",
+    "selectPlanFirst": "Select a plan first"
   },
   "providers": {
     "yookassa": "은행 카드",
@@ -84,7 +98,8 @@
     "cryptopay": "암호화폐",
     "freekassa": "FreeKassa",
     "platega": "Platega",
-    "severpay": "SeverPay"
+    "severpay": "SeverPay",
+    "kassa_ai": "Kassa AI"
   },
   "referral": {
     "title": "추천",
@@ -101,7 +116,33 @@
     "howTitle": "작동 방식",
     "step1": "친구에게 링크를 공유하세요",
     "step2": "친구가 가입하고 구독합니다",
-    "step3": "둘 다 구독에 보너스 일수가 추가됩니다"
+    "step3": "둘 다 구독에 보너스 일수가 추가됩니다",
+    "description": "Invite friends with your link and get bonus subscription days.",
+    "timeline": {
+      "shareTitle": "Share your referral link with a friend",
+      "shareSubtitle": "Copy the link and send it to your friend",
+      "waitTitle": "Wait until your friend buys a subscription",
+      "waitSubtitle": "Any plan works. Available for new users",
+      "friendBonusTitle": "Your friend will get bonus subscription days",
+      "friendBonusSubtitle": "Right after the subscription purchase",
+      "yourBonusTitle": "You will get bonus subscription days",
+      "yourBonusSubtitle": "After your friend activates a subscription"
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": "Where can I find my referral link?",
+      "a1": "In your account, open 'My profile' -> 'Referral program'. There you will see your unique referral link.",
+      "q2": "How many friends can I invite? Are there limits?",
+      "a2": "You can invite as many friends as you want. Each friend gets a 30-day bonus subscription via your link. For your side, the accumulated free period is capped at 2 years.",
+      "q3": "Can I invite a friend who already has a subscription?",
+      "a3": "The referral program is available only for new users. If your friend already has an account, bonus days will not be credited.",
+      "q4": "Do I need an active subscription to participate?",
+      "a4": "You can invite friends even if you do not currently have an active subscription. Just copy your referral link from your account and send it any way you like.",
+      "q5": "I invited a friend, but bonus days were not credited. What should I do?",
+      "a5": "If your friend subscribed via your link but bonus days are still missing, either less than 30 days have passed since purchase or your friend was already an existing user. If you still need help, contact support.",
+      "q6": "Will I get a bonus if my friend cancels within the first 30 days?",
+      "a6": "Bonus days are credited only if the invited friend subscribes through your link and does not cancel within the first 30 days."
+    }
   },
   "promo": {
     "title": "프로모 코드",
@@ -128,7 +169,8 @@
       "already_used": "이미 이 프로모 코드를 사용했습니다",
       "limit_reached": "활성화 한도에 도달했습니다",
       "no_subscription": "구독이 필요합니다"
-    }
+    },
+    "modalDesc": "Enter a promo code to get a payment discount or extra subscription days."
   },
   "devices": {
     "title": "기기",
@@ -210,6 +252,36 @@
         "title": "다른 앱",
         "desc": "링크를 통한 수동 설정"
       }
+    },
+    "wizard": {
+      "os": {
+        "currentDevice": "your device"
+      },
+      "title": {
+        "device": "Setup on {os}",
+        "app": "App",
+        "subscription": "Subscription",
+        "done": "Done"
+      },
+      "subtitle": {
+        "device": "You can set up VPN in just three steps — it only takes a few minutes.",
+        "app": "Install the app for {os} and return to this screen.",
+        "subscription": "Add the subscription to the app using the button below.",
+        "done": "Press the round button in the app to enable VPN."
+      },
+      "actions": {
+        "start": "Start setup",
+        "otherDevice": "Set up on another device",
+        "installApp": "Install app",
+        "nextStep": "Next step",
+        "addSubscription": "Add subscription",
+        "finish": "Finish setup"
+      },
+      "warning": {
+        "title": "Important information",
+        "body": "After installing the app, return to this screen and tap \"next step\" to add the configuration to the app. Without this, VPN will not work.",
+        "confirm": "OK, continue to install"
+      }
     }
   },
   "profile": {
@@ -227,7 +299,10 @@
     "terms": "서비스 약관",
     "privacy": "개인정보 처리방침",
     "status": "서버 상태",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "operations": "Operations history",
+    "freeTelegramProxies": "Free proxies",
+    "accessSave": "Access backup"
   },
   "faq": {
     "title": "자주 묻는 질문",
@@ -261,6 +336,70 @@
       "offline": "오프라인",
       "pending": "대기 중",
       "unknown": "알 수 없음"
-    }
+    },
+    "description": "Check server availability and choose a suitable location for connection.",
+    "empty": "No locations in this group yet"
+  },
+  "login": {
+    "title": "Sign in to KLAR",
+    "subtitle": "Sign in with Telegram to continue",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "error": "Sign-in failed. Please try again.",
+    "orTelegram": "or",
+    "telegramBtn": "Sign in with Telegram",
+    "noKey": ""
+  },
+  "accessSave": {
+    "title": "Access backup",
+    "channelTitle": "Subscribe to the Telegram channel",
+    "channelDesc": "to receive important updates",
+    "linkTitle": "Save your account access link",
+    "linkDesc": "Using this link, you can access your account through a browser.",
+    "copied": "Link copied"
+  },
+  "operations": {
+    "title": "Operations history",
+    "subtitle": "Track your spending with a complete list of transactions",
+    "empty": "No operations yet",
+    "trialActivated": "Trial period activated",
+    "planPaid": "Plan paid",
+    "trialDuration": "Trial duration: {n} days",
+    "trialUntil": "Active until",
+    "amount": "Amount",
+    "months": "Duration"
+  },
+  "proxies": {
+    "title": "Free proxies",
+    "description": "Open Telegram even with restrictions: choose a country and connect a ready-made proxy in one tap.",
+    "empty": "No proxies available yet",
+    "unavailable": "Unavailable",
+    "helpTitle": "Telegram won't open?",
+    "helpIntro": "Tap a country button below to get a ready-to-use Telegram proxy.",
+    "benefit1": "Telegram works even without an extra VPN connection",
+    "benefit2": "No manual setup needed — just tap the button",
+    "benefit3": "Connection stays stable and protected",
+    "disableTitle": "Want to disable the proxy later?",
+    "disablePath": "Settings -> Data and Storage -> Proxy -> Disable",
+    "fallbackTitle": "If it didn't work right away:",
+    "fallbackText": "Telegram usually prompts you to enable the proxy automatically. If no popup appears, the link is still ready — copy it and paste it manually in Settings -> Data and Storage -> Proxy."
+  },
+  "support": {
+    "title": "Contact support",
+    "description": "Get answers to common questions or contact us for help.",
+    "faq": "Frequently asked questions",
+    "setupOtherDevice": "Setup on another device",
+    "setupOtherDeviceDesc": "Choose a platform to connect on another device",
+    "instruction": "Instruction",
+    "forPlatform": "for {platform}",
+    "instructionFor": "Instruction for {platform}",
+    "contact": "Support",
+    "otherPlatforms": "Other platforms"
+  },
+  "accessLinkAuth": {
+    "invalid": "Invalid access link",
+    "missing": "Invalid access link",
+    "failed": "Access link sign-in failed",
+    "loading": "Authorizing..."
   }
 }
