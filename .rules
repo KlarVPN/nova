@@ -1,0 +1,13 @@
+When generating git commit messages, strictly follow Conventional Commits.
+
+Format:
+<type>(scope): <short description>
+
+Allowed types:
+feat, fix, docs, style, refactor, test, chore
+
+Rules:
+- Use imperative mood
+- Max 72 characters
+- No emojis
+- No explanations
