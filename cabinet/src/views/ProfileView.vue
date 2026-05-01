@@ -303,27 +303,27 @@ const router = useRouter()
       panel-class="border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
       @close="closeLanguageModal"
     >
-            <h2 class="mb-3 text-base font-medium text-white">{{ t('profile.language') }}</h2>
-            <div class="flex flex-col gap-2">
-              <button
-                v-for="item in AVAILABLE_LOCALES"
-                :key="item.code"
-                class="flex w-full cursor-pointer items-center rounded-[14px] border px-4 py-3 text-left transition-colors"
-                :class="
-                  locale === item.code
-                    ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-                    : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
-                "
-                @click="selectLanguage(item.code)"
-              >
-                <span class="font-medium">{{ item.name }}</span>
-                <Icon
-                  v-if="locale === item.code"
-                  icon="lucide:check"
-                  class="ml-auto size-4 text-[#bdfe00]"
-                />
-              </button>
-            </div>
+      <h2 class="mb-3 text-base font-medium text-white">{{ t('profile.language') }}</h2>
+      <div class="flex flex-col gap-2">
+        <button
+          v-for="item in AVAILABLE_LOCALES"
+          :key="item.code"
+          class="flex w-full cursor-pointer items-center rounded-[14px] border px-4 py-3 text-left transition-colors"
+          :class="
+            locale === item.code
+              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
+              : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
+          "
+          @click="selectLanguage(item.code)"
+        >
+          <span class="font-medium">{{ item.name }}</span>
+          <Icon
+            v-if="locale === item.code"
+            icon="lucide:check"
+            class="ml-auto size-4 text-[#bdfe00]"
+          />
+        </button>
+      </div>
     </SheetModal>
 
     <SheetModal
@@ -333,42 +333,38 @@ const router = useRouter()
       panel-class="bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:pb-4"
       @close="closePromoModal"
     >
-            <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
-            <p class="mb-3 text-sm text-neutral-400">
-              {{ t('promo.modalDesc') }}
-            </p>
-            <div class="flex flex-col gap-3">
-              <input
-                v-model="promoCode"
-                :placeholder="t('promo.placeholder')"
-                class="promo-input min-w-0 rounded-[14px] bg-neutral-900 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-500 disabled:opacity-40"
-                autocomplete="off"
-                :disabled="promoLoading || promoApplied"
-                @keydown.enter="applyPromo"
-              />
-              <div class="flex gap-2">
-                <Button
-                  class="flex h-10 flex-1 cursor-pointer items-center justify-center bg-white px-4 text-sm font-medium text-black transition-opacity disabled:opacity-40"
-                  :disabled="!promoCode.trim() || promoLoading || promoApplied"
-                  @click="applyPromo"
-                >
-                  <Icon
-                    v-if="promoLoading"
-                    icon="lucide:loader-circle"
-                    class="size-4 animate-spin"
-                  />
-                  <span v-else>{{ t('common.apply') }}</span>
-                </Button>
-              </div>
-              <p v-if="promoResult?.success" class="text-xs text-[#bdfe00]">
-                <template v-if="promoResult.type === 'bonus_days'">
-                  {{ t('promo.addedDays', { days: pluralDays(promoResult.bonus_days ?? 0) }) }}
-                </template>
-                <template v-else-if="promoResult.type === 'discount'">
-                  {{ t('promo.discountApplied', { n: promoResult.discount_percentage }) }}
-                </template>
-              </p>
-            </div>
+      <h2 class="mb-3 text-base font-medium text-white">{{ t('promo.title') }}</h2>
+      <p class="mb-3 text-sm text-neutral-400">
+        {{ t('promo.modalDesc') }}
+      </p>
+      <div class="flex flex-col gap-3">
+        <input
+          v-model="promoCode"
+          :placeholder="t('promo.placeholder')"
+          class="promo-input min-w-0 rounded-[14px] bg-neutral-900 px-3 py-2 font-mono text-sm tracking-widest text-white uppercase outline-none placeholder:text-neutral-500 disabled:opacity-40"
+          autocomplete="off"
+          :disabled="promoLoading || promoApplied"
+          @keydown.enter="applyPromo"
+        />
+        <div class="flex gap-2">
+          <Button
+            class="flex h-10 flex-1 cursor-pointer items-center justify-center bg-white px-4 text-sm font-medium text-black transition-opacity disabled:opacity-40"
+            :disabled="!promoCode.trim() || promoLoading || promoApplied"
+            @click="applyPromo"
+          >
+            <Icon v-if="promoLoading" icon="lucide:loader-circle" class="size-4 animate-spin" />
+            <span v-else>{{ t('common.apply') }}</span>
+          </Button>
+        </div>
+        <p v-if="promoResult?.success" class="text-xs text-[#bdfe00]">
+          <template v-if="promoResult.type === 'bonus_days'">
+            {{ t('promo.addedDays', { days: pluralDays(promoResult.bonus_days ?? 0) }) }}
+          </template>
+          <template v-else-if="promoResult.type === 'discount'">
+            {{ t('promo.discountApplied', { n: promoResult.discount_percentage }) }}
+          </template>
+        </p>
+      </div>
     </SheetModal>
 
     <FloatingSubscriptionLink :url="connectUrl" />
@@ -392,11 +388,10 @@ const router = useRouter()
 }
 
 .profile-links-group > :deep(button + button) {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 :global(:root[data-theme='light']) .profile-links-group > :deep(button + button) {
   box-shadow: inset 0 1px 0 #d2d2d7;
 }
-
 </style>
