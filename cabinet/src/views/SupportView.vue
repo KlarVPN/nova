@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { ActionListButton, PageHeroCard } from '@/components/common'
+import { hapticImpact, openLink } from '@/lib/telegram'
+import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { PageHeroCard, ActionListButton } from '@/components/common'
-import { hapticImpact, openLink } from '@/lib/telegram'
-import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -30,9 +30,7 @@ function openSupport() {
 </script>
 
 <template>
-  <div
-    class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col justify-center gap-4 pt-3 pb-6"
-  >
+  <div class="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-5xl flex-col gap-4 pt-3 pb-6">
     <PageHeroCard
       icon="bx:support"
       :title="t('support.title')"

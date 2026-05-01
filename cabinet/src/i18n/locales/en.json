@@ -316,8 +316,10 @@
   },
   "accessSave": {
     "title": "Access backup",
+    "description": "Save backup sign-in options so you don't lose access to your account.",
     "channelTitle": "Subscribe to the Telegram channel",
     "channelDesc": "to receive important updates",
+    "channelButton": "Open channel",
     "linkTitle": "Save your account access link",
     "linkDesc": "Using this link, you can access your account through a browser.",
     "copied": "Link copied"

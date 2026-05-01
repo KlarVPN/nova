@@ -496,6 +496,7 @@
   "payment_method_added_at": "Added: {date}",
   "payment_method_last_tx": "Last transaction: {date}",
   "payment_method_tx_history_title": "📜 Transaction History",
+  "payment_method_tx_history_description": "All your payments for the selected payment method are shown here.",
   "payment_method_no_history": "No transaction history.",
   "subscription_purchase_title": "Purchase {months}-month subscription",
   "traffic_purchase_title": "Purchase {traffic_gb} GB",

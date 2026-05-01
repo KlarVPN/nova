@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import { useI18n } from 'vue-i18n'
+import { PageHeroCard } from '@/components/common'
 import { api } from '@/lib/api'
 import type { OperationHistoryItem } from '@/types'
+import { Icon } from '@iconify/vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
@@ -41,10 +42,11 @@ onMounted(fetchOperations)
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-2 pb-6">
-    <h1 class="text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('operations.title') }}
-    </h1>
-    <p class="-mt-1 text-sm text-neutral-400">{{ t('operations.subtitle') }}</p>
+    <PageHeroCard
+      :title="t('operations.title')"
+      :description="t('operations.subtitle')"
+      icon="lucide:form"
+    />
 
     <div v-if="loading" class="py-10 text-center text-sm text-neutral-400">
       {{ t('common.loading') }}

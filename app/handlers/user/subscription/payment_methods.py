@@ -404,7 +404,13 @@ async def payment_method_history(callback: types.CallbackQuery, settings: Settin
         return f"{date_str} — {title} — {p.amount:.2f} {p.currency}"
 
     lines = [_format_item(p) for p in user_payments]
-    text = _("payment_method_tx_history_title") + "\n\n" + "\n".join(lines)
+    text = (
+        _("payment_method_tx_history_title")
+        + "\n"
+        + _("payment_method_tx_history_description")
+        + "\n\n"
+        + "\n".join(lines)
+    )
     try:
         split_a, split_b, split_pm_id_for_back = callback.data.split(":", 2)
     except Exception:
@@ -462,4 +468,3 @@ async def payment_methods_list(callback: types.CallbackQuery, settings: Settings
         await callback.answer()
     except Exception as exc:
         logging.debug("Suppressed exception in bot/handlers/user/subscription/payment_methods.py: %s", exc)
-

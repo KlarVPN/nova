@@ -496,6 +496,7 @@
   "payment_method_added_at": "Добавлена: {date}",
   "payment_method_last_tx": "Последняя операция: {date}",
   "payment_method_tx_history_title": "📜 История операций",
+  "payment_method_tx_history_description": "Здесь отображаются все ваши оплаты по выбранному способу оплаты.",
   "payment_method_no_history": "История операций отсутствует.",
   "subscription_purchase_title": "Покупка подписки на {months} мес.",
   "traffic_purchase_title": "Покупка {traffic_gb} ГБ",
