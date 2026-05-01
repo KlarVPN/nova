@@ -6,6 +6,7 @@ import { Icon } from '@iconify/vue'
 import { motion } from 'motion-v'
 import Logotype from '@/components/common/Logotype.vue'
 import { hapticImpact } from '@/lib/telegram'
+import packageJson from '../../../package.json'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,7 @@ const tabs = computed(() => [
 ])
 
 const active = computed(() => route.path)
+const appVersion = packageJson.version
 const tabsContainerRef = ref<HTMLElement | null>(null)
 const tabRefs = ref<Record<string, HTMLElement | null>>({})
 const bubbleY = ref(0)
@@ -30,7 +32,7 @@ function setTabRef(path: string, el: unknown) {
   tabRefs.value[path] = (el as HTMLElement | null) ?? null
 }
 
-function syncDesktopBubble() {
+function syncBubble() {
   const container = tabsContainerRef.value
   const activeEl = tabRefs.value[active.value]
   if (!container || !activeEl) {
@@ -47,16 +49,16 @@ function syncDesktopBubble() {
 
 watch(active, async () => {
   await nextTick()
-  syncDesktopBubble()
+  syncBubble()
 })
 
 onMounted(() => {
-  void nextTick(syncDesktopBubble)
-  window.addEventListener('resize', syncDesktopBubble)
+  void nextTick(syncBubble)
+  window.addEventListener('resize', syncBubble)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', syncDesktopBubble)
+  window.removeEventListener('resize', syncBubble)
 })
 
 function navigate(path: string) {
@@ -67,31 +69,30 @@ function navigate(path: string) {
 </script>
 
 <template>
-  <nav
-    class="fixed bottom-0 left-0 z-50 flex h-16 w-full items-center justify-center bg-black/10 py-4 backdrop-blur-md md:top-0 md:bottom-auto md:h-dvh md:w-48 md:flex-col md:items-start md:bg-black/25 md:px-6 md:py-6"
-    style="padding-bottom: max(env(safe-area-inset-bottom), 16px)"
-  >
-    <div class="font-logo hidden flex-row items-center gap-2 text-sm font-bold md:flex">
+  <nav class="fixed top-0 left-0 z-50 flex h-dvh w-48 flex-col items-start bg-black/25 px-6 py-6 backdrop-blur-md">
+    <div class="font-logo flex flex-row items-center gap-2 text-sm font-bold">
       <Logotype class="size-6" /> KLAR
     </div>
+
     <div
       ref="tabsContainerRef"
-      class="relative flex w-full max-w-md justify-around px-4 md:h-full md:max-w-none md:flex-col md:items-start md:justify-center md:gap-4 md:px-0"
+      class="relative flex h-full w-full max-w-none flex-col items-start justify-center gap-4 px-0"
     >
       <motion.div
         v-if="bubbleReady"
-        class="pointer-events-none absolute hidden rounded-xl bg-neutral-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:block"
+        class="pointer-events-none absolute rounded-xl bg-neutral-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         :initial="false"
         :animate="{ y: bubbleY, height: bubbleHeight, opacity: 1 }"
         :transition="{ type: 'spring', stiffness: 380, damping: 34, mass: 0.52 }"
         style="left: -6px; right: -6px; top: 0"
       />
+
       <button
         v-for="tab in tabs"
         :key="tab.path"
         :ref="(el) => setTabRef(tab.path, el)"
         type="button"
-        class="relative flex min-w-16 cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-xl px-2 py-1.5 text-[10px] font-medium transition-all duration-200 md:w-full md:min-w-0 md:flex-row md:gap-1.5 md:gap-2 md:py-2 md:text-sm"
+        class="relative flex w-full min-w-0 cursor-pointer flex-row items-center gap-2 overflow-hidden rounded-xl px-2 py-2 text-sm font-medium transition-all duration-200"
         :class="active === tab.path ? 'text-white' : 'text-neutral-400'"
         @click="navigate(tab.path)"
       >
@@ -99,6 +100,10 @@ function navigate(path: string) {
         <span class="relative z-10">{{ tab.label }}</span>
       </button>
     </div>
-    <div class="hidden flex-row items-center gap-2 text-xs opacity-20 md:flex">@ 2026 KLAR</div>
+
+    <div class="flex flex-col items-start text-xs opacity-20">
+      <div>v{{ appVersion }}</div>
+      <div>@ 2026 KLAR</div>
+    </div>
   </nav>
 </template>

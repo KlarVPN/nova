@@ -7,7 +7,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { formatDaysRemaining, formatPrice } from '@/lib/utils'
 import { Card } from '@/components/common'
-import { hapticImpact, hapticSuccess, hapticError } from '@/lib/telegram'
+import { api } from '@/lib/api'
+import { hapticImpact, hapticSuccess, hapticError, openLink } from '@/lib/telegram'
 import type { Device } from '@/types'
 import { Button } from '@/components/ui/button'
 import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
@@ -18,7 +19,7 @@ const auth = useAuthStore()
 const subStore = useSubscriptionStore()
 const router = useRouter()
 const { t } = useI18n()
-const { loading } = useToast()
+const { loading, error: toastError, info: toastInfo } = useToast()
 
 const sub = computed(() => auth.subscription)
 
@@ -32,6 +33,9 @@ const statusKey = computed(() => {
 })
 
 const showDevices = ref(false)
+const showTrialGate = ref(false)
+const trialGateLoading = ref(false)
+const trialChannelLink = ref('')
 
 onMounted(() => {
   if (!subStore.plansData) {
@@ -143,8 +147,52 @@ function goToPlans() {
 async function activateTrial() {
   hapticImpact()
   const dismiss = loading(t('common.loading'))
-  await subStore.activateTrial()
+  const ok = await subStore.activateTrial()
   dismiss()
+  if (!ok) toastError(t('home.trialActivateFailed'))
+}
+
+async function openTrialGate() {
+  hapticImpact()
+  trialGateLoading.value = true
+  showTrialGate.value = true
+  try {
+    const status = await api.channel.status()
+    trialChannelLink.value = status.channel_link || ''
+  } catch {
+    toastError(t('home.trialCheckFailed'))
+  } finally {
+    trialGateLoading.value = false
+  }
+}
+
+function goToChannel() {
+  hapticImpact('light')
+  if (!trialChannelLink.value) {
+    toastError(t('home.channelLinkUnavailable'))
+    return
+  }
+  openLink(trialChannelLink.value)
+}
+
+async function checkChannelAndActivateTrial() {
+  hapticImpact('medium')
+  trialGateLoading.value = true
+  try {
+    const status = await api.channel.status()
+    trialChannelLink.value = status.channel_link || trialChannelLink.value
+    if (!status.subscribed) {
+      toastInfo(t('home.trialNeedChannel'))
+      return
+    }
+
+    showTrialGate.value = false
+    await activateTrial()
+  } catch {
+    toastError(t('home.trialCheckFailed'))
+  } finally {
+    trialGateLoading.value = false
+  }
 }
 
 const botUsername = import.meta.env.VITE_BOT_USERNAME
@@ -227,7 +275,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
               v-if="auth.trialAvailable"
               class="h-12 bg-neutral-900 text-white"
               :disabled="subStore.processingTrial"
-              @click="activateTrial"
+              @click="openTrialGate"
             >
               <Icon icon="lucide:gift" class="size-5" />
               <span class="text-left font-sans text-base">{{ t('home.trialBtn') }}</span>
@@ -451,6 +499,39 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
             </div>
           </div>
           <div class="md:hidden" style="height: max(env(safe-area-inset-bottom), 12px)" />
+  </SheetModal>
+
+  <SheetModal
+    v-model="showTrialGate"
+    desktop-position="center"
+    :show-handle="true"
+    panel-class="mx-3 rounded-2xl border border-neutral-800 bg-neutral-950 p-4 md:mx-0 md:w-full md:max-w-md"
+  >
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-2">
+        <Icon icon="lucide:gift" class="size-5 text-[#bdfe00]" />
+        <p class="text-base font-semibold text-white">{{ t('home.trialModalTitle') }}</p>
+      </div>
+      <p class="text-sm text-neutral-400">{{ t('home.trialModalDesc') }}</p>
+
+      <Button class="h-11" :disabled="trialGateLoading" @click="goToChannel">
+        <Icon icon="lucide:external-link" class="size-4 text-black" />
+        <span>{{ t('home.goToChannel') }}</span>
+      </Button>
+
+      <Button
+        class="h-11 bg-neutral-900 text-white"
+        :disabled="trialGateLoading || subStore.processingTrial"
+        @click="checkChannelAndActivateTrial"
+      >
+        <Icon
+          :icon="trialGateLoading ? 'lucide:loader-circle' : 'lucide:badge-check'"
+          class="size-4"
+          :class="trialGateLoading ? 'animate-spin' : ''"
+        />
+        <span>{{ t('home.checkSubscription') }}</span>
+      </Button>
+    </div>
   </SheetModal>
 </template>
 

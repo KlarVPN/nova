@@ -48,6 +48,12 @@ export interface UserProfile {
   }
 }
 
+export interface ChannelSubscriptionStatus {
+  required: boolean
+  subscribed: boolean
+  channel_link: string
+}
+
 export interface SubscriptionPlan {
   months: number
   price_rub: number | null

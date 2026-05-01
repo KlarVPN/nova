@@ -83,6 +83,31 @@ def _is_telegram_linked_user(user: User) -> bool:
     return bool(user.first_name or user.last_name or user.username)
 
 
+async def _is_user_subscribed_to_required_channel(request: Request, user_id: int) -> bool:
+    settings = request.app.state.settings
+    required_channel_id = settings.REQUIRED_CHANNEL_ID
+    if not required_channel_id:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Required channel is not configured",
+        )
+
+    bot = request.app.state.bot
+    if not bot:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Telegram bot is not configured",
+        )
+
+    try:
+        member = await bot.get_chat_member(required_channel_id, user_id)
+    except Exception:
+        return False
+
+    member_status = str(getattr(member, "status", "")).lower()
+    return member_status in {"member", "administrator", "creator"}
+
+
 @router.get("/user/me")
 async def get_me(
     request: Request,
@@ -164,6 +189,29 @@ async def get_me(
             "instruction_windows": settings.INSTRUCTION_WINDOWS_URL or "",
             "instruction_linux": settings.INSTRUCTION_LINUX_URL or "",
         },
+    }
+
+
+@router.get("/channel/subscription-status")
+async def get_channel_subscription_status(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id: int = int(current_user["id"])
+    settings = request.app.state.settings
+
+    if not settings.REQUIRED_CHANNEL_ID:
+        return {
+            "required": False,
+            "subscribed": True,
+            "channel_link": settings.REQUIRED_CHANNEL_LINK or "",
+        }
+
+    subscribed = await _is_user_subscribed_to_required_channel(request, user_id)
+    return {
+        "required": True,
+        "subscribed": subscribed,
+        "channel_link": settings.REQUIRED_CHANNEL_LINK or "",
     }
 
 
@@ -781,6 +829,10 @@ async def activate_trial(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if auth_source != "telegram_init" and not _is_telegram_linked_user(user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Trial is available only for Telegram-linked accounts")
+
+    is_subscribed = await _is_user_subscribed_to_required_channel(request, user_id)
+    if not is_subscribed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Channel subscription required for trial")
 
     result = await sub_service.activate_trial_subscription(session, user_id)
     if not result or not result.get("eligible"):
