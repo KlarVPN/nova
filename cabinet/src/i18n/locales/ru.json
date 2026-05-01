@@ -326,6 +326,8 @@
     "faq": "Часто задаваемые вопросы",
     "setupOtherDevice": "Установка на другом устройстве",
     "setupOtherDeviceDesc": "Выберите платформу для подключения на другом устройстве",
+    "instruction": "Инструкция",
+    "forPlatform": "для {platform}",
     "instructionFor": "Инструкция для {platform}",
     "contact": "Поддержка",
     "otherPlatforms": "Другие платформы"

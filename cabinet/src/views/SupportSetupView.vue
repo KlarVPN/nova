@@ -80,12 +80,15 @@ function openOtherPlatforms() {
         class="flex min-h-24 cursor-pointer flex-col items-start justify-center gap-2 rounded-[14px] bg-neutral-950 p-5 text-white transition-colors hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
         @click="openPlatform(tile.url)"
       >
-        <span class="rounded-[14px] bg-white p-3"
-          ><Icon :icon="tile.icon" class="size-10 text-black"
-        /></span>
+        <span class="rounded-[14px] bg-white/5 p-3">
+          <Icon :icon="tile.icon" class="size-10 text-white" />
+        </span>
 
-        <div class="flex flex-col items-start text-white/60">
-          {{ t('support.instructionFor', { platform: tile.label }) }}
+        <div class="flex flex-col items-start gap-px text-white/60">
+          <span class="leading-none">{{ t('support.instruction') }}</span>
+          <span class="text-lg leading-none font-medium text-white">
+            {{ t('support.forPlatform', { platform: tile.label }) }}
+          </span>
         </div>
       </button>
     </div>

@@ -326,6 +326,8 @@
     "faq": "Frequently asked questions",
     "setupOtherDevice": "Setup on another device",
     "setupOtherDeviceDesc": "Choose a platform to connect on another device",
+    "instruction": "Instruction",
+    "forPlatform": "for {platform}",
     "instructionFor": "Instruction for {platform}",
     "contact": "Support",
     "otherPlatforms": "Other platforms"
