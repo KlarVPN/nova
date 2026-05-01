@@ -67,17 +67,16 @@ function navigate(path: string) {
 
 <template>
   <nav
-    class="fixed right-3 bottom-3 left-3 z-50 flex h-18 items-center justify-center rounded-3xl border border-white/10 bg-black/45 px-2 py-2 shadow-[0_12px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-    style="padding-bottom: max(env(safe-area-inset-bottom), 16px)"
+    class="fixed right-3 bottom-3 left-3 z-50 flex h-18 items-center justify-center rounded-full bg-black/45 p-1 backdrop-blur-xl"
   >
     <div ref="tabsContainerRef" class="relative flex w-full max-w-md justify-around px-1">
       <motion.div
         v-if="bubbleReady"
-        class="pointer-events-none absolute rounded-2xl border border-white/10 bg-white/12 shadow-[0_10px_35px_rgba(0,0,0,0.35)]"
+        class="pointer-events-none absolute rounded-full bg-white/12"
         :initial="false"
         :animate="{ x: bubbleX, width: bubbleWidth, opacity: 1 }"
         :transition="{ type: 'spring', stiffness: 380, damping: 34, mass: 0.52 }"
-        style="top: -3px; bottom: -3px; left: 0"
+        style="top: -12px; bottom: -12px; left: 0"
       />
 
       <button
@@ -90,7 +89,6 @@ function navigate(path: string) {
         @click="navigate(tab.path)"
       >
         <Icon :icon="tab.icon!" class="relative z-10 size-5" :stroke-width="1.8" />
-        <span class="relative z-10">{{ tab.label }}</span>
       </button>
     </div>
   </nav>
