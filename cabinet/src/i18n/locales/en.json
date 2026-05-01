@@ -362,6 +362,7 @@
       "offline": "Offline"
     },
     "sortByPing": "Sort by ping",
+    "empty": "No locations in this group yet",
     "uptime": "uptime",
     "daysMonitored": "{n} days",
     "now": "now",

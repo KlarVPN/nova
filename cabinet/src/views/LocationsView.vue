@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
+import { motion } from 'motion-v'
 import { api } from '@/lib/api'
 import type { LocationStatus } from '@/types'
 import PageHeroCard from '@/components/common/PageHeroCard.vue'
@@ -12,6 +13,15 @@ const loading = ref(false)
 const locations = ref<LocationStatus[]>([])
 const filter = ref<'all' | 'online' | 'offline'>('all')
 let refreshTimer: number | null = null
+const filterContainerRef = ref<HTMLElement | null>(null)
+const filterRefs = ref<Record<'all' | 'online' | 'offline', HTMLElement | null>>({
+  all: null,
+  online: null,
+  offline: null,
+})
+const bubbleX = ref(0)
+const bubbleWidth = ref(0)
+const bubbleReady = ref(false)
 
 const filtered = computed(() => {
   let list = [...locations.value]
@@ -51,12 +61,39 @@ async function fetchLocations() {
   }
 }
 
+function setFilterRef(key: 'all' | 'online' | 'offline', el: unknown) {
+  filterRefs.value[key] = (el as HTMLElement | null) ?? null
+}
+
+function syncFilterBubble() {
+  const container = filterContainerRef.value
+  const activeEl = filterRefs.value[filter.value]
+  if (!container || !activeEl) {
+    bubbleReady.value = false
+    return
+  }
+
+  const containerRect = container.getBoundingClientRect()
+  const activeRect = activeEl.getBoundingClientRect()
+  bubbleX.value = activeRect.left - containerRect.left
+  bubbleWidth.value = activeRect.width
+  bubbleReady.value = true
+}
+
+watch(filter, async () => {
+  await nextTick()
+  syncFilterBubble()
+})
+
 onMounted(() => {
   fetchLocations()
+  void nextTick(syncFilterBubble)
+  window.addEventListener('resize', syncFilterBubble)
   refreshTimer = window.setInterval(fetchLocations, 5 * 60 * 1000)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncFilterBubble)
   if (refreshTimer) window.clearInterval(refreshTimer)
 })
 </script>
@@ -71,33 +108,27 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <div class="grid grid-cols-3 gap-1 rounded-full bg-neutral-950 p-1">
+    <div
+      ref="filterContainerRef"
+      class="relative grid grid-cols-3 gap-1 rounded-full bg-neutral-950 p-1"
+    >
+      <motion.div
+        v-if="bubbleReady"
+        class="pointer-events-none absolute top-1 bottom-1 z-0 rounded-full bg-neutral-800"
+        :initial="false"
+        :animate="{ x: bubbleX, width: bubbleWidth, opacity: 1 }"
+        :transition="{ type: 'spring', stiffness: 420, damping: 36, mass: 0.45 }"
+        style="left: 0"
+      />
       <button
-        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
-        :class="filter === 'all' ? 'bg-neutral-800 text-white' : 'bg-neutral-900 text-neutral-300'"
-        @click="filter = 'all'"
+        v-for="option in ['all', 'online', 'offline']"
+        :key="option"
+        :ref="(el) => setFilterRef(option, el)"
+        class="relative z-10 cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
+        :class="filter === option ? 'text-white' : 'text-neutral-400'"
+        @click="filter = option"
       >
-        {{ t('locations.filters.all') }}
-      </button>
-      <button
-        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
-        :class="
-          filter === 'online'
-            ? 'bg-emerald-950/50 text-emerald-300'
-            : 'bg-neutral-900 text-neutral-300'
-        "
-        @click="filter = 'online'"
-      >
-        {{ t('locations.filters.online') }}
-      </button>
-      <button
-        class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
-        :class="
-          filter === 'offline' ? 'bg-rose-950/30 text-rose-300' : 'bg-neutral-900 text-neutral-300'
-        "
-        @click="filter = 'offline'"
-      >
-        {{ t('locations.filters.offline') }}
+        {{ t(`locations.filters.${option}`) }}
       </button>
     </div>
 
@@ -105,7 +136,7 @@ onBeforeUnmount(() => {
       {{ t('common.loading') }}
     </div>
 
-    <div v-else class="flex flex-col gap-2">
+    <div v-else-if="filtered.length" class="flex flex-col gap-2">
       <div
         v-for="item in filtered"
         :key="`${item.country}-${item.name}`"
@@ -153,6 +184,14 @@ onBeforeUnmount(() => {
           <span>{{ t('locations.now') }}</span>
         </div>
       </div>
+    </div>
+
+    <div
+      v-else
+      class="flex flex-col items-center gap-4 rounded-[14px] bg-neutral-950 px-4 py-10 text-center"
+    >
+      <Icon icon="lucide:map-pin-off" class="size-16 text-neutral-500" />
+      <p class="text-base font-medium text-neutral-400">{{ t('locations.empty') }}</p>
     </div>
   </div>
 </template>
