@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
       <details
         v-for="(item, idx) in faqItems"
         :key="idx"
-        class="faq-item group overflow-hidden rounded-[16px] bg-neutral-950/85 backdrop-blur-sm"
+        class="faq-item group overflow-hidden rounded-[14px] bg-neutral-950/85 backdrop-blur-sm"
         :open="openIndex === idx"
       >
         <summary
@@ -88,7 +88,6 @@ onBeforeUnmount(() => {
 
 .faq-item .faq-content {
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.28s ease;
 }
 
 .faq-item[open] .faq-content {
