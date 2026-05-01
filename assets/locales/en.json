@@ -545,5 +545,6 @@
   "no_bonus_placeholder": "none",
   "payment_successful_with_promo_full": "✅ Payment successful!\nYour {months}-month subscription has been extended by {bonus_days} bonus days via promo code and is active until {end_date}.\n\nConnection key:\n<code>{config_link}</code>\n\nTo connect, follow the link and follow the instructions 👇",
   "system_or_unknown_user": "System/unknown user",
-  "free_kassa_order_full": "Order №{order_id} from {date}\n\n"
+  "free_kassa_order_full": "Order №{order_id} from {date}\n\n",
+  "kassa_ai_order_full": "Kassa AI payment №{order_id} from {date}\n\n"
 }

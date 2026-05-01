@@ -10,6 +10,7 @@ from fastapi.responses import Response
 from app.handlers.user.payment import yookassa_webhook_route
 from app.services.crypto_pay_service import cryptopay_webhook_route
 from app.services.freekassa_service import freekassa_webhook_route
+from app.services.kassa_ai_service import kassa_ai_webhook_route
 from app.services.panel_webhook_service import panel_webhook_route
 from app.services.platega_service import platega_webhook_route
 from app.services.severpay_service import severpay_webhook_route
@@ -46,6 +47,7 @@ def build_webhook_router(dp: Dispatcher, bot: Bot, settings) -> APIRouter:
         "panel_service",
         "stars_service",
         "freekassa_service",
+        "kassa_ai_service",
         "cryptopay_service",
         "panel_webhook_service",
         "platega_service",
@@ -79,6 +81,11 @@ def build_webhook_router(dp: Dispatcher, bot: Bot, settings) -> APIRouter:
     async def freekassa_webhook(request: Request) -> Response:
         shim = FastAPIRequestShim(request, app_payload)
         return await freekassa_webhook_route(shim)
+
+    @router.post(settings.kassa_ai_webhook_path)
+    async def kassa_ai_webhook(request: Request) -> Response:
+        shim = FastAPIRequestShim(request, app_payload)
+        return await kassa_ai_webhook_route(shim)
 
     @router.post(settings.platega_webhook_path)
     async def platega_webhook(request: Request) -> Response:

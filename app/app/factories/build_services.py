@@ -67,7 +67,14 @@ def build_core_services(
         referral_service=referral_service,
         default_return_url=bot_username_for_default_return,
     )
-    kassa_ai_service = KassaAiService(settings)
+    kassa_ai_service = KassaAiService(
+        bot=bot,
+        settings=settings,
+        i18n=i18n,
+        async_session_factory=async_session_factory,
+        subscription_service=subscription_service,
+        referral_service=referral_service,
+    )
     panel_webhook_service = PanelWebhookService(bot, settings, i18n, async_session_factory, panel_service)
     yookassa_service = YooKassaService(
         shop_id=settings.YOOKASSA_SHOP_ID,

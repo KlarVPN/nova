@@ -554,6 +554,19 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
+    def kassa_ai_webhook_path(self) -> str:
+        return "/webhook/kassa-ai"
+
+    @computed_field
+    @property
+    def kassa_ai_full_webhook_url(self) -> Optional[str]:
+        base = self.WEBHOOK_BASE_URL
+        if base:
+            return f"{base.rstrip('/')}{self.kassa_ai_webhook_path}"
+        return None
+
+    @computed_field
+    @property
     def severpay_webhook_path(self) -> str:
         return "/webhook/severpay"
 

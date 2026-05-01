@@ -545,5 +545,6 @@
   "no_bonus_placeholder": "нет",
   "payment_successful_with_promo_full": "✅ Оплата прошла успешно!\nВаша подписка на {months} мес. продлена на {bonus_days} бонусных дней по промокоду и активна до {end_date}.\n\nКлюч подключения:\n<code>{config_link}</code>\n\nЧтобы подключиться, перейдите по ссылке и следуйте инструкции 👇",
   "system_or_unknown_user": "Система/неизвестный пользователь",
-  "free_kassa_order_full": "Заказ №{order_id} от {date}\n\n"
+  "free_kassa_order_full": "Заказ №{order_id} от {date}\n\n",
+  "kassa_ai_order_full": "Платёж Kassa AI №{order_id} от {date}\n\n"
 }
