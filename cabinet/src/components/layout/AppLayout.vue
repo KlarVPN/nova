@@ -29,6 +29,11 @@ const showNavigation = computed(
 <template>
   <div class="relative h-dvh w-full overflow-hidden bg-[#010101]">
     <div
+      v-if="showNavigation"
+      class="pointer-events-none fixed right-0 bottom-0 left-0 z-40 h-18 bg-gradient-to-b from-transparent to-black md:hidden"
+    />
+
+    <div
       class="h-dvh overflow-y-auto px-4 pt-3 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:px-12"
       :class="showNavigation ? 'pb-16 md:pb-4 md:pl-32' : 'pb-3'"
     >

@@ -69,6 +69,10 @@ function navigate(path: string) {
   <nav
     class="fixed right-3 bottom-3 left-3 z-50 flex h-18 items-center justify-center rounded-full bg-black/45 p-1 backdrop-blur-xl"
   >
+    <div
+      class="pointer-events-none absolute top-full right-0 left-0 h-16 rounded-b-full bg-gradient-to-b from-transparent to-black/80"
+    />
+
     <div ref="tabsContainerRef" class="relative flex w-full max-w-md justify-around px-1">
       <motion.div
         v-if="bubbleReady"
