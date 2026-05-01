@@ -71,10 +71,10 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <div class="grid grid-cols-3 gap-1">
+    <div class="grid grid-cols-3 gap-1 rounded-full bg-neutral-950 p-1">
       <button
         class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
-        :class="filter === 'all' ? 'bg-neutral-900 text-white' : 'bg-neutral-950 text-neutral-300'"
+        :class="filter === 'all' ? 'bg-neutral-800 text-white' : 'bg-neutral-900 text-neutral-300'"
         @click="filter = 'all'"
       >
         {{ t('locations.filters.all') }}
@@ -83,8 +83,8 @@ onBeforeUnmount(() => {
         class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
         :class="
           filter === 'online'
-            ? 'bg-emerald-950/30 text-emerald-300'
-            : 'bg-neutral-950 text-neutral-300'
+            ? 'bg-emerald-950/50 text-emerald-300'
+            : 'bg-neutral-900 text-neutral-300'
         "
         @click="filter = 'online'"
       >
@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
       <button
         class="cursor-pointer rounded-full p-3 text-xs font-medium transition-all"
         :class="
-          filter === 'offline' ? 'bg-rose-950/30 text-rose-300' : 'bg-neutral-950 text-neutral-300'
+          filter === 'offline' ? 'bg-rose-950/30 text-rose-300' : 'bg-neutral-900 text-neutral-300'
         "
         @click="filter = 'offline'"
       >
