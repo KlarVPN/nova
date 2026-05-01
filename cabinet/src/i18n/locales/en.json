@@ -113,6 +113,7 @@
   },
   "referral": {
     "title": "Referrals",
+    "description": "Invite friends with your link and get bonus subscription days.",
     "subtitle": "Invite friends and earn bonuses",
     "invited": "Invited",
     "purchased": "Purchased",
@@ -126,7 +127,32 @@
     "howTitle": "How it works",
     "step1": "Share the link with a friend",
     "step2": "Friend signs up and subscribes",
-    "step3": "Both get bonus days added to their subscription"
+    "step3": "Both get bonus days added to their subscription",
+    "timeline": {
+      "shareTitle": "Share your referral link with a friend",
+      "shareSubtitle": "Copy the link and send it to your friend",
+      "waitTitle": "Wait until your friend buys a subscription",
+      "waitSubtitle": "Any plan works. Available for new users",
+      "friendBonusTitle": "Your friend will get bonus subscription days",
+      "friendBonusSubtitle": "Right after the subscription purchase",
+      "yourBonusTitle": "You will get bonus subscription days",
+      "yourBonusSubtitle": "After your friend activates a subscription"
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": "Where can I find my referral link?",
+      "a1": "In your account, open 'My profile' -> 'Referral program'. There you will see your unique referral link.",
+      "q2": "How many friends can I invite? Are there limits?",
+      "a2": "You can invite as many friends as you want. Each friend gets a 30-day bonus subscription via your link. For your side, the accumulated free period is capped at 2 years.",
+      "q3": "Can I invite a friend who already has a subscription?",
+      "a3": "The referral program is available only for new users. If your friend already has an account, bonus days will not be credited.",
+      "q4": "Do I need an active subscription to participate?",
+      "a4": "You can invite friends even if you do not currently have an active subscription. Just copy your referral link from your account and send it any way you like.",
+      "q5": "I invited a friend, but bonus days were not credited. What should I do?",
+      "a5": "If your friend subscribed via your link but bonus days are still missing, either less than 30 days have passed since purchase or your friend was already an existing user. If you still need help, contact support.",
+      "q6": "Will I get a bonus if my friend cancels within the first 30 days?",
+      "a6": "Bonus days are credited only if the invited friend subscribes through your link and does not cancel within the first 30 days."
+    }
   },
   "promo": {
     "title": "Promo Code",

@@ -7,7 +7,7 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import { AVAILABLE_LOCALES, locale, setLocale } from '@/i18n/i18n.ts'
 import { hapticError, hapticImpact, hapticSuccess, openLink } from '@/lib/telegram'
 import { Button } from '@/components/ui/button'
-import FloatingSubscriptionLink from '@/components/common/FloatingSubscriptionLink.vue'
+import FloatingLink from '@/components/common/FloatingLink.vue'
 import SheetModal from '@/components/common/SheetModal.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/components/ui/toast'
@@ -367,7 +367,7 @@ const router = useRouter()
       </div>
     </SheetModal>
 
-    <FloatingSubscriptionLink :url="connectUrl" />
+    <FloatingLink :text="t('home.subLink')" :url="connectUrl" />
   </div>
 </template>
 

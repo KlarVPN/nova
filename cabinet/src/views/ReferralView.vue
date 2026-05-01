@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
@@ -8,6 +8,8 @@ import { hapticSuccess, shareUrl } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import { Card } from '@/components/common'
 import { Button } from '@/components/ui/button'
+import PageHeroCard from '@/components/common/PageHeroCard.vue'
+import FloatingLink from '@/components/common/FloatingLink.vue'
 
 const store = useSubscriptionStore()
 const { t } = useI18n()
@@ -31,14 +33,74 @@ function shareLink() {
 }
 
 const monthOrder = [1, 3, 6, 12]
+const openFaqIndex = ref<number | null>(0)
+
+const referralSteps = computed(() => [
+  {
+    icon: 'lucide:share-2',
+    title: t('referral.timeline.shareTitle'),
+    subtitle: store.referralData?.referral_link || t('referral.timeline.shareSubtitle'),
+    canCopy: Boolean(store.referralData?.referral_link),
+  },
+  {
+    icon: 'lucide:circle-dollar-sign',
+    title: t('referral.timeline.waitTitle'),
+    subtitle: t('referral.timeline.waitSubtitle'),
+    canCopy: false,
+  },
+  {
+    icon: 'lucide:smile',
+    title: t('referral.timeline.friendBonusTitle'),
+    subtitle: t('referral.timeline.friendBonusSubtitle'),
+    canCopy: false,
+  },
+  {
+    icon: 'lucide:gift',
+    title: t('referral.timeline.yourBonusTitle'),
+    subtitle: t('referral.timeline.yourBonusSubtitle'),
+    canCopy: false,
+  },
+])
+
+const referralFaq = computed(() => [
+  {
+    q: t('referral.faq.q1'),
+    a: t('referral.faq.a1'),
+  },
+  {
+    q: t('referral.faq.q2'),
+    a: t('referral.faq.a2'),
+  },
+  {
+    q: t('referral.faq.q3'),
+    a: t('referral.faq.a3'),
+  },
+  {
+    q: t('referral.faq.q4'),
+    a: t('referral.faq.a4'),
+  },
+  {
+    q: t('referral.faq.q5'),
+    a: t('referral.faq.a5'),
+  },
+  {
+    q: t('referral.faq.q6'),
+    a: t('referral.faq.a6'),
+  },
+])
+
+function toggleFaq(index: number) {
+  openFaqIndex.value = openFaqIndex.value === index ? null : index
+}
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-5 pt-2">
-    <h1 class="text-center text-2xl leading-[0.9] font-medium tracking-tight text-white">
-      {{ t('referral.title') }}
-    </h1>
-
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-5 pt-2 pb-22 md:pb-6">
+    <PageHeroCard
+      :title="t('referral.title')"
+      :description="t('referral.description')"
+      icon="mdi:account-group"
+    />
     <Transition name="content-fade" mode="out-in">
       <div v-if="store.loadingReferral" key="loading" class="flex w-full flex-col gap-3 py-2">
         <div class="grid grid-cols-2 gap-3">
@@ -53,8 +115,41 @@ const monthOrder = [1, 3, 6, 12]
         />
       </div>
 
-      <div v-else-if="store.referralData" key="content" class="w-full">
+      <div v-else-if="store.referralData" key="content" class="flex w-full flex-col gap-3">
+        <!-- How it works -->
+        <div class="flex flex-col gap-3">
+          <div class="relative overflow-hidden rounded-[14px] bg-neutral-950 px-4 py-3">
+            <div
+              class="absolute top-6 bottom-6 left-8 w-px border-l border-dashed border-white/25"
+            />
+            <div
+              v-for="(step, i) in referralSteps"
+              :key="i"
+              class="relative flex items-start gap-3 py-2"
+            >
+              <span
+                class="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-neutral-900 ring-3 ring-neutral-950"
+              >
+                <Icon :icon="step.icon" class="size-4 text-white/90" />
+              </span>
+              <div class="min-w-0 flex-1 text-left">
+                <p class="text-base font-medium text-white">{{ step.title }}</p>
+                <p class="text-sm text-white/55">{{ step.subtitle }}</p>
+                <button
+                  v-if="step.canCopy"
+                  type="button"
+                  class="mt-1 inline-flex cursor-pointer items-center gap-1 text-sm text-neutral-200"
+                  @click="copyLink"
+                >
+                  {{ copied ? t('common.copied') : t('common.copy') }}
+                  <Icon :icon="copied ? 'lucide:check' : 'lucide:copy'" class="size-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Stats -->
+
         <div class="grid grid-cols-2 gap-3">
           <Card>
             <span class="flex items-center gap-2 text-sm">
@@ -76,57 +171,21 @@ const monthOrder = [1, 3, 6, 12]
           </Card>
         </div>
 
-        <!-- Referral Link -->
-        <div class="flex flex-col gap-3">
-          <p class="text-sm font-medium text-neutral-500">
-            {{ t('referral.linkLabel') }}
-          </p>
-          <Card>
-            <span class="flex items-center gap-2 text-sm">
-              <Icon icon="lucide:link" class="size-4" />
-              {{ t('referral.link') }}
-            </span>
-            <span class="truncate text-left text-sm font-medium text-white">{{
-              store.referralData.referral_link
-            }}</span>
-          </Card>
-          <div class="flex gap-3">
-            <Button
-              class="flex h-10 flex-1 border border-neutral-800 bg-neutral-950 transition-colors hover:border-neutral-700 hover:bg-neutral-900"
-              @click="copyLink"
-            >
-              <Icon
-                :icon="copied ? 'lucide:check' : 'lucide:copy'"
-                class="size-4 text-neutral-400"
-              />
-              <span class="text-sm text-neutral-400">{{
-                copied ? t('common.copied') : t('common.copy')
-              }}</span>
-            </Button>
-            <Button class="flex h-10 flex-1 transition-colors" @click="shareLink">
-              <Icon icon="lucide:share-2" class="size-4" />
-              <span class="text-sm">{{ t('common.share') }}</span>
-            </Button>
-          </div>
-        </div>
-
         <!-- Bonus Table -->
         <div class="flex flex-col gap-3">
-          <p class="text-sm font-medium text-neutral-500">
+          <p class="py-1 text-base font-medium text-white">
             {{ t('referral.bonusTitle') }}
           </p>
-          <div class="overflow-hidden rounded-[14px] border border-neutral-800">
+          <div class="overflow-hidden rounded-[14px]">
             <!-- Header -->
             <div class="grid grid-cols-3 bg-neutral-900 px-4 py-2">
-              <span class="text-xs font-semibold text-neutral-500 uppercase">{{
-                t('referral.plan')
-              }}</span>
-              <span class="text-center text-xs font-semibold text-neutral-500 uppercase">{{
-                t('referral.you')
-              }}</span>
-              <span class="text-center text-xs font-semibold text-neutral-500 uppercase">{{
-                t('referral.friend')
-              }}</span>
+              <span class="text-xs font-semibold text-neutral-500">{{ t('referral.plan') }}</span>
+              <span class="text-center text-xs font-semibold text-neutral-500">
+                {{ t('referral.you') }}
+              </span>
+              <span class="text-center text-xs font-semibold text-neutral-500">
+                {{ t('referral.friend') }}
+              </span>
             </div>
             <div
               v-for="(months, idx) in monthOrder"
@@ -134,36 +193,50 @@ const monthOrder = [1, 3, 6, 12]
               class="grid grid-cols-3 border-t border-neutral-800 px-4 py-2.5"
               :class="idx % 2 === 0 ? 'bg-neutral-950' : 'bg-neutral-900/50'"
             >
-              <span class="font-mono text-sm text-white">{{ monthsLabel(months) }}</span>
-              <span class="text-center font-mono text-sm text-[#bdfe00]">
+              <span class="text-sm text-white">{{ monthsLabel(months) }}</span>
+              <span class="text-center text-sm font-bold text-white">
                 +{{ pluralDays(store.referralData.bonus_structure[months]?.inviter_days ?? 0) }}
               </span>
-              <span class="text-center font-mono text-sm text-neutral-400">
+              <span class="text-center text-sm text-neutral-400">
                 +{{ pluralDays(store.referralData.bonus_structure[months]?.referee_days ?? 0) }}
               </span>
             </div>
           </div>
         </div>
 
-        <!-- How it works -->
         <div class="flex flex-col gap-3">
-          <p class="text-sm font-medium text-neutral-500">
-            {{ t('referral.howTitle') }}
-          </p>
+          <p class="py-1 text-base font-medium text-white">{{ t('referral.faq.title') }}</p>
           <div class="flex flex-col gap-2">
             <div
-              v-for="(step, i) in [t('referral.step1'), t('referral.step2'), t('referral.step3')]"
-              :key="i"
-              class="flex items-start gap-3 rounded-[14px] border border-neutral-800 bg-neutral-950 px-4 py-2"
+              v-for="(item, idx) in referralFaq"
+              :key="idx"
+              class="overflow-hidden rounded-[14px] bg-neutral-950"
             >
-              <span class="shrink-0 text-sm font-bold text-[#bdfe00]">{{ i + 1 }}.</span>
-              <p class="text-left text-sm text-neutral-400">{{ step }}</p>
+              <button
+                type="button"
+                class="flex w-full cursor-pointer items-start justify-between gap-3 px-4 py-3 text-left"
+                @click="toggleFaq(idx)"
+              >
+                <span class="text-base font-medium text-white">{{ item.q }}</span>
+                <Icon
+                  :icon="openFaqIndex === idx ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+                  class="mt-0.5 size-4 shrink-0 text-white"
+                />
+              </button>
+              <div v-if="openFaqIndex === idx" class="border-t border-white/10 px-4 py-3">
+                <p class="text-sm text-white/90">{{ item.a }}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div v-else key="empty" class="w-full rounded-[14px] bg-neutral-950 px-4 py-6">
+        <p class="text-sm text-neutral-400">{{ t('common.error') }}</p>
+      </div>
     </Transition>
   </div>
+  <FloatingLink text="Ваша реферальная ссылка" :url="store.referralData?.referral_link || ''" />
 </template>
 
 <style scoped>

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { Button } from '@/components/ui/button'
-import FloatingSubscriptionLink from '@/components/common/FloatingSubscriptionLink.vue'
+import FloatingLink from '@/components/common/FloatingLink.vue'
 import PageHeroCard from '@/components/common/PageHeroCard.vue'
 import { hapticImpact, openLink } from '@/lib/telegram'
 import { useAuthStore } from '@/stores/auth'
@@ -101,6 +101,6 @@ function openOtherPlatforms() {
       {{ t('support.otherPlatforms') }}
     </Button>
 
-    <FloatingSubscriptionLink :url="connectUrl" />
+    <FloatingLink :text="t('home.subLink')" :url="connectUrl" />
   </div>
 </template>
