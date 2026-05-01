@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
-import { useSubscriptionStore } from '@/stores/subscription'
-import { useAuthStore } from '@/stores/auth'
-import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
-import { hapticImpact } from '@/lib/telegram'
-import { useToast } from '@/components/ui/toast'
-import type { PaymentProvider } from '@/types'
+import { PageHeroCard, SheetModal, Skeleton } from '@/components/common'
 import { Button } from '@/components/ui/button'
-import { SheetModal, PageHeroCard, Skeleton } from '@/components/common'
+import { useToast } from '@/components/ui/toast'
+import { hapticImpact } from '@/lib/telegram'
+import { formatPrice, monthsLabel, providerLabel } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth'
+import { useSubscriptionStore } from '@/stores/subscription'
+import type { PaymentProvider } from '@/types'
+import { Icon } from '@iconify/vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const store = useSubscriptionStore()
 const auth = useAuthStore()
@@ -578,11 +578,11 @@ watch(
         <button
           v-for="provider in availableProvidersForSelection"
           :key="provider"
-          class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] border px-4 py-3 text-left transition-colors"
+          class="flex w-full cursor-pointer items-center gap-3 rounded-[14px] px-4 py-3 text-left transition-colors"
           :class="
             selectedProvider === provider
-              ? 'border-[#bdfe00] bg-neutral-900 text-[#bdfe00]'
-              : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
+              ? ' bg-neutral-900 text-white'
+              : ' bg-neutral-950 text-white hover:bg-neutral-900'
           "
           @click="chooseProvider(provider as PaymentProvider)"
         >
@@ -591,13 +591,13 @@ watch(
             v-else
             :icon="providerIconMap[provider] ?? 'lucide:credit-card'"
             class="size-4 shrink-0"
-            :class="selectedProvider === provider ? 'text-[#bdfe00]' : 'text-neutral-500'"
+            :class="selectedProvider === provider ? 'text-white' : 'text-neutral-500'"
           />
           <span class="font-medium">{{ providerLabel(provider) }}</span>
           <Icon
             v-if="selectedProvider === provider"
             icon="lucide:check"
-            class="ml-auto size-4 text-[#bdfe00]"
+            class="ml-auto size-4 text-white"
           />
         </button>
       </div>

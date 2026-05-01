@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Icon } from '@iconify/vue'
+import SheetModal from '@/components/common/SheetModal.vue'
+import { Button } from '@/components/ui/button'
+import type { Locale } from '@/i18n/i18n.ts'
 import { AVAILABLE_LOCALES, locale, setLocale } from '@/i18n/i18n.ts'
 import { hapticImpact } from '@/lib/telegram'
-import { Button } from '@/components/ui/button'
-import SheetModal from '@/components/common/SheetModal.vue'
-import type { Locale } from '@/i18n/i18n.ts'
+import { Icon } from '@iconify/vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const showLanguageModal = ref(false)
@@ -67,6 +67,7 @@ function selectLanguage(lang: Locale) {
   <SheetModal
     :model-value="showLanguageModal"
     show-handle
+    desktop-position="end"
     overlay-class="bg-black/70 backdrop-blur-sm"
     panel-class="border-t border-white/10 bg-[#0a0a0a] p-4 pb-6 md:w-full md:max-w-md md:rounded-2xl md:border md:pb-4"
     @close="closeLanguageModal"
@@ -76,11 +77,11 @@ function selectLanguage(lang: Locale) {
       <button
         v-for="item in AVAILABLE_LOCALES"
         :key="item.code"
-        class="flex w-full cursor-pointer items-center rounded-[14px] border px-4 py-3 text-left transition-colors"
+        class="flex w-full cursor-pointer items-center rounded-[14px] px-4 py-3 text-left transition-colors"
         :class="
           locale === item.code
-            ? 'border-white bg-neutral-900 text-white'
-            : 'border-neutral-800 bg-neutral-950 text-white hover:bg-neutral-900'
+            ? ' bg-neutral-900 text-white'
+            : ' bg-neutral-950 text-white hover:bg-neutral-900'
         "
         @click="selectLanguage(item.code)"
       >
