@@ -11,6 +11,7 @@ import type { PaymentProvider } from '@/types'
 import { Button } from '@/components/ui/button'
 import SheetModal from '@/components/common/SheetModal.vue'
 import PageHeroCard from '@/components/common/PageHeroCard.vue'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 const store = useSubscriptionStore()
 const auth = useAuthStore()
@@ -372,10 +373,10 @@ watch(
     <Transition name="content-fade">
       <!-- Loading -->
       <div v-if="showPlansSkeleton" key="loading" class="flex w-full flex-col gap-3 py-4">
-        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
-        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
-        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
-        <div class="h-[136px] w-full animate-pulse rounded-[14px] bg-neutral-900" />
+        <Skeleton class="h-[136px] w-full" />
+        <Skeleton class="h-[136px] w-full" />
+        <Skeleton class="h-[136px] w-full" />
+        <Skeleton class="h-[136px] w-full" />
       </div>
 
       <div v-else key="content" class="w-full">

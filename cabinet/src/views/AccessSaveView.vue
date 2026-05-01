@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/toast'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 const { t } = useI18n()
 const { success, error } = useToast()
@@ -54,7 +55,7 @@ async function copyLink() {
       </div>
       <p class="mb-3 text-sm text-neutral-400">{{ t('accessSave.linkDesc') }}</p>
 
-      <div v-if="loading" class="h-12 animate-pulse rounded-[14px] bg-neutral-900" />
+      <Skeleton v-if="loading" class="h-12" />
       <button
         v-else
         type="button"

@@ -14,6 +14,7 @@ import type { Device } from '@/types'
 import { Button } from '@/components/ui/button'
 import SubscriptionBadge from '@/components/common/SubscriptionBadge.vue'
 import SheetModal from '@/components/common/SheetModal.vue'
+import Skeleton from '@/components/common/Skeleton.vue'
 import { useToast } from '@/components/ui/toast'
 
 const auth = useAuthStore()
@@ -252,17 +253,17 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
         <!-- LOADING SKELETON -->
         <template v-if="statusKey === 'loading'">
           <div class="flex flex-col items-center gap-5 pt-6">
-            <span class="flex animate-pulse rounded-full bg-neutral-900 p-3">
+            <span class="flex rounded-full bg-neutral-900 p-3">
               <span class="block size-12" />
             </span>
             <div class="flex w-full flex-col items-center gap-2">
-              <div class="h-7 w-32 animate-pulse bg-neutral-900" />
-              <div class="h-4 w-24 animate-pulse bg-neutral-900" />
+              <Skeleton class="h-7 w-32 rounded-none" />
+              <Skeleton class="h-4 w-24 rounded-none" />
             </div>
           </div>
           <div class="flex w-full flex-col gap-3">
-            <div class="h-14 w-full animate-pulse bg-neutral-900" />
-            <div class="h-14 w-full animate-pulse bg-neutral-900" />
+            <Skeleton class="h-14 w-full rounded-none" />
+            <Skeleton class="h-14 w-full rounded-none" />
           </div>
         </template>
 

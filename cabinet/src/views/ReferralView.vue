@@ -10,6 +10,7 @@ import { Card } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import PageHeroCard from '@/components/common/PageHeroCard.vue'
 import FloatingLink from '@/components/common/FloatingLink.vue'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 const store = useSubscriptionStore()
 const { t } = useI18n()
@@ -104,15 +105,11 @@ function toggleFaq(index: number) {
     <Transition name="content-fade" mode="out-in">
       <div v-if="store.loadingReferral" key="loading" class="flex w-full flex-col gap-3 py-2">
         <div class="grid grid-cols-2 gap-3">
-          <div class="h-24 animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900" />
-          <div class="h-24 animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900" />
+          <Skeleton class="h-24 border border-neutral-800" />
+          <Skeleton class="h-24 border border-neutral-800" />
         </div>
-        <div
-          class="h-32 w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
-        <div
-          class="h-44 w-full animate-pulse rounded-[14px] border border-neutral-800 bg-neutral-900"
-        />
+        <Skeleton class="h-32 w-full border border-neutral-800" />
+        <Skeleton class="h-44 w-full border border-neutral-800" />
       </div>
 
       <div v-else-if="store.referralData" key="content" class="flex w-full flex-col gap-3">
