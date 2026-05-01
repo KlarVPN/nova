@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { motion } from 'motion-v'
 import { hapticImpact } from '@/lib/telegram'
+import { getActiveNavPath, isNavTabActive } from '@/lib/navigation'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,7 +19,7 @@ const tabs = computed(() => [
   { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
 ])
 
-const active = computed(() => route.path)
+const active = computed(() => getActiveNavPath(route.path, tabs.value.map((tab) => tab.path)))
 const tabsContainerRef = ref<HTMLElement | null>(null)
 const tabRefs = ref<Record<string, HTMLElement | null>>({})
 const bubbleX = ref(0)
@@ -89,7 +90,7 @@ function navigate(path: string) {
         :ref="(el) => setTabRef(tab.path, el)"
         type="button"
         class="relative flex flex-1 cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-2xl px-3 py-4 text-[10px] font-medium transition-all duration-200"
-        :class="active === tab.path ? 'text-white' : 'text-neutral-400'"
+        :class="isNavTabActive(route.path, tab.path) ? 'text-white' : 'text-neutral-400'"
         @click="navigate(tab.path)"
       >
         <Icon :icon="tab.icon!" class="relative z-10 size-5" :stroke-width="1.8" />

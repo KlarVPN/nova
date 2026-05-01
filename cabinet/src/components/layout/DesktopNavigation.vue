@@ -6,6 +6,7 @@ import { Icon } from '@iconify/vue'
 import { motion } from 'motion-v'
 import Logotype from '@/components/common/Logotype.vue'
 import { hapticImpact } from '@/lib/telegram'
+import { getActiveNavPath, isNavTabActive } from '@/lib/navigation'
 import packageJson from '../../../package.json'
 
 const route = useRoute()
@@ -20,7 +21,7 @@ const tabs = computed(() => [
   { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
 ])
 
-const active = computed(() => route.path)
+const active = computed(() => getActiveNavPath(route.path, tabs.value.map((tab) => tab.path)))
 const appVersion = packageJson.version
 const tabsContainerRef = ref<HTMLElement | null>(null)
 const tabRefs = ref<Record<string, HTMLElement | null>>({})
@@ -95,7 +96,7 @@ function navigate(path: string) {
         :ref="(el) => setTabRef(tab.path, el)"
         type="button"
         class="relative flex w-full min-w-0 cursor-pointer flex-row items-center gap-2 overflow-hidden rounded-xl px-2 py-2 text-sm font-medium transition-all duration-200"
-        :class="active === tab.path ? 'text-white' : 'text-neutral-400'"
+        :class="isNavTabActive(route.path, tab.path) ? 'text-white' : 'text-neutral-400'"
         @click="navigate(tab.path)"
       >
         <Icon :icon="tab.icon!" class="relative z-10 size-5" :stroke-width="1.8" />
