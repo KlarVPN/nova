@@ -32,11 +32,6 @@ const displayName = computed(() => {
   return [firstName, lastName].filter(Boolean).join(' ')
 })
 
-const displayUsername = computed(
-  () => auth.profile?.username || auth.telegramUserCache.username || '',
-)
-
-const userInitial = computed(() => displayName.value.charAt(0).toUpperCase() || '?')
 const randomAvatarSeed = ref(`rnd-${Math.random().toString(36).slice(2, 10)}`)
 const telegramAvatarUrl = computed(
   () => auth.profile?.photo_url || auth.user?.photo_url || auth.telegramPhotoUrl || '',

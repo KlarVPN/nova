@@ -5,19 +5,13 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { motion } from 'motion-v'
 import { hapticImpact } from '@/lib/telegram'
-import { getActiveNavPath, isNavTabActive } from '@/lib/navigation'
+import { getActiveNavPath, getNavigationTabs, isNavTabActive } from '@/lib/navigation'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
-const tabs = computed(() => [
-  { path: '/', label: t('nav.home'), icon: 'lucide:home' },
-  { path: '/setup', icon: 'lucide:settings', label: t('nav.setup') },
-  { path: '/locations', icon: 'lucide:map', label: t('nav.locations') },
-  { path: '/profile', icon: 'lucide:user', label: t('nav.profile') },
-  { path: '/support', icon: 'lucide:headset', label: t('nav.support') },
-])
+const tabs = computed(() => getNavigationTabs(t))
 
 const active = computed(() => getActiveNavPath(route.path, tabs.value.map((tab) => tab.path)))
 const tabsContainerRef = ref<HTMLElement | null>(null)

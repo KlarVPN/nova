@@ -1,3 +1,19 @@
+export type NavigationTab = {
+  path: string
+  label: string
+  icon: string
+}
+
+export function getNavigationTabs(t: (key: string) => string): NavigationTab[] {
+  return [
+    { path: '/', label: t('nav.home'), icon: 'lucide:home' },
+    { path: '/setup', label: t('nav.setup'), icon: 'lucide:settings' },
+    { path: '/locations', label: t('nav.locations'), icon: 'lucide:map' },
+    { path: '/profile', label: t('nav.profile'), icon: 'lucide:user' },
+    { path: '/support', label: t('nav.support'), icon: 'lucide:headset' },
+  ]
+}
+
 const profileNavPrefixes = [
   '/profile',
   '/plans',
