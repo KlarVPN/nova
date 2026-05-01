@@ -126,6 +126,7 @@ function toggleFaq(index: number) {
               v-for="(step, i) in referralSteps"
               :key="i"
               class="relative flex items-start gap-3 py-2"
+              :class="i === referralSteps.length - 1 ? 'bg-neutral-950' : ''"
             >
               <span
                 class="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-neutral-900 ring-3 ring-neutral-950"
