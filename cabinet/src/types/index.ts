@@ -95,6 +95,8 @@ export interface AdminUserItem {
   avatar_url?: string | null
   is_banned: boolean
   registration_date: string | null
+  total_spent?: number
+  has_active_subscription?: boolean
 }
 
 export interface AdminAdItem {
@@ -115,6 +117,54 @@ export interface AdminLogItem {
   event_type: string | null
   content: string | null
   timestamp: string | null
+}
+
+export interface AdminUserProfileData {
+  user: {
+    user_id: number
+    username: string | null
+    first_name: string | null
+    last_name: string | null
+    avatar_url: string | null
+    is_banned: boolean
+    registration_date: string | null
+    panel_user_uuid: string | null
+    referred_by_id: number | null
+    total_spent: number
+  }
+  active_subscription: {
+    subscription_id: number
+    start_date: string | null
+    end_date: string | null
+    is_active: boolean
+    status_from_panel: string | null
+    duration_months: number | null
+    traffic_limit_bytes: number | null
+    traffic_used_bytes: number | null
+  } | null
+  subscriptions: Array<{
+    subscription_id: number
+    start_date: string | null
+    end_date: string | null
+    is_active: boolean
+    duration_months: number | null
+    provider: string | null
+    status_from_panel: string | null
+  }>
+  payments: Array<{
+    payment_id: number
+    amount: number
+    currency: string
+    status: string
+    provider: string | null
+    description: string | null
+    created_at: string | null
+  }>
+  devices: {
+    items: Array<Record<string, unknown>>
+    count: number
+    max_devices: number | null
+  }
 }
 
 export interface ChannelSubscriptionStatus {

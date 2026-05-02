@@ -15,6 +15,7 @@ import type {
   AdminUserItem,
   AdminAdItem,
   AdminLogItem,
+  AdminUserProfileData,
 } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
@@ -174,10 +175,68 @@ export const api = {
       }),
     deletePromo: (promoId: number) =>
       request<{ ok: boolean }>(`/admin/promos/${promoId}`, { method: 'DELETE' }),
-    users: (page = 0, pageSize = 20) =>
-      request<{ total: number; items: AdminUserItem[] }>(`/admin/users?page=${page}&page_size=${pageSize}`),
+    users: (params?: {
+      page?: number
+      pageSize?: number
+      q?: string
+      isBanned?: boolean
+      hasActiveSubscription?: boolean
+      registeredFrom?: string
+      registeredTo?: string
+      minSpent?: number
+      maxSpent?: number
+      sortBy?: 'registration_date' | 'spent' | 'user_id'
+      sortOrder?: 'asc' | 'desc'
+    }) => {
+      const page = params?.page ?? 0
+      const pageSize = params?.pageSize ?? 20
+      const query = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
+      if (params?.q) query.set('q', params.q)
+      if (typeof params?.isBanned === 'boolean') query.set('is_banned', String(params.isBanned))
+      if (typeof params?.hasActiveSubscription === 'boolean') query.set('has_active_subscription', String(params.hasActiveSubscription))
+      if (params?.registeredFrom) query.set('registered_from', params.registeredFrom)
+      if (params?.registeredTo) query.set('registered_to', params.registeredTo)
+      if (typeof params?.minSpent === 'number') query.set('min_spent', String(params.minSpent))
+      if (typeof params?.maxSpent === 'number') query.set('max_spent', String(params.maxSpent))
+      if (params?.sortBy) query.set('sort_by', params.sortBy)
+      if (params?.sortOrder) query.set('sort_order', params.sortOrder)
+      return request<{ total: number; page: number; page_size: number; has_more: boolean; items: AdminUserItem[] }>(
+        `/admin/users?${query.toString()}`,
+      )
+    },
     banUser: (userId: number) => request<{ ok: boolean }>(`/admin/users/${userId}/ban`, { method: 'POST' }),
     unbanUser: (userId: number) => request<{ ok: boolean }>(`/admin/users/${userId}/unban`, { method: 'POST' }),
+    userProfile: (userId: number) => request<AdminUserProfileData>(`/admin/users/${userId}`),
+    messageUser: (userId: number, text: string) =>
+      request<{ ok: boolean }>(`/admin/users/${userId}/message`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      }),
+    changeUserSubscriptionDays: (userId: number, deltaDays: number) =>
+      request<{ ok: boolean; new_end_date: string }>(`/admin/users/${userId}/subscription/days`, {
+        method: 'POST',
+        body: JSON.stringify({ delta_days: deltaDays }),
+      }),
+    setUserDevicesLimit: (userId: number, limit: number) =>
+      request<{ ok: boolean; limit: number }>(`/admin/users/${userId}/limits/devices`, {
+        method: 'POST',
+        body: JSON.stringify({ limit }),
+      }),
+    setUserTrafficLimit: (userId: number, gb: number | null, unlimited = false) =>
+      request<{ ok: boolean }>(`/admin/users/${userId}/limits/traffic`, {
+        method: 'POST',
+        body: JSON.stringify({ gb, unlimited }),
+      }),
+    resetUserHwid: (userId: number) =>
+      request<{ ok: boolean; disconnected: number }>(`/admin/users/${userId}/devices/reset-hwid`, {
+        method: 'POST',
+      }),
+    regenerateUserSubscriptionLink: (userId: number) =>
+      request<{ ok: boolean; subscription_url: string }>(
+        `/admin/users/${userId}/subscription/regenerate-link`,
+        { method: 'POST' },
+      ),
+    syncUser: (userId: number) => request<{ ok: boolean; synced: boolean }>(`/admin/users/${userId}/sync`, { method: 'POST' }),
     ads: (page = 0, pageSize = 20) =>
       request<{ total: number; items: AdminAdItem[] }>(`/admin/ads?page=${page}&page_size=${pageSize}`),
     createAd: (payload: Record<string, unknown>) =>

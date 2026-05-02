@@ -3,7 +3,7 @@ import { PageHeroCard } from '@/components/common'
 import { api } from '@/lib/api'
 import { getAuthHeaders } from '@/lib/adminAuth'
 import { useAuthStore } from '@/stores/auth'
-import type { AdminAdItem, AdminLogItem, AdminOverviewData, AdminPromoItem, AdminUserItem } from '@/types'
+import type { AdminAdItem, AdminLogItem, AdminOverviewData, AdminPromoItem, AdminUserItem, AdminUserProfileData } from '@/types'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -36,6 +36,16 @@ const users = ref<AdminUserItem[]>([])
 const usersTotal = ref(0)
 const usersPage = ref(0)
 const usersSearch = ref('')
+const usersOnlyActive = ref<boolean | null>(null)
+const usersRegisteredFrom = ref('')
+const usersRegisteredTo = ref('')
+const usersMinSpent = ref('')
+const usersMaxSpent = ref('')
+const selectedUserProfile = ref<AdminUserProfileData | null>(null)
+const showUserProfile = ref(false)
+const userMessageText = ref('')
+const userSubDeltaDays = ref('30')
+const userRegeneratedLink = ref('')
 const usersLoadingMore = ref(false)
 const usersHasMore = ref(true)
 const usersSentinel = ref<HTMLElement | null>(null)
@@ -139,10 +149,21 @@ async function loadOverview() {
 }
 
 async function loadUsers(append = false) {
-  const response = await api.admin.users(usersPage.value, 20)
+  const response = await api.admin.users({
+    page: usersPage.value,
+    pageSize: 20,
+    q: usersSearch.value.trim() || undefined,
+    hasActiveSubscription: usersOnlyActive.value === null ? undefined : usersOnlyActive.value,
+    registeredFrom: usersRegisteredFrom.value || undefined,
+    registeredTo: usersRegisteredTo.value || undefined,
+    minSpent: usersMinSpent.value ? Number(usersMinSpent.value) : undefined,
+    maxSpent: usersMaxSpent.value ? Number(usersMaxSpent.value) : undefined,
+    sortBy: 'registration_date',
+    sortOrder: 'desc',
+  })
   users.value = append ? [...users.value, ...response.items] : response.items
   usersTotal.value = response.total
-  usersHasMore.value = users.value.length < usersTotal.value
+  usersHasMore.value = response.has_more
 }
 
 async function loadMoreUsers() {
@@ -199,6 +220,83 @@ async function toggleBan(user: AdminUserItem) {
     if (user.is_banned) await api.admin.unbanUser(user.user_id)
     else await api.admin.banUser(user.user_id)
     await resetUsersFeed()
+  })
+}
+
+async function openUserProfile(user: AdminUserItem) {
+  await runAction(async () => {
+    selectedUserProfile.value = await api.admin.userProfile(user.user_id)
+    userMessageText.value = ''
+    userSubDeltaDays.value = '30'
+    userRegeneratedLink.value = ''
+    showUserProfile.value = true
+  })
+}
+
+async function sendUserMessage() {
+  if (!selectedUserProfile.value) return
+  const text = userMessageText.value.trim()
+  if (!text) return
+  await runAction(async () => {
+    await api.admin.messageUser(selectedUserProfile.value!.user.user_id, text)
+    userMessageText.value = ''
+    setNote('Message sent')
+  })
+}
+
+async function applySubscriptionDeltaDays() {
+  if (!selectedUserProfile.value) return
+  const days = Number(userSubDeltaDays.value || 0)
+  if (!days) return
+  await runAction(async () => {
+    await api.admin.changeUserSubscriptionDays(selectedUserProfile.value!.user.user_id, days)
+    selectedUserProfile.value = await api.admin.userProfile(selectedUserProfile.value!.user.user_id)
+    setNote('Subscription period updated')
+  })
+}
+
+async function applyDeviceLimit(limit: number) {
+  if (!selectedUserProfile.value) return
+  await runAction(async () => {
+    await api.admin.setUserDevicesLimit(selectedUserProfile.value!.user.user_id, limit)
+    selectedUserProfile.value = await api.admin.userProfile(selectedUserProfile.value!.user.user_id)
+    setNote('Device limit updated')
+  })
+}
+
+async function applyTrafficLimit(gb: number | null, unlimited = false) {
+  if (!selectedUserProfile.value) return
+  await runAction(async () => {
+    await api.admin.setUserTrafficLimit(selectedUserProfile.value!.user.user_id, gb, unlimited)
+    selectedUserProfile.value = await api.admin.userProfile(selectedUserProfile.value!.user.user_id)
+    setNote('Traffic limit updated')
+  })
+}
+
+async function resetUserHwidAction() {
+  if (!selectedUserProfile.value) return
+  await runAction(async () => {
+    const result = await api.admin.resetUserHwid(selectedUserProfile.value!.user.user_id)
+    selectedUserProfile.value = await api.admin.userProfile(selectedUserProfile.value!.user.user_id)
+    setNote(`HWID reset: ${result.disconnected} devices`)
+  })
+}
+
+async function regenerateUserLink() {
+  if (!selectedUserProfile.value) return
+  await runAction(async () => {
+    const result = await api.admin.regenerateUserSubscriptionLink(selectedUserProfile.value!.user.user_id)
+    userRegeneratedLink.value = result.subscription_url
+    setNote('Subscription link regenerated')
+  })
+}
+
+async function syncUserAction() {
+  if (!selectedUserProfile.value) return
+  await runAction(async () => {
+    await api.admin.syncUser(selectedUserProfile.value!.user.user_id)
+    selectedUserProfile.value = await api.admin.userProfile(selectedUserProfile.value!.user.user_id)
+    setNote('User synced with panel')
   })
 }
 
@@ -339,6 +437,21 @@ watch(activeTab, async (tab) => {
   }
 })
 
+watch(usersSearch, async () => {
+  if (activeTab.value !== 'users') return
+  await resetUsersFeed()
+})
+
+watch(usersOnlyActive, async () => {
+  if (activeTab.value !== 'users') return
+  await resetUsersFeed()
+})
+
+watch([usersRegisteredFrom, usersRegisteredTo, usersMinSpent, usersMaxSpent], async () => {
+  if (activeTab.value !== 'users') return
+  await resetUsersFeed()
+})
+
 onBeforeUnmount(() => {
   usersObserver?.disconnect()
   usersObserver = null
@@ -368,10 +481,16 @@ onBeforeUnmount(() => {
       <template v-if="activeTab === 'users'">
         <div class="flex items-center gap-2 rounded-[14px] bg-neutral-950 p-2">
           <input v-model="usersSearch" class="w-full rounded bg-neutral-900 px-3 py-2 text-sm text-white" :placeholder="t('admin.search.users')" />
-          <button type="button" class="rounded bg-neutral-800 px-3 py-2 text-xs text-white" @click="usersSearch = ''">Reset</button>
+          <input v-model="usersRegisteredFrom" type="date" class="rounded bg-neutral-900 px-2 py-2 text-xs text-white" />
+          <input v-model="usersRegisteredTo" type="date" class="rounded bg-neutral-900 px-2 py-2 text-xs text-white" />
+          <input v-model="usersMinSpent" class="w-24 rounded bg-neutral-900 px-2 py-2 text-xs text-white" placeholder="Min spent" />
+          <input v-model="usersMaxSpent" class="w-24 rounded bg-neutral-900 px-2 py-2 text-xs text-white" placeholder="Max spent" />
+          <button type="button" class="rounded px-3 py-2 text-xs" :class="usersOnlyActive === true ? 'bg-white text-black' : 'bg-neutral-800 text-white'" @click="usersOnlyActive = usersOnlyActive === true ? null : true">Active</button>
+          <button type="button" class="rounded px-3 py-2 text-xs" :class="usersOnlyActive === false ? 'bg-white text-black' : 'bg-neutral-800 text-white'" @click="usersOnlyActive = usersOnlyActive === false ? null : false">Inactive</button>
+          <button type="button" class="rounded bg-neutral-800 px-3 py-2 text-xs text-white" @click="usersSearch = ''; usersRegisteredFrom = ''; usersRegisteredTo = ''; usersMinSpent = ''; usersMaxSpent = ''; usersOnlyActive = null">Reset</button>
         </div>
         <p class="text-xs text-neutral-400">Total: {{ usersTotal }}</p>
-        <div v-for="u in filteredUsers" :key="u.user_id" class="rounded-[14px] bg-neutral-950 px-4 py-3">
+        <div v-for="u in filteredUsers" :key="u.user_id" class="rounded-[14px] bg-neutral-950 px-4 py-3 cursor-pointer" @click="openUserProfile(u)">
           <div class="flex items-center gap-3">
             <img
               v-if="u.avatar_url"
@@ -387,13 +506,14 @@ onBeforeUnmount(() => {
               <p class="truncate text-sm text-white">{{ u.first_name || `User ${u.user_id}` }}</p>
               <p class="truncate text-xs text-neutral-400">{{ u.username ? `@${u.username}` : '—' }}</p>
               <p class="text-xs text-neutral-500">ID {{ u.user_id }}</p>
+              <p class="text-xs text-neutral-500">Spent: {{ u.total_spent ?? 0 }}</p>
             </div>
 
             <button
               type="button"
               class="rounded bg-white px-2 py-1 text-xs text-black"
               :disabled="busy"
-              @click="toggleBan(u)"
+              @click.stop="toggleBan(u)"
             >
               {{ u.is_banned ? t('admin.actions.unban') : t('admin.actions.ban') }}
             </button>
@@ -466,6 +586,74 @@ onBeforeUnmount(() => {
         <div class="w-full max-w-sm rounded-[14px] bg-neutral-950 p-4">
           <p class="text-sm text-white">{{ t('admin.confirmDeleteAd', { source: confirmDeleteAd.source }) }}</p>
           <div class="mt-3 flex gap-2"><button type="button" class="rounded bg-neutral-800 px-3 py-2 text-xs text-white" @click="confirmDeleteAd = null">{{ t('admin.actions.cancel') }}</button><button type="button" class="rounded bg-red-600 px-3 py-2 text-xs text-white" :disabled="busy" @click="removeAd(confirmDeleteAd)">{{ t('admin.actions.delete') }}</button></div>
+        </div>
+      </div>
+
+      <div v-if="showUserProfile && selectedUserProfile" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="showUserProfile = false">
+        <div class="w-full max-w-2xl rounded-[14px] bg-neutral-950 p-4">
+          <div class="flex items-start gap-3">
+            <img v-if="selectedUserProfile.user.avatar_url" :src="selectedUserProfile.user.avatar_url" class="size-12 rounded-full object-cover" />
+            <div v-else class="flex size-12 items-center justify-center rounded-full bg-neutral-800 text-sm text-neutral-300">U</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-base font-semibold text-white">{{ selectedUserProfile.user.first_name || 'User' }}</p>
+              <p class="text-xs text-neutral-400">{{ selectedUserProfile.user.username ? `@${selectedUserProfile.user.username}` : '—' }} · ID {{ selectedUserProfile.user.user_id }}</p>
+              <p class="text-xs text-neutral-500">Spent: {{ selectedUserProfile.user.total_spent }}</p>
+            </div>
+            <button type="button" class="rounded bg-neutral-800 px-2 py-1 text-xs text-white" @click="showUserProfile = false">Close</button>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div class="rounded bg-neutral-900 px-3 py-2 text-neutral-300">Devices: {{ selectedUserProfile.devices.count }} / {{ selectedUserProfile.devices.max_devices ?? '∞' }}</div>
+            <div class="rounded bg-neutral-900 px-3 py-2 text-neutral-300">Subs history: {{ selectedUserProfile.subscriptions.length }}</div>
+          </div>
+
+          <div class="mt-3 rounded bg-neutral-900 p-3">
+            <p class="mb-2 text-xs text-neutral-400">Send personal message</p>
+            <textarea v-model="userMessageText" class="h-20 w-full rounded bg-neutral-800 px-2 py-2 text-sm text-white" placeholder="Message text" />
+            <button type="button" class="mt-2 rounded bg-white px-3 py-2 text-xs text-black" :disabled="busy" @click="sendUserMessage">Send</button>
+          </div>
+
+          <div class="mt-3 rounded bg-neutral-900 p-3">
+            <p class="mb-2 text-xs text-neutral-400">Subscription actions</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input v-model="userSubDeltaDays" class="w-24 rounded bg-neutral-800 px-2 py-2 text-xs text-white" placeholder="days" />
+              <button type="button" class="rounded bg-white px-2 py-2 text-xs text-black" :disabled="busy" @click="applySubscriptionDeltaDays">Apply days</button>
+              <button type="button" class="rounded bg-neutral-800 px-2 py-2 text-xs text-white" :disabled="busy" @click="userSubDeltaDays = '30'; applySubscriptionDeltaDays()">+30</button>
+              <button type="button" class="rounded bg-neutral-800 px-2 py-2 text-xs text-white" :disabled="busy" @click="userSubDeltaDays = '-30'; applySubscriptionDeltaDays()">-30</button>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded bg-neutral-900 p-3">
+            <p class="mb-2 text-xs text-neutral-400">Device / traffic limits</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <button v-for="n in [1,2,3,5,10]" :key="`dev-${n}`" type="button" class="rounded bg-neutral-800 px-2 py-1 text-xs text-white" :disabled="busy" @click="applyDeviceLimit(n)">{{ n }} devices</button>
+            </div>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <button v-for="gb in [50,100,500,1000]" :key="`gb-${gb}`" type="button" class="rounded bg-neutral-800 px-2 py-1 text-xs text-white" :disabled="busy" @click="applyTrafficLimit(gb)">{{ gb }} GB</button>
+              <button type="button" class="rounded bg-neutral-700 px-2 py-1 text-xs text-white" :disabled="busy" @click="applyTrafficLimit(null, true)">Unlimited</button>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded bg-neutral-900 p-3">
+            <p class="mb-2 text-xs text-neutral-400">Maintenance actions</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded bg-neutral-800 px-2 py-2 text-xs text-white" :disabled="busy" @click="resetUserHwidAction">Reset HWID</button>
+              <button type="button" class="rounded bg-neutral-800 px-2 py-2 text-xs text-white" :disabled="busy" @click="regenerateUserLink">Regenerate link</button>
+              <button type="button" class="rounded bg-neutral-800 px-2 py-2 text-xs text-white" :disabled="busy" @click="syncUserAction">Sync user</button>
+            </div>
+            <div v-if="userRegeneratedLink" class="mt-2 rounded bg-neutral-800 px-2 py-2 text-xs text-neutral-200 break-all">
+              {{ userRegeneratedLink }}
+            </div>
+          </div>
+
+          <div class="mt-3 rounded bg-neutral-900 p-3">
+            <p class="mb-2 text-xs text-neutral-400">Recent payments</p>
+            <div class="max-h-40 overflow-auto text-xs text-neutral-300">
+              <div v-for="p in selectedUserProfile.payments" :key="p.payment_id" class="border-b border-neutral-800 py-1">
+                #{{ p.payment_id }} · {{ p.amount }} {{ p.currency }} · {{ p.status }} · {{ formatDate(p.created_at) }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
