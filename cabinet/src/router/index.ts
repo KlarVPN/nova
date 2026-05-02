@@ -89,6 +89,12 @@ const router = createRouter({
       component: () => import('@/views/OperationsView.vue'),
       meta: { title: 'Operations' },
     },
+    {
+      name: 'admin',
+      path: '/admin',
+      component: () => import('@/views/AdminView.vue'),
+      meta: { title: 'Admin', requiresAdmin: true },
+    },
     { path: '/configs', redirect: '/setup' },
     { path: '/promo', redirect: '/plans' },
     { path: '/:pathMatch(.*)*', redirect: '/' },
@@ -112,6 +118,7 @@ router.beforeEach(async (to) => {
   if (!token) return { name: 'login' }
 
   await auth.fetchProfile()
+  if (to.meta.requiresAdmin && !auth.profile?.is_admin) return { name: 'home' }
   if (auth.isAuthenticated) return true
 
   auth.logout()

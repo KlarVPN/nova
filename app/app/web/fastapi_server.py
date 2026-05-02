@@ -37,6 +37,7 @@ async def build_and_start_fastapi_app(
         bot_username=bot_username,
         dp=dp,
         bot=bot,
+        i18n_instance=dp.get("i18n_instance"),
     )
 
     config = uvicorn.Config(

@@ -403,5 +403,51 @@
       "pending": "Pending",
       "unknown": "Unknown"
     }
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "subtitle": "Service management in web cabinet",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "payments": "Payments",
+      "promos": "Promos",
+      "ads": "Ads",
+      "logs": "Logs",
+      "broadcast": "Broadcast"
+    },
+    "metrics": {
+      "users": "Users",
+      "banned": "Banned",
+      "revenueToday": "Revenue today",
+      "revenueAll": "Revenue all time"
+    },
+    "actions": {
+      "runSync": "Run sync",
+      "ban": "Ban",
+      "unban": "Unban",
+      "exportCsv": "Export CSV",
+      "prev": "Prev",
+      "next": "Next",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "sendBroadcast": "Send broadcast"
+    },
+    "search": {
+      "users": "Search user",
+      "promos": "Search promo",
+      "ads": "Search campaign",
+      "logs": "Search logs"
+    },
+    "target": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "broadcastPlaceholder": "Broadcast text",
+    "confirmDeletePromo": "Delete promo {code}?",
+    "confirmDeleteAd": "Delete campaign {source}?"
   }
 }

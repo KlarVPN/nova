@@ -163,7 +163,6 @@ export function openInvoice(
 }
 
 export function shareUrl(url: string, text?: string) {
-  const shareText = text ? `${text}\n${url}` : url
   twa?.openTelegramLink(
     `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text ?? '')}`,
   )

@@ -112,7 +112,6 @@ const paySubscriptionPrice = computed(() => {
   return { oldPrice: null, finalPrice: null }
 })
 
-const paySubscriptionFinalPriceText = computed(() => paySubscriptionPrice.value.finalPrice ?? '')
 const paySubscriptionOldPriceText = computed(() => paySubscriptionPrice.value.oldPrice ?? '')
 
 const defaultCtaPriceText = computed(() => {
@@ -183,13 +182,6 @@ const includedTrafficGb = computed(() => store.plansData?.included_traffic_gb ??
 const maxDevices = computed(() => store.plansData?.max_devices ?? null)
 const sortedPlans = computed(() => [...displayPlans.value].sort((a, b) => a.months - b.months))
 
-const cheapestMonthlyPlan = computed(() => {
-  const base = sortedPlans.value.find((p) => p.months === 1)
-  if (!base) return null
-  const cost = planCostValue(base)
-  return cost == null ? null : Math.round(cost)
-})
-
 const providerIconMap: Record<string, string> = {
   yookassa: 'lucide:credit-card',
   stars: 'mingcute:star-fill',
@@ -238,26 +230,6 @@ function planDisplayPrice(priceRub: number | null, priceStars: number | null) {
   if (priceRub != null) return formatPrice(discountedPrice(priceRub))
   if (priceStars != null) return `${priceStars} ⭐`
   return '—'
-}
-
-function planCostValue(plan: {
-  price_rub: number | null
-  price_stars: number | null
-}): number | null {
-  if (plan.price_rub != null) return discountedPrice(plan.price_rub)
-  if (plan.price_stars != null) return plan.price_stars
-  return null
-}
-
-function planSavings(months: number): number | null {
-  const base = sortedPlans.value.find((p) => p.months === 1)
-  const target = sortedPlans.value.find((p) => p.months === months)
-  if (!base || !target || months <= 1) return null
-  const baseCost = planCostValue(base)
-  const targetCost = planCostValue(target)
-  if (baseCost == null || targetCost == null) return null
-  const save = baseCost * months - targetCost
-  return save > 0 ? Math.round(save) : null
 }
 
 function pricePerMonth(

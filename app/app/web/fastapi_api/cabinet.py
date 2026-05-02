@@ -174,6 +174,7 @@ async def get_me(
         "language_code": user.language_code or "ru",
         "referral_code": user.referral_code or "",
         "is_banned": user.is_banned,
+        "is_admin": user.user_id in settings.ADMIN_IDS,
         "has_active_subscription": has_active_subscription,
         "subscription": _sub_to_dict(sub) if sub else None,
         "trial_available": trial_available,

@@ -12,6 +12,7 @@ const { t } = useI18n()
 const loading = ref(false)
 const locations = ref<LocationStatus[]>([])
 const filter = ref<'all' | 'online' | 'offline'>('all')
+const filterOptions: Array<'all' | 'online' | 'offline'> = ['all', 'online', 'offline']
 let refreshTimer: number | null = null
 const filterContainerRef = ref<HTMLElement | null>(null)
 const filterRefs = ref<Record<'all' | 'online' | 'offline', HTMLElement | null>>({
@@ -121,7 +122,7 @@ onBeforeUnmount(() => {
         style="left: 0"
       />
       <button
-        v-for="option in ['all', 'online', 'offline']"
+        v-for="option in filterOptions"
         :key="option"
         :ref="(el) => setFilterRef(option, el)"
         class="relative z-10 cursor-pointer rounded-full p-3 text-xs font-medium transition-all"

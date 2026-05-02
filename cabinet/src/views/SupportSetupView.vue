@@ -7,10 +7,8 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import { Icon } from '@iconify/vue'
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
-const router = useRouter()
 const auth = useAuthStore()
 const subStore = useSubscriptionStore()
 
@@ -42,11 +40,6 @@ onMounted(async () => {
     await subStore.fetchConnect()
   }
 })
-
-function goBack() {
-  hapticImpact('light')
-  router.push({ name: 'support' })
-}
 
 function openPlatform(url: string) {
   if (!url) return

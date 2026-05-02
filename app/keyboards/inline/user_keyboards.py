@@ -7,19 +7,14 @@ from app.config import Proxy, Settings
 
 
 def get_main_menu_inline_keyboard(
-    lang: str, i18n_instance, settings: Settings, show_trial_button: bool = False
+    lang: str,
+    i18n_instance,
+    settings: Settings,
+    show_trial_button: bool = False,
+    is_admin: bool = False,
 ) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
-
-    if show_trial_button and settings.TRIAL_ENABLED:
-        builder.row(
-            InlineKeyboardButton(
-                text=_(key="menu_activate_trial_button"),
-                callback_data="main_action:request_trial",
-                icon_custom_emoji_id="5355197719822504108",
-            )
-        )
 
     if settings.MINI_APP_URL:
         builder.row(
@@ -29,11 +24,11 @@ def get_main_menu_inline_keyboard(
                 icon_custom_emoji_id="5354961973362598334",
             )
         )
-    else:
+    elif settings.WEB_URL:
         builder.row(
             InlineKeyboardButton(
                 text=_(key="menu_cabinet_button"),
-                callback_data="main_action:cabinet",
+                url=settings.WEB_URL,
                 icon_custom_emoji_id="5354961973362598334",
             )
         )
@@ -76,50 +71,20 @@ def get_main_menu_inline_keyboard(
         )
     )
 
-    return builder.as_markup()
+    if is_admin:
+        admin_url = None
+        if settings.MINI_APP_URL:
+            admin_url = f"{settings.MINI_APP_URL.rstrip('/')}/admin"
+        elif settings.WEB_URL:
+            admin_url = f"{settings.WEB_URL.rstrip('/')}/admin"
 
-
-def get_cabinet_keyboard(i18n_instance, lang: str, settings) -> InlineKeyboardMarkup:
-    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
-
-    builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(
-            text=_(key="menu_subscribe_inline"),
-            callback_data="main_action:subscribe",
-            icon_custom_emoji_id="5355001173529106401",
-        )
-    )
-    builder.row(
-        InlineKeyboardButton(
-            text=_(key="menu_my_subscription_inline"),
-            callback_data="main_action:my_subscription",
-            icon_custom_emoji_id="5357490991840399481",
-        )
-    )
-
-    promo_button = InlineKeyboardButton(
-        text=_(key="menu_apply_promo_button"),
-        callback_data="main_action:apply_promo",
-        icon_custom_emoji_id="5355262243116194984",
-    )
-    if settings.REFERRAL_ENABLED:
-        referral_button = InlineKeyboardButton(
-            text=_(key="menu_referral_inline"),
-            callback_data="main_action:referral",
-            icon_custom_emoji_id="5354998738282647073",
-        )
-        builder.row(referral_button, promo_button)
-    else:
-        builder.row(promo_button)
-
-    builder.row(
-        InlineKeyboardButton(
-            text=_(key="back_to_main_menu_button"),
-            callback_data="main_action:back_to_main",
-            icon_custom_emoji_id="5355307842783975721",
-        )
-    )
+        if admin_url:
+            builder.row(
+                InlineKeyboardButton(
+                    text=_(key="menu_admin_panel_button"),
+                    url=admin_url,
+                )
+            )
 
     return builder.as_markup()
 
@@ -680,12 +645,28 @@ def get_back_to_main_menu_markup(
     return builder.as_markup()
 
 
-def get_subscribe_only_markup(lang: str, i18n_instance) -> InlineKeyboardMarkup:
+def get_subscribe_only_markup(
+    lang: str, i18n_instance, settings: Settings
+) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text=_(key="menu_subscribe_inline"), callback_data="main_action:subscribe"
-    )
+    if settings.SUBSCRIPTION_MINI_APP_URL:
+        builder.button(
+            text=_(key="menu_my_subscription_inline"),
+            web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
+        )
+    elif settings.MINI_APP_URL:
+        builder.button(
+            text=_(key="menu_cabinet_button"),
+            web_app=WebAppInfo(url=settings.MINI_APP_URL),
+        )
+    elif settings.WEB_URL:
+        builder.button(text=_(key="menu_cabinet_button"), url=settings.WEB_URL)
+    else:
+        builder.button(
+            text=_(key="back_to_main_menu_button"),
+            callback_data="main_action:back_to_main",
+        )
     return builder.as_markup()
 
 

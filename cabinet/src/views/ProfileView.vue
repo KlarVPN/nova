@@ -94,12 +94,6 @@ async function applyPromo() {
   }
 }
 
-function resetPromo() {
-  promoCode.value = ''
-  promoResult.value = null
-  promoApplied.value = false
-}
-
 function openExternal(url: string) {
   if (!url) return
   hapticImpact('light')

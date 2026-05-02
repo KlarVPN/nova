@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import QrcodeVue from 'qrcode.vue'
-import type { ImageSettings } from 'qrcode.vue'
 
 const props = defineProps<{
   url: string

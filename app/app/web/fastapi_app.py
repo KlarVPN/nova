@@ -25,6 +25,7 @@ def create_fastapi_app(
     bot_username: str = "",
     dp=None,
     bot=None,
+    i18n_instance=None,
 ) -> FastAPI:
     app = FastAPI(title="KLAR API", version="1.0.0")
 
@@ -42,6 +43,7 @@ def create_fastapi_app(
     app.state.bot_username = bot_username
     app.state.dp = dp
     app.state.bot = bot
+    app.state.i18n_instance = i18n_instance
 
     @app.get("/health")
     async def health() -> JSONResponse:

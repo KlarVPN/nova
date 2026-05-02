@@ -8,6 +8,7 @@ from typing import Optional, Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest, TelegramForbiddenError
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 from app.utils.image_sender import answer_with_image, edit_with_image, replace_with_text
 
@@ -18,13 +19,11 @@ from app.keyboards.inline.user_keyboards import (
     get_main_menu_inline_keyboard,
     get_language_selection_keyboard,
     get_proxies_keyboard,
-    get_channel_subscription_keyboard, get_cabinet_keyboard, get_information_keyboard, get_location_info_keyboard,
+    get_channel_subscription_keyboard, get_information_keyboard, get_location_info_keyboard,
     get_instructions_keyboard,
     get_terms_acknowledge_keyboard,
 )
 from app.services.subscription_service import SubscriptionService
-from app.services.panel_api_service import PanelApiService
-from app.services.referral_service import ReferralService
 from app.services.promo_code_service import PromoCodeService
 from app.config import Settings
 from app.middlewares.i18n import JsonI18n
@@ -103,22 +102,10 @@ async def send_main_menu(target_event: Union[types.Message,
 
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    show_trial_button_in_menu = False
-    if settings.TRIAL_ENABLED:
-        if hasattr(
-                subscription_service, 'has_had_any_subscription') and callable(
-                    getattr(subscription_service, 'has_had_any_subscription')):
-            if not await subscription_service.has_had_any_subscription(
-                    session, user_id):
-                show_trial_button_in_menu = True
-        else:
-            logging.error(
-                "Method has_had_any_subscription is missing in SubscriptionService for send_main_menu!"
-            )
-
     text = _(key="main_menu_greeting", user_name=user_full_name, user_telegram_id=user_id)
+    is_admin_user = user_id in settings.ADMIN_IDS
     reply_markup = get_main_menu_inline_keyboard(current_lang, i18n, settings,
-                                                 show_trial_button_in_menu)
+                                                 False, is_admin=is_admin_user)
 
     target_message_obj: Optional[types.Message] = None
     if isinstance(target_event, types.Message):
@@ -861,7 +848,30 @@ async def cabinet_command_handler(
                                            ) if i18n else key
 
     text_to_send = _(key="cabinet_menu_title")
-    reply_markup = get_cabinet_keyboard(i18n, current_lang, settings)
+
+    if settings.SUBSCRIPTION_MINI_APP_URL:
+        reply_markup = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(
+                text=_(key="menu_my_subscription_inline"),
+                web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
+            )
+        ]])
+    elif settings.MINI_APP_URL:
+        reply_markup = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(
+                text=_(key="menu_cabinet_button"),
+                web_app=WebAppInfo(url=settings.MINI_APP_URL),
+            )
+        ]])
+    elif settings.WEB_URL:
+        reply_markup = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(
+                text=_(key="menu_cabinet_button"),
+                url=settings.WEB_URL,
+            )
+        ]])
+    else:
+        reply_markup = None
 
     target_message_obj = event.message if isinstance(
         event, types.CallbackQuery) else event
@@ -938,68 +948,37 @@ async def instructions_command_handler(
         await answer_with_image(target_message_obj, "instructions.png", text_to_send, reply_markup)
 
 
-@router.callback_query(F.data.startswith("main_action:"))
-async def main_action_callback_handler(
-        callback: types.CallbackQuery, state: FSMContext, settings: Settings,
-        i18n_data: dict, bot: Bot, subscription_service: SubscriptionService,
-        referral_service: ReferralService, panel_service: PanelApiService,
-        promo_code_service: PromoCodeService, session: AsyncSession):
-    action = callback.data.split(":")[1]
-    user_id = callback.from_user.id
-    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
-    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
-    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs
-                                           ) if i18n else key
+@router.callback_query(F.data == "main_action:back_to_main")
+async def back_to_main_callback_handler(
+    callback: types.CallbackQuery,
+    settings: Settings,
+    i18n_data: dict,
+    subscription_service: SubscriptionService,
+    session: AsyncSession,
+):
+    await send_main_menu(
+        callback,
+        settings,
+        i18n_data,
+        subscription_service,
+        session,
+        is_edit=True,
+    )
 
-    from . import subscription as user_subscription_handlers
-    from . import referral as user_referral_handlers
-    from . import promo_user as user_promo_handlers
-    from . import trial_handler as user_trial_handlers
 
-    if not callback.message:
-        await callback.answer("Error: message context lost.", show_alert=True)
-        return
-
-    if action == "subscribe":
-        await user_subscription_handlers.display_subscription_options(
-            callback, i18n_data, settings, session, promo_code_service=promo_code_service)
-    elif action == "my_subscription":
-        await user_subscription_handlers.my_subscription_command_handler(
-            callback, i18n_data, settings, panel_service, subscription_service,
-            session, bot)
-    elif action == "my_devices":
-        await user_subscription_handlers.my_devices_command_handler(
-            callback, i18n_data, settings, panel_service, subscription_service,
-            session, bot)
-    elif action == "referral":
-        if not settings.REFERRAL_ENABLED:
-            await callback.answer(_("referral_no_bonuses_configured"),
-                                  show_alert=True)
-            return
-        await user_referral_handlers.referral_command_handler(
-            callback, settings, i18n_data, referral_service, bot, session)
-    elif action == "apply_promo":
-        await user_promo_handlers.prompt_promo_code_input(
-            callback, state, i18n_data, settings, session)
-    elif action == "request_trial":
-        await user_trial_handlers.request_trial_confirmation_handler(
-            callback, settings, i18n_data, subscription_service, session)
-    elif action == "language":
-
-        await language_command_handler(callback, i18n_data, settings)
-    elif action == "back_to_main":
-        await send_main_menu(callback,
-                             settings,
-                             i18n_data,
-                             subscription_service,
-                             session,
-                             is_edit=True)
-    elif action == "back_to_main_keep":
-        await send_main_menu(callback,
-                             settings,
-                             i18n_data,
-                             subscription_service,
-                             session,
-                             is_edit=False)
-    else:
-        await callback.answer(_("main_menu_unknown_action"), show_alert=True)
+@router.callback_query(F.data == "main_action:back_to_main_keep")
+async def back_to_main_keep_callback_handler(
+    callback: types.CallbackQuery,
+    settings: Settings,
+    i18n_data: dict,
+    subscription_service: SubscriptionService,
+    session: AsyncSession,
+):
+    await send_main_menu(
+        callback,
+        settings,
+        i18n_data,
+        subscription_service,
+        session,
+        is_edit=False,
+    )

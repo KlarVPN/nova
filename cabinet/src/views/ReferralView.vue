@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { copyToClipboard, monthsLabel, pluralDays } from '@/lib/utils'
-import { hapticSuccess, shareUrl } from '@/lib/telegram'
+import { hapticSuccess } from '@/lib/telegram'
 import { useToast } from '@/components/ui/toast'
 import { Card } from '@/components/common'
 import { PageHeroCard, FloatingLink, Skeleton } from '@/components/common'
@@ -23,11 +23,6 @@ async function copyLink() {
   copied.value = true
   success(t('common.copied'))
   setTimeout(() => (copied.value = false), 2000)
-}
-
-function shareLink() {
-  if (!store.referralData?.referral_link) return
-  shareUrl(store.referralData.referral_link, t('referral.shareText'))
 }
 
 const monthOrder = [1, 3, 6, 12]

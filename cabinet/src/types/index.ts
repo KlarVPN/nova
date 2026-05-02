@@ -31,6 +31,7 @@ export interface UserProfile {
   language_code: string
   referral_code: string
   is_banned: boolean
+  is_admin: boolean
   has_active_subscription: boolean
   subscription: ActiveSubscription | null
   trial_available: boolean
@@ -46,6 +47,74 @@ export interface UserProfile {
     instruction_windows: string
     instruction_linux: string
   }
+}
+
+export interface AdminOverviewData {
+  user_stats: {
+    total_users: number
+    banned_users: number
+    active_today: number
+    paid_subscriptions: number
+    trial_users: number
+    inactive_users: number
+    referral_users: number
+  }
+  financial_stats: {
+    today_revenue: number
+    today_payments_count: number
+    week_revenue: number
+    month_revenue: number
+    all_time_revenue: number
+  }
+  sync_status: {
+    last_sync_time: string | null
+    status: string
+    details: string
+    users_processed_from_panel: number
+    subscriptions_synced: number
+  }
+  queue_stats: Record<string, unknown> | null
+}
+
+export interface AdminPromoItem {
+  promo_code_id: number
+  code: string
+  promo_type: 'bonus_days' | 'discount'
+  bonus_days: number
+  discount_percentage: number
+  max_activations: number
+  current_activations: number
+  is_active: boolean
+  valid_until: string | null
+}
+
+export interface AdminUserItem {
+  user_id: number
+  username: string | null
+  first_name: string | null
+  avatar_url?: string | null
+  is_banned: boolean
+  registration_date: string | null
+}
+
+export interface AdminAdItem {
+  ad_campaign_id: number
+  source: string
+  start_param: string
+  cost: number
+  is_active: boolean
+  created_at: string | null
+}
+
+export interface AdminLogItem {
+  message_log_id: number
+  user_id: number | null
+  target_user_id: number | null
+  telegram_username: string | null
+  telegram_first_name: string | null
+  event_type: string | null
+  content: string | null
+  timestamp: string | null
 }
 
 export interface ChannelSubscriptionStatus {

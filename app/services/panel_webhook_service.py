@@ -60,7 +60,7 @@ class PanelWebhookService:
             lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
             first_name = db_user.first_name or f"User {user_id}" if db_user else f"User {user_id}"
 
-        markup = get_subscribe_only_markup(lang, self.i18n)
+        markup = get_subscribe_only_markup(lang, self.i18n, self.settings)
 
         if event_name in EVENT_MAP:
             days_left, msg_key = EVENT_MAP[event_name]

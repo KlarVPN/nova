@@ -38,5 +38,17 @@ async def get_current_user(
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 
+async def get_current_admin(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    settings = request.app.state.settings
+    user_id = int(current_user["id"])
+    if user_id not in settings.ADMIN_IDS:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
+
+
 SessionDep = Depends(get_session)
 CurrentUserDep = Depends(get_current_user)
+CurrentAdminDep = Depends(get_current_admin)

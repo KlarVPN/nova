@@ -3,7 +3,7 @@ import { Card, SheetModal, Skeleton, SubscriptionBadge } from '@/components/comm
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { api } from '@/lib/api'
-import { hapticError, hapticImpact, hapticSuccess, openLink, twa } from '@/lib/telegram'
+import { hapticError, hapticImpact, hapticSuccess, openLink } from '@/lib/telegram'
 import { formatDaysRemaining, formatPrice } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
@@ -75,20 +75,6 @@ const subscribeFromLabel = computed(() => {
 
   if (minStars != null) return `${t('home.from')} ${minStars} ⭐`
   return ''
-})
-
-const currentDeviceIcon = computed(() => {
-  const p = String(twa?.platform || '').toLowerCase()
-  if (p.includes('ios') || p.includes('macos') || p.includes('mac')) return 'lucide:laptop'
-  if (p.includes('android')) return 'lucide:smartphone'
-  if (p.includes('web') || p.includes('tdesktop')) return 'lucide:monitor'
-
-  const ua = navigator.userAgent.toLowerCase()
-  if (ua.includes('android') || ua.includes('iphone')) return 'lucide:smartphone'
-  if (ua.includes('ipad')) return 'lucide:tablet'
-  if (ua.includes('mac os') || ua.includes('windows') || ua.includes('linux'))
-    return 'lucide:monitor'
-  return 'lucide:laptop'
 })
 
 async function openDevicesModal() {
@@ -243,7 +229,7 @@ const isUnlimitedTraffic = computed(() => !sub.value?.traffic_limit_gb)
 
 <template>
   <div
-    class="mx-auto flex h-[calc(100dvh-4.5rem)] w-full max-w-5xl flex-col items-center justify-center gap-5 py-6 text-center md:h-[calc(100dvh-2rem)]"
+    class="mx-auto flex h-dvh w-full max-w-5xl flex-col items-center justify-center gap-5 py-6 text-center pb-5"
   >
     <Transition name="content-fade" mode="out-in">
       <div :key="statusKey" class="flex h-full w-full flex-col items-center justify-between gap-5">

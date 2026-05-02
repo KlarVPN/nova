@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { locale, initLocale } from '@/i18n/i18n.ts'
 import { AppLayout, AuthLayout } from '@/components/layout'
@@ -8,7 +7,6 @@ import Toaster from '@/components/ui/toast/Toaster.vue'
 import { i18n } from '@/i18n/i18n.ts'
 import { useRoute, useRouter } from 'vue-router'
 
-const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()

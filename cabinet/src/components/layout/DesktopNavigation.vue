@@ -7,13 +7,15 @@ import { motion } from 'motion-v'
 import Logotype from '@/components/common/Logotype.vue'
 import { hapticImpact } from '@/lib/telegram'
 import { getActiveNavPath, getNavigationTabs, isNavTabActive } from '@/lib/navigation'
+import { useAuthStore } from '@/stores/auth'
 import packageJson from '../../../package.json'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const auth = useAuthStore()
 
-const tabs = computed(() => getNavigationTabs(t))
+const tabs = computed(() => getNavigationTabs(t, Boolean(auth.profile?.is_admin)))
 
 const active = computed(() => getActiveNavPath(route.path, tabs.value.map((tab) => tab.path)))
 const appVersion = packageJson.version

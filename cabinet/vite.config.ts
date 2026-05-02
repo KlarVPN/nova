@@ -1,9 +1,9 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve, dirname } from 'node:path'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import tailwindcss from '@tailwindcss/vite'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite'
 
 // Vite 8 uses Rolldown as the default bundler
 export default defineConfig(({ command }) => ({
@@ -52,7 +52,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   server: {
-    allowedHosts: ['e3ai4200qtoz.share.zrok.io'],
+    allowedHosts: ['e0ls8xhus4yr.share.zrok.io'],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

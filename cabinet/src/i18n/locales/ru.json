@@ -403,5 +403,51 @@
       "pending": "В ожидании",
       "unknown": "Неизвестно"
     }
+  },
+  "admin": {
+    "title": "Админ-панель",
+    "subtitle": "Управление сервисом в веб-кабинете",
+    "tabs": {
+      "overview": "Обзор",
+      "users": "Пользователи",
+      "payments": "Платежи",
+      "promos": "Промокоды",
+      "ads": "Реклама",
+      "logs": "Логи",
+      "broadcast": "Рассылка"
+    },
+    "metrics": {
+      "users": "Пользователи",
+      "banned": "Заблокированы",
+      "revenueToday": "Выручка за день",
+      "revenueAll": "Выручка за все время"
+    },
+    "actions": {
+      "runSync": "Запустить синхронизацию",
+      "ban": "Забанить",
+      "unban": "Разбанить",
+      "exportCsv": "Экспорт CSV",
+      "prev": "Назад",
+      "next": "Далее",
+      "enable": "Включить",
+      "disable": "Выключить",
+      "delete": "Удалить",
+      "cancel": "Отмена",
+      "sendBroadcast": "Отправить рассылку"
+    },
+    "search": {
+      "users": "Поиск пользователя",
+      "promos": "Поиск промокода",
+      "ads": "Поиск кампании",
+      "logs": "Поиск по логам"
+    },
+    "target": {
+      "all": "Все",
+      "active": "Активные",
+      "inactive": "Неактивные"
+    },
+    "broadcastPlaceholder": "Текст рассылки",
+    "confirmDeletePromo": "Удалить промокод {code}?",
+    "confirmDeleteAd": "Удалить кампанию {source}?"
   }
 }

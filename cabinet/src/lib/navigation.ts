@@ -4,14 +4,18 @@ export type NavigationTab = {
   icon: string
 }
 
-export function getNavigationTabs(t: (key: string) => string): NavigationTab[] {
-  return [
+export function getNavigationTabs(t: (key: string) => string, isAdmin = false): NavigationTab[] {
+  const tabs: NavigationTab[] = [
     { path: '/', label: t('nav.home'), icon: 'lucide:home' },
     { path: '/setup', label: t('nav.setup'), icon: 'lucide:settings' },
     { path: '/locations', label: t('nav.locations'), icon: 'lucide:map' },
     { path: '/profile', label: t('nav.profile'), icon: 'lucide:user' },
     { path: '/support', label: t('nav.support'), icon: 'lucide:headset' },
   ]
+  if (isAdmin) {
+    tabs.push({ path: '/admin', label: 'Admin', icon: 'lucide:shield-check' })
+  }
+  return tabs
 }
 
 const profileNavPrefixes = [

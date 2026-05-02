@@ -10,16 +10,23 @@ import type {
   ProxyItem,
   OperationsHistoryData,
   ChannelSubscriptionStatus,
+  AdminOverviewData,
+  AdminPromoItem,
+  AdminUserItem,
+  AdminAdItem,
+  AdminLogItem,
 } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 class ApiError extends Error {
-  constructor(
-    public status: number,
-    public detail: string,
-  ) {
+  status: number
+  detail: string
+
+  constructor(status: number, detail: string) {
     super(detail)
+    this.status = status
+    this.detail = detail
     this.name = 'ApiError'
   }
 }
@@ -130,6 +137,71 @@ export const api = {
 
   operations: {
     list: () => request<OperationsHistoryData>('/operations'),
+  },
+
+  admin: {
+    overview: () => request<AdminOverviewData>('/admin/overview'),
+    sync: () => request<{ status: string; details?: string }>('/admin/sync', { method: 'POST' }),
+    payments: (page = 0, pageSize = 20) =>
+      request<{
+        total: number
+        items: Array<{
+          payment_id: number
+          user_id: number
+          username: string | null
+          first_name: string | null
+          amount: number
+          currency: string
+          status: string
+          provider: string | null
+          months: number | null
+          created_at: string | null
+        }>
+      }>(`/admin/payments?page=${page}&page_size=${pageSize}`),
+    paymentsCsvUrl: () => `${BASE_URL}/admin/payments.csv`,
+    promoActivationsCsvUrl: (promoId: number) => `${BASE_URL}/admin/promos/${promoId}/activations.csv`,
+    promos: (page = 0, pageSize = 20) =>
+      request<{ total: number; items: AdminPromoItem[] }>(`/admin/promos?page=${page}&page_size=${pageSize}`),
+    createPromo: (payload: Record<string, unknown>) =>
+      request<{ promo_code_id: number; code: string }>('/admin/promos', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    updatePromo: (promoId: number, payload: Record<string, unknown>) =>
+      request<{ ok: boolean }>(`/admin/promos/${promoId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      }),
+    deletePromo: (promoId: number) =>
+      request<{ ok: boolean }>(`/admin/promos/${promoId}`, { method: 'DELETE' }),
+    users: (page = 0, pageSize = 20) =>
+      request<{ total: number; items: AdminUserItem[] }>(`/admin/users?page=${page}&page_size=${pageSize}`),
+    banUser: (userId: number) => request<{ ok: boolean }>(`/admin/users/${userId}/ban`, { method: 'POST' }),
+    unbanUser: (userId: number) => request<{ ok: boolean }>(`/admin/users/${userId}/unban`, { method: 'POST' }),
+    ads: (page = 0, pageSize = 20) =>
+      request<{ total: number; items: AdminAdItem[] }>(`/admin/ads?page=${page}&page_size=${pageSize}`),
+    createAd: (payload: Record<string, unknown>) =>
+      request<{ ad_campaign_id: number }>('/admin/ads', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    toggleAd: (campaignId: number, isActive: boolean) =>
+      request<{ ok: boolean }>(`/admin/ads/${campaignId}/toggle`, {
+        method: 'POST',
+        body: JSON.stringify({ is_active: isActive }),
+      }),
+    deleteAd: (campaignId: number) => request<{ ok: boolean }>(`/admin/ads/${campaignId}`, { method: 'DELETE' }),
+    logs: (page = 0, pageSize = 50, userId?: number) => {
+      const userPart = typeof userId === 'number' ? `&user_id=${userId}` : ''
+      return request<{ total: number; items: AdminLogItem[] }>(
+        `/admin/logs?page=${page}&page_size=${pageSize}${userPart}`,
+      )
+    },
+    broadcast: (text: string, target: 'all' | 'active' | 'inactive' = 'all') =>
+      request<{ queued: number; target: string }>('/admin/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ text, target }),
+      }),
   },
 }
 
